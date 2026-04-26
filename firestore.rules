@@ -1,0 +1,242 @@
+// firebase-blueprint.json analysis and Draft Rules implementation
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- PRIMITIVES ---
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { 
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'; 
+    }
+    // Allow bootstrapped admin based on email
+    function isSuperAdmin() {
+      return isSignedIn() && request.auth.token.email == 'manthansawant2007@gmail.com' && request.auth.token.email_verified == true;
+    }
+    function hasAdminAccess() {
+      return isSuperAdmin() || isAdmin();
+    }
+    
+    function isValidId(id) { 
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // --- VALIDATION BLUEPRINTS ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'subscriptionPlan', 'role', 'createdAt', 'updatedAt']) &&
+             data.keys().size() == 5 &&
+             data.email is string && data.email.size() >= 3 && data.email.size() <= 200 &&
+             data.subscriptionPlan in ['free', 'basic', 'premium'] &&
+             data.role in ['user', 'admin'] &&
+             data.createdAt is number &&
+             data.updatedAt is number;
+    }
+
+    function isValidProfile(data) {
+      let optionalPin = 'pin' in data ? 1 : 0;
+      let optionalLanguage = 'preferredLanguage' in data ? 1 : 0;
+      return data.keys().hasAll(['name', 'avatarUrl', 'isKid', 'createdAt', 'updatedAt']) &&
+             data.keys().size() == 5 + optionalPin + optionalLanguage &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 50 &&
+             data.avatarUrl is string && data.avatarUrl.size() <= 1000 &&
+             data.isKid is bool &&
+             data.createdAt is number &&
+             data.updatedAt is number &&
+             (!('pin' in data) || (data.pin is string && data.pin.size() <= 10)) &&
+             (!('preferredLanguage' in data) || (data.preferredLanguage is string && data.preferredLanguage.size() <= 20));
+    }
+
+    function isValidWatchProgress(data) {
+      return data.keys().hasAll(['contentId', 'contentType', 'progressSeconds', 'durationSeconds', 'completed', 'updatedAt']) &&
+             data.keys().size() == 6 &&
+             data.contentId is string && data.contentId.size() > 0 && data.contentId.size() <= 128 &&
+             data.contentType in ['movie', 'episode'] &&
+             data.progressSeconds is number &&
+             data.durationSeconds is number &&
+             data.completed is bool &&
+             data.updatedAt is number;
+    }
+
+    function isValidListItem(data) {
+      return data.keys().hasAll(['contentId', 'contentType', 'addedAt']) &&
+             data.keys().size() == 3 &&
+             data.contentId is string && data.contentId.size() > 0 && data.contentId.size() <= 128 &&
+             data.contentType in ['movie', 'series'] &&
+             data.addedAt is number;
+    }
+
+    function isValidContent(data) {
+      let c1 = 'posterUrl' in data ? 1 : 0;
+      let c2 = 'backdropUrl' in data ? 1 : 0;
+      let c3 = 'genres' in data ? 1 : 0;
+      let c4 = 'releaseYear' in data ? 1 : 0;
+      let c5 = 'ageRating' in data ? 1 : 0;
+      let c6 = 'duration' in data ? 1 : 0;
+      let c7 = 'videoUrl' in data ? 1 : 0;
+      let c8 = 'trailerUrl' in data ? 1 : 0;
+      let c9 = 'cast' in data ? 1 : 0;
+      return data.keys().hasAll(['title', 'type', 'description', 'isPublished', 'createdAt', 'updatedAt']) &&
+             data.keys().size() == 6 + c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8 + c9 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.type in ['movie', 'series'] &&
+             data.description is string && data.description.size() <= 5000 &&
+             data.isPublished is bool &&
+             data.createdAt is number &&
+             data.updatedAt is number &&
+             (!('posterUrl' in data) || (data.posterUrl is string && data.posterUrl.size() <= 1000)) &&
+             (!('backdropUrl' in data) || (data.backdropUrl is string && data.backdropUrl.size() <= 1000)) &&
+             (!('genres' in data) || (data.genres is list && data.genres.size() <= 20 && (data.genres.size() == 0 || data.genres[0] is string))) &&
+             (!('releaseYear' in data) || (data.releaseYear is number)) &&
+             (!('ageRating' in data) || (data.ageRating is string && data.ageRating.size() <= 20)) &&
+             (!('duration' in data) || (data.duration is number)) &&
+             (!('videoUrl' in data) || (data.videoUrl is string && data.videoUrl.size() <= 1000)) &&
+             (!('trailerUrl' in data) || (data.trailerUrl is string && data.trailerUrl.size() <= 1000)) &&
+             (!('cast' in data) || (data.cast is list && data.cast.size() <= 50 && (data.cast.size() == 0 || data.cast[0] is string)));
+    }
+
+    function isValidSeason(data) {
+      let c1 = 'description' in data ? 1 : 0;
+      let c2 = 'posterUrl' in data ? 1 : 0;
+      return data.keys().hasAll(['seriesId', 'seasonNumber', 'title', 'isPublished']) &&
+             data.keys().size() == 4 + c1 + c2 &&
+             data.seriesId is string && data.seriesId.size() > 0 && data.seriesId.size() <= 128 &&
+             data.seasonNumber is number &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.isPublished is bool &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+             (!('posterUrl' in data) || (data.posterUrl is string && data.posterUrl.size() <= 1000));
+    }
+
+    function isValidEpisode(data) {
+      let c1 = 'description' in data ? 1 : 0;
+      let c2 = 'thumbnailUrl' in data ? 1 : 0;
+      let c3 = 'duration' in data ? 1 : 0;
+      return data.keys().hasAll(['seasonId', 'seriesId', 'episodeNumber', 'title', 'videoUrl', 'isPublished']) &&
+             data.keys().size() == 6 + c1 + c2 + c3 &&
+             data.seasonId is string && data.seasonId.size() > 0 && data.seasonId.size() <= 128 &&
+             data.seriesId is string && data.seriesId.size() > 0 && data.seriesId.size() <= 128 &&
+             data.episodeNumber is number &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.videoUrl is string && data.videoUrl.size() > 0 && data.videoUrl.size() <= 1000 &&
+             data.isPublished is bool &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+             (!('thumbnailUrl' in data) || (data.thumbnailUrl is string && data.thumbnailUrl.size() <= 1000)) &&
+             (!('duration' in data) || (data.duration is number));
+    }
+
+    // --- RULES ---
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || hasAdminAccess());
+      allow list: if hasAdminAccess();
+      
+      allow create: if isSignedIn() && isValidId(userId) && request.auth.uid == userId &&
+                    isValidUser(incoming()) &&
+                    incoming().email == request.auth.token.email &&
+                    // Only super admin can create themselves as admin, others must be user or set by an admin
+                    (incoming().role == 'user' || isSuperAdmin()) &&
+                    incoming().createdAt == request.time &&
+                    incoming().updatedAt == request.time;
+                    
+      allow update: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) &&
+                    incoming().email == existing().email &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().updatedAt == request.time &&
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['subscriptionPlan', 'updatedAt'])) ||
+                    hasAdminAccess();
+                    
+      allow delete: if hasAdminAccess();
+
+      match /profiles/{profileId} {
+        allow read: if isSignedIn() && (request.auth.uid == userId || hasAdminAccess());
+        
+        allow create: if isSignedIn() && isValidId(userId) && isValidId(profileId) && request.auth.uid == userId &&
+                      isValidProfile(incoming()) &&
+                      incoming().createdAt == request.time &&
+                      incoming().updatedAt == request.time;
+                      
+        allow update: if isSignedIn() && request.auth.uid == userId && isValidProfile(incoming()) &&
+                      incoming().createdAt == existing().createdAt &&
+                      incoming().updatedAt == request.time &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['name', 'avatarUrl', 'isKid', 'pin', 'preferredLanguage', 'updatedAt']);
+                      
+        allow delete: if isSignedIn() && (request.auth.uid == userId || hasAdminAccess());
+
+        match /watchProgress/{contentId} {
+          allow read: if isSignedIn() && (request.auth.uid == userId || hasAdminAccess());
+          allow create: if isSignedIn() && isValidId(userId) && isValidId(profileId) && isValidId(contentId) && request.auth.uid == userId &&
+                        isValidWatchProgress(incoming()) &&
+                        incoming().contentId == contentId &&
+                        incoming().updatedAt == request.time;
+          allow update: if isSignedIn() && request.auth.uid == userId && isValidWatchProgress(incoming()) &&
+                        incoming().contentId == existing().contentId &&
+                        incoming().contentType == existing().contentType &&
+                        incoming().updatedAt == request.time &&
+                        incoming().diff(existing()).affectedKeys().hasOnly(['progressSeconds', 'durationSeconds', 'completed', 'updatedAt']);
+          allow delete: if isSignedIn() && (request.auth.uid == userId || hasAdminAccess());
+        }
+
+        match /watchlist/{contentId} {
+          allow read: if isSignedIn() && (request.auth.uid == userId || hasAdminAccess());
+          allow create: if isSignedIn() && isValidId(userId) && isValidId(profileId) && isValidId(contentId) && request.auth.uid == userId &&
+                        isValidListItem(incoming()) &&
+                        incoming().contentId == contentId &&
+                        incoming().addedAt == request.time;
+          allow update: if false; // Watchlist items are added or removed, not updated.
+          allow delete: if isSignedIn() && (request.auth.uid == userId || hasAdminAccess());
+        }
+
+        match /favorites/{contentId} {
+          allow read: if isSignedIn() && (request.auth.uid == userId || hasAdminAccess());
+          allow create: if isSignedIn() && isValidId(userId) && isValidId(profileId) && isValidId(contentId) && request.auth.uid == userId &&
+                        isValidListItem(incoming()) &&
+                        incoming().contentId == contentId &&
+                        incoming().addedAt == request.time;
+          allow update: if false; // Favorites are added or removed, not updated.
+          allow delete: if isSignedIn() && (request.auth.uid == userId || hasAdminAccess());
+        }
+      }
+    }
+
+    match /content/{contentId} {
+      allow read: if isSignedIn() && (resource.data.isPublished == true || hasAdminAccess());
+      
+      allow create: if hasAdminAccess() && isValidId(contentId) && isValidContent(incoming()) &&
+                    incoming().createdAt == request.time &&
+                    incoming().updatedAt == request.time;
+                    
+      allow update: if hasAdminAccess() && isValidContent(incoming()) &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().updatedAt == request.time;
+                    
+      allow delete: if hasAdminAccess();
+
+      match /seasons/{seasonId} {
+        allow read: if isSignedIn() && (resource.data.isPublished == true || hasAdminAccess());
+        allow create: if hasAdminAccess() && isValidId(contentId) && isValidId(seasonId) && isValidSeason(incoming()) &&
+                      incoming().seriesId == contentId;
+        allow update: if hasAdminAccess() && isValidSeason(incoming()) && incoming().seriesId == existing().seriesId;
+        allow delete: if hasAdminAccess();
+
+        match /episodes/{episodeId} {
+          allow read: if isSignedIn() && (resource.data.isPublished == true || hasAdminAccess());
+          allow create: if hasAdminAccess() && isValidId(contentId) && isValidId(seasonId) && isValidId(episodeId) && isValidEpisode(incoming()) &&
+                        incoming().seasonId == seasonId &&
+                        incoming().seriesId == contentId;
+          allow update: if hasAdminAccess() && isValidEpisode(incoming()) && 
+                        incoming().seasonId == existing().seasonId &&
+                        incoming().seriesId == existing().seriesId;
+          allow delete: if hasAdminAccess();
+        }
+      }
+    }
+  }
+}

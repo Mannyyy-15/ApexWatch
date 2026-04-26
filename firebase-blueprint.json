@@ -1,0 +1,145 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a registered user account, managing authentication, subscription, and account-level settings.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "description": "User's email address." },
+        "subscriptionPlan": { "type": "string", "enum": ["free", "basic", "premium"], "description": "Current subscription plan." },
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "Role for admin access." },
+        "createdAt": { "type": "number", "description": "Timestamp of account creation." },
+        "updatedAt": { "type": "number", "description": "Timestamp of last update." }
+      },
+      "required": ["email", "subscriptionPlan", "role", "createdAt", "updatedAt"]
+    },
+    "Profile": {
+      "title": "Profile",
+      "description": "A viewing profile under a user account. Users can have multiple profiles (e.g., Kids).",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Profile name." },
+        "avatarUrl": { "type": "string", "description": "URL to profile avatar." },
+        "isKid": { "type": "boolean", "description": "Flag indicating if this is a kids profile." },
+        "pin": { "type": "string", "description": "Optional PIN for profile lock. Empty if no PIN." },
+        "preferredLanguage": { "type": "string", "description": "Preferred audio/subtitle language." },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["name", "avatarUrl", "isKid", "createdAt", "updatedAt"]
+    },
+    "WatchProgress": {
+      "title": "Watch Progress",
+      "description": "Tracks the viewing progress of a specific content piece for a profile.",
+      "type": "object",
+      "properties": {
+        "contentId": { "type": "string", "description": "ID of the movie or episode." },
+        "contentType": { "type": "string", "enum": ["movie", "episode"] },
+        "progressSeconds": { "type": "number", "description": "Current playback timestamp in seconds." },
+        "durationSeconds": { "type": "number", "description": "Total duration of the content." },
+        "completed": { "type": "boolean", "description": "Flag for when content is fully watched." },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["contentId", "contentType", "progressSeconds", "durationSeconds", "completed", "updatedAt"]
+    },
+    "ListItem": {
+      "title": "List Item",
+      "description": "An item in a profile's watchlist or favorites.",
+      "type": "object",
+      "properties": {
+        "contentId": { "type": "string" },
+        "contentType": { "type": "string", "enum": ["movie", "series"] },
+        "addedAt": { "type": "number" }
+      },
+      "required": ["contentId", "contentType", "addedAt"]
+    },
+    "Content": {
+      "title": "Content",
+      "description": "Metadata for a movie or TV series. Managed by admins or synced.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["movie", "series"] },
+        "description": { "type": "string" },
+        "posterUrl": { "type": "string" },
+        "backdropUrl": { "type": "string" },
+        "genres": { "type": "array", "items": { "type": "string" } },
+        "releaseYear": { "type": "number" },
+        "ageRating": { "type": "string" },
+        "duration": { "type": "number", "description": "Duration in minutes (for movies). Optional for series." },
+        "videoUrl": { "type": "string", "description": "Main video URL for movies." },
+        "trailerUrl": { "type": "string" },
+        "cast": { "type": "array", "items": { "type": "string" } },
+        "isPublished": { "type": "boolean" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["title", "type", "description", "isPublished", "createdAt", "updatedAt"]
+    },
+    "Season": {
+      "title": "Season",
+      "description": "A season of a TV series.",
+      "type": "object",
+      "properties": {
+        "seriesId": { "type": "string" },
+        "seasonNumber": { "type": "number" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "posterUrl": { "type": "string" },
+        "isPublished": { "type": "boolean" }
+      },
+      "required": ["seriesId", "seasonNumber", "title", "isPublished"]
+    },
+    "Episode": {
+      "title": "Episode",
+      "description": "An episode in a season.",
+      "type": "object",
+      "properties": {
+        "seasonId": { "type": "string" },
+        "seriesId": { "type": "string" },
+        "episodeNumber": { "type": "number" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "thumbnailUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "duration": { "type": "number", "description": "Duration in minutes" },
+        "isPublished": { "type": "boolean" }
+      },
+      "required": ["seasonId", "seriesId", "episodeNumber", "title", "videoUrl", "isPublished"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "User" },
+      "description": "Stores user account details and subscriptions."
+    },
+    "/users/{userId}/profiles/{profileId}": {
+      "schema": { "$ref": "Profile" },
+      "description": "Profiles belonging to a user."
+    },
+    "/users/{userId}/profiles/{profileId}/watchProgress/{contentId}": {
+      "schema": { "$ref": "WatchProgress" },
+      "description": "Track playback progress per profile."
+    },
+    "/users/{userId}/profiles/{profileId}/watchlist/{contentId}": {
+      "schema": { "$ref": "ListItem" },
+      "description": "Items added to the profile's watchlist."
+    },
+    "/users/{userId}/profiles/{profileId}/favorites/{contentId}": {
+      "schema": { "$ref": "ListItem" },
+      "description": "Items added to the profile's favorites."
+    },
+    "/content/{contentId}": {
+      "schema": { "$ref": "Content" },
+      "description": "Global catalog of movies and series."
+    },
+    "/content/{contentId}/seasons/{seasonId}": {
+      "schema": { "$ref": "Season" },
+      "description": "Seasons for a specific series."
+    },
+    "/content/{contentId}/seasons/{seasonId}/episodes/{episodeId}": {
+      "schema": { "$ref": "Episode" },
+      "description": "Episodes for a specific season."
+    }
+  }
+}
