@@ -7,7 +7,7 @@ import { tmdb } from '../utils/tmdb';
 import { MovieCardSkeleton } from './Skeleton';
 
 export function ProfileLibrary() {
-    const { user, activeProfile, setActiveMovieId, setCurrentView, libraryTab: activeTab, setLibraryTab: setActiveTab } = useAppContext();
+    const { user, activeProfile, setActiveMovieId, setActiveMediaType, setCurrentView, libraryTab: activeTab, setLibraryTab: setActiveTab } = useAppContext();
     const [watchlist, setWatchlist] = useState([]);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -64,8 +64,9 @@ export function ProfileLibrary() {
         loadLibraryData();
     }, [user, activeProfile]);
 
-    const handleMovieClick = (id) => {
+    const handleMovieClick = (id, type) => {
         setActiveMovieId(id);
+        setActiveMediaType(type || 'movie');
         setCurrentView('details');
     };
 
@@ -113,7 +114,7 @@ export function ProfileLibrary() {
                                 watchlist.length > 0 ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-5">
                                         {watchlist.map((movie) => (
-                                            <div key={movie.id} className="group relative cursor-pointer" onClick={() => handleMovieClick(movie.id)}>
+                                            <div key={movie.id} className="group relative cursor-pointer" onClick={() => handleMovieClick(movie.id, movie.type)}>
                                                 <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden mb-2 border border-white/10 group-hover:border-red-600 transition-colors">
                                                     <img src={movie.poster} alt={movie.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"/>
                                                     <button 
@@ -139,7 +140,7 @@ export function ProfileLibrary() {
                                 history.length > 0 ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-5">
                                         {history.map((movie) => (
-                                            <div key={movie.id} className="group relative cursor-pointer" onClick={() => handleMovieClick(movie.id)}>
+                                            <div key={movie.id} className="group relative cursor-pointer" onClick={() => handleMovieClick(movie.id, movie.type)}>
                                                 <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden mb-2 border border-white/10">
                                                     <img src={movie.poster} alt={movie.title} className="w-full h-full object-cover"/>
                                                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

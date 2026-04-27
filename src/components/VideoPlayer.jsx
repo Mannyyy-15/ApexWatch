@@ -7,7 +7,7 @@ import { useTVBackHandler } from '../hooks/useTV';
 import { firestoreService } from '../utils/firestore';
 
 export function VideoPlayer() {
-    const { activeMovieId, setCurrentView, user, activeProfile } = useAppContext();
+    const { activeMovieId, setCurrentView, user, activeProfile, activeSeason, activeEpisode, activeMediaType } = useAppContext();
 
     useTVBackHandler(() => setCurrentView('details'));
     const [movie, setMovie] = useState(null);
@@ -18,6 +18,41 @@ export function VideoPlayer() {
     const [playerReady, setPlayerReady] = useState(false);
 
     useEffect(() => {
+        const lockOrientation = async () => {
+            try {
+                // Request orientation lock if supported
+                if (window.screen.orientation && window.screen.orientation.lock) {
+                    await window.screen.orientation.lock('landscape').catch(() => {
+                        // Silently fail if not allowed by browser policy (usually requires fullscreen)
+                        console.log('Orientation lock requested.');
+                    });
+                }
+                
+                // On mobile, try to enter fullscreen for better experience
+                if (document.documentElement.requestFullscreen && window.innerHeight < 600) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                }
+            } catch (error) {
+                console.warn('Orientation control error:', error);
+            }
+        };
+
+        const unlockOrientation = () => {
+            try {
+                if (window.screen.orientation && window.screen.orientation.unlock) {
+                    window.screen.orientation.unlock();
+                }
+                if (document.exitFullscreen && document.fullscreenElement) {
+                    document.exitFullscreen().catch(() => {});
+                }
+            } catch (error) { }
+        };
+
+        lockOrientation();
+        return () => unlockOrientation();
+    }, []);
+
+    useEffect(() => {
         if (!activeMovieId) return;
 
         const loadMovieAndProgress = async () => {
@@ -25,11 +60,16 @@ export function VideoPlayer() {
             try {
                 // Fetch Metadata
                 let data;
-                try {
+                if (activeMediaType === 'movie') {
                     data = await tmdb.fetchMovieDetails(activeMovieId);
-                    if (!data.title) throw new Error('Not a movie');
-                } catch {
+                    if (!data.title && !data.id) {
+                        data = await tmdb.fetchTVDetails(activeMovieId);
+                    }
+                } else {
                     data = await tmdb.fetchTVDetails(activeMovieId);
+                    if (!data.name && !data.id) {
+                        data = await tmdb.fetchMovieDetails(activeMovieId);
+                    }
                 }
                 const formatted = tmdb.formatMovie(data);
                 setMovie(formatted);
@@ -114,7 +154,7 @@ export function VideoPlayer() {
 
     // Construct Vidking embed URL dynamically
     const baseUrl = movie.type === 'tv' 
-        ? `https://www.vidking.net/embed/tv/${movie.tmdbId}/${movie.season || 1}/${movie.episode || 1}`
+        ? `https://www.vidking.net/embed/tv/${movie.tmdbId}/${activeSeason || 1}/${activeEpisode || 1}`
         : `https://www.vidking.net/embed/movie/${movie.tmdbId}`;
     
     const params = new URLSearchParams({
@@ -194,6 +234,8 @@ export function VideoPlayer() {
                         className="w-full h-full border-none" 
                         allowFullScreen 
                         allow="autoplay; encrypted-media; picture-in-picture"
+                        sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
+                        title={movie.title}
                     />
                 </motion.div>
             )}

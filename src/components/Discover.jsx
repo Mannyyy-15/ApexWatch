@@ -6,25 +6,47 @@ import { tmdb } from '../utils/tmdb';
 import { MovieCardSkeleton } from './Skeleton';
 
 export function Discover() {
-    const { setActiveMovieId, setCurrentView, searchQuery, setSearchQuery } = useAppContext();
+    const { setActiveMovieId, setActiveMediaType, setCurrentView, searchQuery, setSearchQuery } = useAppContext();
     const [searchResults, setSearchResults] = useState([]);
     const [trending, setTrending] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Initial Trending Data
+    // Initial Trending/Mixed Data
     useEffect(() => {
-        const loadTrending = async () => {
+        const loadContent = async () => {
             setLoading(true);
             try {
-                const results = await tmdb.fetchTrending();
-                setTrending(results.map(tmdb.formatMovie).filter(Boolean).slice(0, 20));
+                const isMobile = window.innerWidth < 768;
+                if (isMobile) {
+                    // Fetch a mix for mobile discovery
+                    const [trending, movies, tv, anime] = await Promise.all([
+                        tmdb.fetchTrending('all'),
+                        tmdb.fetchPopular('movie'),
+                        tmdb.fetchPopular('tv'),
+                        tmdb.fetchDiscover('tv', { with_genres: 16, with_keywords: '210024' })
+                    ]);
+                    
+                    const allContent = [...trending, ...movies, ...tv, ...anime]
+                        .map(tmdb.formatMovie)
+                        .filter(Boolean);
+                    
+                    // Filter unique IDs
+                    const uniqueMixed = Array.from(new Map(allContent.map(item => [item.id, item])).values());
+                    
+                    // Shuffle for variety
+                    const shuffled = uniqueMixed.sort(() => 0.5 - Math.random());
+                    setTrending(shuffled.slice(0, 60));
+                } else {
+                    const results = await tmdb.fetchTrending();
+                    setTrending(results.map(tmdb.formatMovie).filter(Boolean).slice(0, 30));
+                }
             } catch (error) {
-                console.error('Error loading trending:', error);
+                console.error('Error loading content:', error);
             } finally {
                 setLoading(false);
             }
         };
-        loadTrending();
+        loadContent();
     }, []);
 
     // Search logic with global query
@@ -36,7 +58,9 @@ export function Discover() {
         setLoading(true);
         try {
             const results = await tmdb.search(query);
-            setSearchResults(results.map(tmdb.formatMovie).filter(Boolean));
+            const formatted = results.map(tmdb.formatMovie).filter(Boolean);
+            const uniqueResults = Array.from(new Map(formatted.map(item => [item.id, item])).values());
+            setSearchResults(uniqueResults);
         } catch (error) {
             console.error('Search error:', error);
         } finally {
@@ -50,33 +74,34 @@ export function Discover() {
         }
     }, [searchQuery, performSearch]);
 
-    const handleMovieClick = (id) => {
+    const handleMovieClick = (id, type) => {
         setActiveMovieId(id);
+        setActiveMediaType(type || 'movie');
         setCurrentView('details');
     };
 
     const displayMovies = searchQuery.trim() ? searchResults : trending;
 
     return (
-        <div className="min-h-screen pt-24 md:pt-32 px-4 md:px-20 pb-32 w-full max-w-[1600px] mx-auto">
+        <div className="min-h-screen pt-32 md:pt-40 px-2 md:px-20 pb-32 w-full max-w-[1600px] mx-auto relative z-10">
             
-            {/* Search Bar - Main Action */}
-            <div className="mb-12 max-w-2xl mx-auto px-2">
+            {/* Search Bar - Only Visible on Mobile (Desktop uses Global Search) */}
+            <div className="mb-8 md:mb-12 max-w-2xl mx-auto px-2 md:hidden">
                 <div className="relative group">
-                    <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-white/40 group-focus-within:text-red-500 transition-colors">
-                        <Search size={22} />
+                    <div className="absolute inset-y-0 left-4 md:left-5 flex items-center pointer-events-none text-white/40 group-focus-within:text-red-500 transition-colors">
+                        <Search size={18} className="md:w-[22px] md:h-[22px]" />
                     </div>
                     <input 
                         type="text" 
-                        placeholder="Search for movies, TV series..." 
+                        placeholder="Movies, TV, Anime..." 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-[#111] border border-white/10 rounded-2xl py-5 pl-16 pr-6 text-xl text-white placeholder-white/20 focus:outline-none focus:border-red-600 focus:bg-black transition-all font-medium shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+                        className="w-full bg-[#111] border border-white/10 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-12 md:pl-16 pr-12 text-base md:text-xl text-white placeholder-white/20 focus:outline-none focus:border-red-600 focus:bg-black transition-all font-medium shadow-[0_0_50px_rgba(0,0,0,0.5)]"
                     />
                     {searchQuery && (
                         <button 
                             onClick={() => setSearchQuery('')}
-                            className="absolute inset-y-0 right-5 flex items-center text-white/40 hover:text-white"
+                            className="absolute inset-y-0 right-4 flex items-center text-white/40 hover:text-white transition-colors"
                         >
                             <X size={20} />
                         </button>
@@ -84,16 +109,25 @@ export function Discover() {
                 </div>
             </div>
 
-            {searchQuery && (
-                <div className="mb-8 px-4">
-                    <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">
-                        Found {searchResults.length} matches for "{searchQuery}"
-                    </p>
+            {/* Results Header - Only if searching */}
+            {searchQuery.trim() && (
+                <div className="mb-8 md:mb-12 relative z-20">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-1.5 h-8 bg-red-600 rounded-full shadow-[0_0_20px_rgba(229,9,20,0.6)]"></div>
+                        <div>
+                            <h2 className="text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter leading-none">
+                                Search <span className="text-red-600">Results</span>
+                            </h2>
+                            <p className="text-white/40 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] mt-1.5">
+                                Found {searchResults.length} matches for "{searchQuery}"
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
 
             {/* Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 tv:grid-cols-8 gap-4 md:gap-6 px-2">
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 tv:grid-cols-8 gap-3 md:gap-6 px-1">
                 {loading && displayMovies.length === 0 ? (
                      [...Array(24)].map((_, i) => <MovieCardSkeleton key={i} />)
                 ) : (
@@ -107,26 +141,24 @@ export function Discover() {
                                 transition={{ duration: 0.3 }}
                                 key={movie.id} 
                                 className="group relative cursor-pointer outline-none" 
-                                onClick={() => handleMovieClick(movie.id)}
+                                onClick={() => handleMovieClick(movie.id, movie.type)}
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleMovieClick(movie.id);
+                                    if (e.key === 'Enter') handleMovieClick(movie.id, movie.type);
                                 }}
                                 tabIndex={0}
                                 role="button"
                                 aria-label={`View details for ${movie.title}`}
                             >
-                                <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden mb-2 border border-white/10 group-hover:border-red-600/50 transition-colors">
+                                <div className="relative aspect-[2/3] rounded-xl md:rounded-[24px] overflow-hidden mb-1.5 md:mb-2 border border-white/10 group-hover:border-red-600/50 transition-colors">
                                     <img src={movie.poster} alt={movie.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"/>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60"></div>
-                                    
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-2xl scale-90 group-hover:scale-100 transition-transform">
-                                            <Play size={24} className="fill-white text-white ml-1"/>
-                                        </div>
-                                    </div>
                                 </div>
-                                <h3 className="text-sm font-bold text-white group-hover:text-red-500 transition-colors truncate px-1">{movie.title}</h3>
-                                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider px-1">{movie.year} • {movie.type}</p>
+                                <h3 className="text-[10px] md:text-sm font-bold text-white group-hover:text-red-500 transition-colors truncate px-0.5">{movie.title}</h3>
+                                <div className="flex items-center gap-1 text-[8px] md:text-[10px] text-white/40 font-black uppercase tracking-wider px-0.5">
+                                    <span>{movie.year}</span>
+                                    <span>•</span>
+                                    <span>{movie.type === 'tv' ? 'TV' : 'Movie'}</span>
+                                </div>
                             </motion.div>
                         ))}
                     </AnimatePresence>

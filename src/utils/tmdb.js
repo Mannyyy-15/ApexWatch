@@ -38,43 +38,72 @@ const fetchWithErrorHandling = async (url) => {
 
 export const tmdb = {
     fetchTrending: async (type = 'movie', page = 1) => {
-        const data = await fetchWithErrorHandling(`${BASE_URL}/trending/${type}/week?page=${page}`);
+        const data = await fetchWithErrorHandling(`${BASE_URL}/trending/${type}/week?page=${page}&region=IN`);
         return data.results || [];
     },
 
     fetchPopular: async (type = 'movie', page = 1) => {
-        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/popular?page=${page}`);
+        if (type === 'all') {
+            // TMDB doesn't have /all/popular. We'll use trending as a proxy for 'popular all'
+            return tmdb.fetchTrending('all', page);
+        }
+        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/popular?page=${page}&region=IN`);
         return data.results || [];
     },
 
     fetchMovieDetails: async (id) => {
         if (!id || id === 'undefined') return { results: [], error: 'Invalid ID' };
-        return await fetchWithErrorHandling(`${BASE_URL}/movie/${id}?append_to_response=credits,videos,recommendations`);
+        return await fetchWithErrorHandling(`${BASE_URL}/movie/${id}?append_to_response=credits,videos,recommendations&region=IN`);
     },
 
     fetchTVDetails: async (id) => {
         if (!id || id === 'undefined') return { results: [], error: 'Invalid ID' };
-        return await fetchWithErrorHandling(`${BASE_URL}/tv/${id}?append_to_response=credits,videos,recommendations`);
+        return await fetchWithErrorHandling(`${BASE_URL}/tv/${id}?append_to_response=credits,videos,recommendations&region=IN`);
+    },
+
+    fetchTVSeasonDetails: async (tvId, seasonNumber) => {
+        if (!tvId || seasonNumber === undefined) return { results: [] };
+        return await fetchWithErrorHandling(`${BASE_URL}/tv/${tvId}/season/${seasonNumber}`);
     },
 
     fetchTopRated: async (type = 'movie', page = 1) => {
-        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/top_rated?page=${page}`);
+        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/top_rated?page=${page}&region=IN`);
+        return data.results || [];
+    },
+
+    fetchNowPlaying: async (page = 1) => {
+        const data = await fetchWithErrorHandling(`${BASE_URL}/movie/now_playing?page=${page}&region=IN`);
+        return data.results || [];
+    },
+
+    fetchUpcoming: async (page = 1) => {
+        const data = await fetchWithErrorHandling(`${BASE_URL}/movie/upcoming?page=${page}&region=IN`);
+        return data.results || [];
+    },
+
+    fetchDiscover: async (type = 'movie', params = {}) => {
+        const queryParams = new URLSearchParams({
+            sort_by: 'popularity.desc',
+            region: 'IN',
+            ...params
+        }).toString();
+        const data = await fetchWithErrorHandling(`${BASE_URL}/discover/${type}?${queryParams}`);
         return data.results || [];
     },
 
     fetchByGenre: async (genreId, type = 'movie') => {
-        const data = await fetchWithErrorHandling(`${BASE_URL}/discover/${type}?with_genres=${genreId}&sort_by=popularity.desc`);
+        const data = await fetchWithErrorHandling(`${BASE_URL}/discover/${type}?with_genres=${genreId}&sort_by=popularity.desc&region=IN`);
         return data.results || [];
     },
 
     fetchRecommended: async (id, type = 'movie') => {
         if (!id || id === 'undefined') return [];
-        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/${id}/recommendations`);
+        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/${id}/recommendations?region=IN`);
         return data.results || [];
     },
 
     search: async (query) => {
-        const data = await fetchWithErrorHandling(`${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`);
+        const data = await fetchWithErrorHandling(`${BASE_URL}/search/multi?query=${encodeURIComponent(query)}&region=IN`);
         return data.results || [];
     },
 
@@ -100,6 +129,7 @@ export const tmdb = {
             year: (item.release_date || item.first_air_date || '2024').split('-')[0],
             rating: item.adult ? 'R' : 'PG-13',
             duration: item.runtime ? `${Math.floor(item.runtime / 60)}h ${item.runtime % 60}m` : (item.number_of_seasons ? `${item.number_of_seasons} Seasons` : '2h 15m'),
+            seasons: item.seasons || [],
             tags: item.genres ? item.genres.map(g => g.name) : [],
             description: item.overview || 'No description available.',
             cast: item.credits?.cast?.slice(0, 10).map(c => ({

@@ -1,37 +1,89 @@
 import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { tmdb } from '../utils/tmdb';
 
 export function NavigationIsland() {
-    const { currentView, setCurrentView, user, activeProfile, loadingAuth, login, logout, searchQuery, setSearchQuery, setLibraryTab } = useAppContext();
+    const { 
+        currentView, setCurrentView, 
+        user, activeProfile, loadingAuth, 
+        logout, searchQuery, setSearchQuery, 
+        setLibraryTab, setActiveMovieId, setActiveMediaType 
+    } = useAppContext();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+    const [instantResults, setInstantResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showSearchDropdown, setShowSearchDropdown] = useState(false);
     const profileMenuRef = useRef(null);
     const mobileMenuRef = useRef(null);
+    const searchRef = useRef(null);
 
-    // Close menu on click outside
+    // Close menus on click outside
     useEffect(() => {
         function handleClickOutside(event) {
-            const isDesktopMenu = profileMenuRef.current && profileMenuRef.current.contains(event.target);
+            const isDesktopProfileMenu = profileMenuRef.current && profileMenuRef.current.contains(event.target);
             const isMobileMenu = mobileMenuRef.current && mobileMenuRef.current.contains(event.target);
+            const isSearchArea = searchRef.current && searchRef.current.contains(event.target);
             
-            if (!isDesktopMenu && !isMobileMenu) {
+            if (!isDesktopProfileMenu && !isMobileMenu) {
                 setShowProfileMenu(false);
             }
+            
+            if (!isSearchArea) {
+                setShowSearchDropdown(false);
+            }
         }
-        if (showProfileMenu) {
+        
+        if (showProfileMenu || showSearchDropdown) {
             document.addEventListener('mousedown', handleClickOutside);
         }
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [showProfileMenu]);
+    }, [showProfileMenu, showSearchDropdown]);
 
     // Close menu on navigation
     useEffect(() => {
         setShowProfileMenu(false);
+        setShowSearchDropdown(false);
     }, [currentView]);
+
+    // Instant Search Logic
+    useEffect(() => {
+        const fetchResults = async () => {
+            if (searchQuery.length < 2) {
+                setInstantResults([]);
+                setShowSearchDropdown(false);
+                return;
+            }
+
+            setIsSearching(true);
+            setShowSearchDropdown(true);
+            try {
+                const results = await tmdb.search(searchQuery);
+                const formatted = results.map(tmdb.formatMovie).filter(Boolean);
+                const uniqueResults = Array.from(new Map(formatted.map(item => [item.id, item])).values());
+                setInstantResults(uniqueResults.slice(0, 6));
+            } catch (error) {
+                console.error('Search error:', error);
+            } finally {
+                setIsSearching(false);
+            }
+        };
+
+        const timer = setTimeout(fetchResults, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const handleResultClick = (movie) => {
+        setActiveMovieId(movie.id);
+        setActiveMediaType(movie.type || 'movie');
+        setCurrentView('details');
+        setShowSearchDropdown(false);
+        setSearchQuery('');
+    };
 
     const avatarUrl = activeProfile?.avatarUrl || user?.photoURL;
 
@@ -109,20 +161,71 @@ export function NavigationIsland() {
 
         <div className="w-[1px] h-6 bg-white/10 mx-4 flex-shrink-0"></div>
 
-        <div className="flex items-center bg-white/5 hover:bg-white/10 transition-all rounded-full px-5 py-2.5 mr-3 group border border-white/5 focus-within:border-white/20 flex-shrink-0">
+        <div 
+          ref={searchRef}
+          className="flex items-center bg-white/5 hover:bg-white/10 transition-all rounded-full px-5 py-2.5 mr-3 group border border-white/5 focus-within:border-white/20 flex-shrink-0 relative"
+        >
           <Search size={16} className="text-white/40 group-focus-within:text-white transition-colors"/>
           <input 
             type="text" 
             placeholder="Search content..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => searchQuery.length >= 2 && setShowSearchDropdown(true)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && searchQuery.trim()) {
                 setCurrentView('discover');
+                setShowSearchDropdown(false);
               }
             }}
             className="bg-transparent border-none text-sm text-white placeholder-white/30 focus:outline-none w-32 focus:w-56 transition-all duration-500 ml-3 font-medium"
           />
+
+          {/* Search Dropdown */}
+          <AnimatePresence>
+            {showSearchDropdown && (searchQuery.length >= 2) && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute top-full left-0 right-0 mt-4 bg-[#0f0f0f] rounded-[1.5rem] border border-white/10 shadow-2xl p-2 z-50 overflow-hidden min-w-[300px]"
+              >
+                {isSearching ? (
+                  <div className="p-4 text-center text-white/40 text-xs font-bold uppercase tracking-widest">Searching...</div>
+                ) : instantResults.length > 0 ? (
+                  <div className="space-y-1">
+                    {instantResults.map(movie => (
+                      <button
+                        key={movie.id}
+                        onClick={() => handleResultClick(movie)}
+                        className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-all text-left group/item"
+                      >
+                        <div className="w-10 h-14 rounded-md overflow-hidden bg-white/5 flex-shrink-0">
+                          <img src={movie.poster} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-sm font-bold text-white group-hover/item:text-red-500 transition-colors truncate">{movie.title}</span>
+                          <div className="flex items-center gap-2 text-[10px] text-white/40 font-black uppercase tracking-wider">
+                            <span>{movie.year}</span>
+                            <span>•</span>
+                            <span className="text-red-600/60">{movie.type === 'tv' ? 'TV' : 'Movie'}</span>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                    <button 
+                      onClick={() => { setCurrentView('discover'); setShowSearchDropdown(false); }}
+                      className="w-full p-3 text-center text-[10px] font-black uppercase tracking-widest text-red-600 hover:text-red-500 transition-colors border-t border-white/5 mt-1"
+                    >
+                      See all results
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-white/40 text-xs font-bold uppercase tracking-widest">No results found</div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {!loadingAuth && (<div className="relative" ref={profileMenuRef}>
@@ -194,35 +297,38 @@ export function NavigationIsland() {
         </div>
       </div>
 
-      {/* Mobile Bottom Dock - Simplified */}
+      {/* Mobile Bottom Dock - Redesigned */}
       <motion.div 
         ref={mobileMenuRef}
         initial={{ y: 100 }} 
         animate={{ y: 0 }} 
-        className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-8 bg-black/60 backdrop-blur-3xl border border-white/10 p-2 px-6 rounded-[2rem] shadow-2xl navigation-island-mobile"
+        className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-between bg-black/80 backdrop-blur-3xl border border-white/10 p-2 px-4 rounded-[2rem] shadow-2xl navigation-island-mobile max-w-[500px] mx-auto"
       >
-        <MobileNavItem icon={<Home size={22}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
-        <MobileNavItem icon={<Compass size={22}/>} label="Explore" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
-        <MobileNavItem icon={<Search size={22}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
+        <MobileNavItem icon={<Home size={20}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
+        <MobileNavItem icon={<Film size={20}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
+        <MobileNavItem icon={<Search size={20}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
+        <MobileNavItem icon={<Tv size={20}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
         
         {!loadingAuth && user ? (
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${showProfileMenu ? 'bg-white/10' : ''}`}
           >
-             <div className="w-7 h-7 rounded-full overflow-hidden border border-white/20 bg-white/5">
-                {avatarUrl ? (
-                   <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User size={14} className="text-white"/>
-                  </div>
-                )}
+             <div className={`p-1 rounded-xl transition-all ${showProfileMenu ? 'bg-red-600/10' : ''}`}>
+                <div className={`w-6 h-6 rounded-full overflow-hidden border ${showProfileMenu ? 'border-red-500' : 'border-white/20'} bg-white/5`}>
+                    {avatarUrl ? (
+                       <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User size={12} className="text-white"/>
+                      </div>
+                    )}
+                </div>
              </div>
-             <span className="text-[10px] font-bold text-white/60">Profile</span>
+             <span className={`text-[9px] font-bold ${showProfileMenu ? 'text-white' : 'text-white/40'}`}>Profile</span>
           </button>
         ) : (
-          <MobileNavItem icon={<LogIn size={22}/>} label="Join" onClick={() => setCurrentView('auth')}/>
+          <MobileNavItem icon={<LogIn size={20}/>} label="Join" onClick={() => setCurrentView('auth')}/>
         )}
 
         {/* Mobile Profile Dropup */}

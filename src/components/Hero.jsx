@@ -6,7 +6,7 @@ import { tmdb } from '../utils/tmdb';
 import { firestoreService } from '../utils/firestore';
 
 export function Hero() {
-  const { setActiveMovieId, setCurrentView, user, activeProfile } = useAppContext();
+  const { setActiveMovieId, setActiveMediaType, setCurrentView, user, activeProfile } = useAppContext();
   const [heroesList, setHeroesList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const heroMovie = heroesList[currentIndex];
@@ -113,9 +113,9 @@ export function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full px-6 md:px-20 pb-20 md:pb-24 grid md:grid-cols-2 gap-8 items-end">
+      <div className="relative z-10 w-full px-6 md:px-20 pb-20 md:pb-24 grid md:grid-cols-2 gap-4 md:gap-8 items-end">
 
-        <div className="flex flex-col items-start min-h-[250px] md:min-h-[300px] justify-end">
+        <div className="flex flex-col items-start min-h-[200px] md:min-h-[300px] justify-end">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
@@ -125,7 +125,7 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="w-full"
             >
-              <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <div className="flex items-center gap-3 mb-3 md:mb-6">
                 <span className="px-3 py-1 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase text-white">Trending</span>
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full">
                   <span className="text-[#e50914] text-xs font-bold">Match</span>
@@ -134,21 +134,25 @@ export function Hero() {
                 <span className="text-white/60 text-xs font-medium tracking-wider hidden sm:inline">{heroMovie.year} • {heroMovie.duration} • {heroMovie.rating || '18+'}</span>
               </div>
 
-              <h1 className="display-text text-4xl md:text-[6rem] font-black tracking-tighter mb-4 md:mb-6 leading-[0.95] text-white filter drop-shadow-xl uppercase">
+              <h1 className="display-text text-4xl md:text-[5.5rem] font-black tracking-tighter mb-4 md:mb-6 leading-[0.95] text-white filter drop-shadow-xl uppercase">
                 {heroMovie.title}
               </h1>
 
-              <p className="max-w-xl text-lg text-white/80 mb-8 font-medium leading-relaxed drop-shadow-md hidden md:block line-clamp-3">
+              <p className="max-w-xl text-lg text-white/80 mb-6 md:mb-8 font-medium leading-relaxed drop-shadow-md hidden md:block line-clamp-3">
                 {heroMovie.description}
               </p>
 
-              <div className="flex flex-col gap-3 w-full md:flex-row md:flex-wrap md:items-center md:gap-3">
+              <div className="flex flex-col gap-3 w-full md:flex-row md:flex-wrap md:items-center md:gap-4">
                 <button 
-                  onClick={() => { setActiveMovieId(heroMovie.id); setCurrentView('player'); }} 
-                  className="w-full md:w-auto flex items-center justify-center gap-3 bg-red-600 text-white px-10 py-4 rounded-2xl font-black text-lg hover:scale-105 md:hover:scale-110 hover:shadow-[0_0_50px_rgba(229,9,20,0.4)] transition-all duration-500 active:scale-95"
+                  onClick={() => { 
+                    setActiveMovieId(heroMovie.id); 
+                    setActiveMediaType(heroMovie.type);
+                    setCurrentView('player'); 
+                  }} 
+                  className="w-full md:w-auto flex items-center justify-center gap-3 bg-red-600 text-white px-8 py-3.5 md:px-10 md:py-4 rounded-xl md:rounded-2xl font-black text-base md:text-xl hover:scale-105 md:hover:scale-110 transition-all duration-500 active:scale-95"
                 >
-                  <Play fill="currentColor" size={24} />
-                  WATCH NOW
+                  <Play fill="currentColor" size={20} className="md:w-6 md:h-6" />
+                  PLAY NOW
                 </button>
 
                 <div className="flex gap-3 w-full md:w-auto">
@@ -161,7 +165,11 @@ export function Hero() {
                   </button>
 
                   <button 
-                    onClick={() => { setActiveMovieId(heroMovie.id); setCurrentView('details'); }} 
+                    onClick={() => { 
+                      setActiveMovieId(heroMovie.id); 
+                      setActiveMediaType(heroMovie.type);
+                      setCurrentView('details'); 
+                    }} 
                     className="flex-1 md:w-14 md:h-14 glass flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 rounded-2xl font-bold text-xs md:text-lg hover:bg-white/10 hover:border-white/40 transition-all text-white group py-3 md:py-0"
                   >
                     <Info size={20} className="text-white/60 group-hover:text-white transition-colors" />
