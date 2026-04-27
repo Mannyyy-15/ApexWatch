@@ -109,65 +109,77 @@ h1, h2, h3, h4, .display-text {
   animation: float 6s ease-in-out infinite;
 }
 
-/* TV Optimized Global Styles */
-@media screen and (min-width: 1024px) {
-  :root {
-    /* Larger spacing for TV */
-    --tv-focus-scale: 1.05;
-  }
-  
-  /* Hide cursor on TV if inactive (standard for smart TV apps) */
-  .tv-mode body {
-    cursor: none;
-  }
-}
-
-/* Orientation Lock Notice for Mobile */
-@media screen and (orientation: portrait) and (max-width: 1024px) {
-  .orientation-notice {
-    display: flex !important;
-  }
-}
-
-.orientation-notice {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: black;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem;
-}
-
-/* Global Focus Ring for D-pad Navigation */
-:focus-visible {
-  outline: 4px solid var(--color-accent) !important;
-  outline-offset: 4px;
-  border-radius: 8px;
-}
-
-/* Hide scrollbars globally for a cleaner "App" look on TV */
-* {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-}
-*::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
-
-/* Prevent text selection on TV (prevents blue highlight on long press) */
-body {
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: pan-y;
-}
-
 @layer utilities {
   .hide-scrollbar {
-    display: none;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
 }
 
+/* Android TV Specific Styles */
+body.is-tv {
+  cursor: none; /* Hide cursor on TV */
+  user-select: none;
+}
+
+body.is-tv :focus {
+  outline: 3px solid var(--color-accent) !important;
+  outline-offset: 4px;
+  box-shadow: 0 0 20px var(--color-accent-glow) !important;
+  transform: scale(1.05);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), outline 0.2s ease;
+  z-index: 50;
+}
+
+body.is-tv .tv-focusable {
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+/* Larger font sizes for TV (10-foot UI) */
+body.is-tv h1 { font-size: 4rem; }
+body.is-tv h2 { font-size: 3rem; }
+body.is-tv p { font-size: 1.25rem; }
+
+/* Ensure focusable items have relative positioning for z-index */
+body.is-tv [tabindex="0"] {
+  position: relative;
+}
+
+/* TV Sidebar Layout */
+.tv-sidebar {
+  display: none !important;
+}
+
+body.is-tv .tv-sidebar {
+  display: flex !important;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 280px;
+  background: rgba(5, 5, 5, 0.8);
+  backdrop-filter: blur(40px);
+  border-right: 1px solid var(--glass-border);
+  z-index: 100;
+  flex-direction: column;
+  padding: 40px 20px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.is-tv main {
+  margin-left: 280px;
+  width: calc(100% - 280px);
+  padding-bottom: 40px;
+}
+
+body.is-tv .navigation-island-desktop {
+  display: none !important;
+}
+
+body.is-tv .navigation-island-mobile {
+  display: none !important;
+}

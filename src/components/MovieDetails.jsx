@@ -2,12 +2,15 @@ import { motion } from 'motion/react';
 import { Play, Plus, X, List, Share2, Heart, ExternalLink, Check, Film } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useState, useEffect } from 'react';
+import { useTVBackHandler } from '../hooks/useTV';
 import { tmdb } from '../utils/tmdb';
 import { firestoreService } from '../utils/firestore';
 import { MovieRow } from './MovieRow';
 
 export function MovieDetails() {
     const { activeMovieId, setActiveMovieId, setCurrentView, user, activeProfile } = useAppContext();
+    
+    useTVBackHandler(() => setCurrentView('home'));
     const [movie, setMovie] = useState(null);
     const [inWatchlist, setInWatchlist] = useState(false);
     const [hasProgress, setHasProgress] = useState(null);

@@ -107,6 +107,12 @@ export function MovieRow({ title, movies, isContinueWatching = false, continueWa
                                 key={`${movie.id}-${index}`} 
                                 className={`flex-shrink-0 snap-start cursor-pointer transition-all duration-500 ${isContinueWatching ? 'w-[280px] md:w-[320px]' : 'w-[150px] md:w-[190px] lg:w-[220px]'}`} 
                                 onClick={() => onMovieClick(movie.id)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') onMovieClick(movie.id);
+                                }}
+                                tabIndex={0}
+                                role="button"
+                                aria-label={`View details for ${movie.title}`}
                             >
                                 {/* Thumbnail Container */}
                                 <div className={`group relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded-2xl overflow-hidden mb-4 border border-white/10 shadow-2xl transition-all duration-700 ease-[0.16,1,0.3,1] hover:border-white/30 hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]`}>

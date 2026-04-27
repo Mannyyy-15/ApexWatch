@@ -13,9 +13,11 @@ import { AppProvider, useAppContext } from './context/AppContext';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { useTV } from './hooks/useTV';
 
 function MainLayout() {
     const { currentView } = useAppContext();
+    const isTV = useTV();
     const [showScrollUp, setShowScrollUp] = useState(false);
     const scrollContainerRef = useRef(null);
 

@@ -46,15 +46,20 @@ export function ProfilesSelection() {
               transition={{ delay: idx * 0.1 }}
               whileHover={{ y: -15 }} 
               onClick={() => handleSelectProfile(profile)} 
-              className="flex flex-col items-center gap-6 cursor-pointer group"
+              onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSelectProfile(profile);
+              }}
+              tabIndex={0}
+              role="button"
+              className="flex flex-col items-center gap-6 cursor-pointer group outline-none"
             >
-              <div className="w-28 h-28 md:w-40 md:h-40 rounded-[32px] overflow-hidden border-2 border-white/5 group-hover:border-white transition-all duration-500 shadow-2xl relative group-hover:shadow-[0_0_50px_rgba(255,255,255,0.15)] bg-white/5">
-                <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer"/>
+              <div className="w-28 h-28 md:w-40 md:h-40 rounded-[32px] overflow-hidden border-2 border-white/5 group-hover:border-white group-focus:border-white transition-all duration-500 shadow-2xl relative group-hover:shadow-[0_0_50px_rgba(255,255,255,0.15)] bg-white/5">
+                <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover group-hover:scale-110 group-focus:scale-110 transition-transform duration-700" referrerPolicy="no-referrer"/>
                 {profile.isKid && (<div className="absolute top-2 right-2 glass px-3 py-1 rounded-lg text-[10px] font-black tracking-widest text-white border-white/20">
                     KIDS
                   </div>)}
               </div>
-              <span className="text-white/40 group-hover:text-white transition-all text-xl font-bold tracking-tight">{profile.name}</span>
+              <span className="text-white/40 group-hover:text-white group-focus:text-white transition-all text-xl font-bold tracking-tight">{profile.name}</span>
             </motion.div>))}
 
           {profiles.length < 5 && (<motion.div 
@@ -63,7 +68,12 @@ export function ProfilesSelection() {
               transition={{ delay: profiles.length * 0.1 }}
               whileHover={{ y: -15 }} 
               onClick={handleAddProfile} 
-              className="flex flex-col items-center gap-6 cursor-pointer group"
+              onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddProfile();
+              }}
+              tabIndex={0}
+              role="button"
+              className="flex flex-col items-center gap-6 cursor-pointer group outline-none"
             >
               <div className="w-28 h-28 md:w-40 md:h-40 rounded-[32px] border-2 border-white/10 flex items-center justify-center group-hover:border-white group-hover:bg-white/10 transition-all duration-500 glass">
                 <Plus size={56} className="text-white/20 group-hover:text-white transition-all duration-500"/>
