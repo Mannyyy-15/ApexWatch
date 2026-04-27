@@ -234,7 +234,7 @@ export function VideoPlayer() {
                         className="w-full h-full border-none" 
                         allowFullScreen 
                         allow="autoplay; encrypted-media; picture-in-picture"
-                        sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
+                        sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation allow-popups allow-presentation allow-popups-to-escape-sandbox"
                         title={movie.title}
                     />
                 </motion.div>
