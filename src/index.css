@@ -109,12 +109,65 @@ h1, h2, h3, h4, .display-text {
   animation: float 6s ease-in-out infinite;
 }
 
-@layer utilities {
-  .hide-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+/* TV Optimized Global Styles */
+@media screen and (min-width: 1024px) {
+  :root {
+    /* Larger spacing for TV */
+    --tv-focus-scale: 1.05;
   }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+  
+  /* Hide cursor on TV if inactive (standard for smart TV apps) */
+  .tv-mode body {
+    cursor: none;
   }
 }
+
+/* Orientation Lock Notice for Mobile */
+@media screen and (orientation: portrait) and (max-width: 1024px) {
+  .orientation-notice {
+    display: flex !important;
+  }
+}
+
+.orientation-notice {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: black;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Global Focus Ring for D-pad Navigation */
+:focus-visible {
+  outline: 4px solid var(--color-accent) !important;
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+/* Hide scrollbars globally for a cleaner "App" look on TV */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Prevent text selection on TV (prevents blue highlight on long press) */
+body {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    display: none;
+  }
+}
+

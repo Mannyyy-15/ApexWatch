@@ -15,7 +15,31 @@
 
 <body>
   <div id="root"></div>
+  
+  <!-- TV Orientation / Mobile Landscape Notice -->
+  <div class="orientation-notice">
+    <div style="font-size: 80px; margin-bottom: 20px;">📱🔄</div>
+    <h1 style="font-family: 'Outfit', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: -2px;">Landscape Only</h1>
+    <p style="color: rgba(255,255,255,0.4); font-family: 'Inter', sans-serif; max-width: 300px;">ApexWatch is optimized for TV and Cinema. Please rotate your device to landscape to continue.</p>
+  </div>
+
   <script type="module" src="/src/main.jsx"></script>
+  <script>
+    // Request Landscape Lock on first interaction (required by most browsers)
+    document.addEventListener('click', () => {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {
+          // Silent fail if not supported/allowed
+        });
+      }
+      
+      // Request Fullscreen for TV feel
+      if (!document.fullscreenElement && window.innerHeight < 600) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    }, { once: true });
+  </script>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
