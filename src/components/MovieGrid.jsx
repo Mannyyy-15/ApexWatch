@@ -125,10 +125,8 @@ export function MovieGrid() {
     };
 
     useEffect(() => {
-        if (activeProfile) {
-            loadContent();
-        }
-    }, [activeProfile?.id]); // Use ID to prevent unnecessary reloads
+        loadContent();
+    }, [activeProfile?.id]); // Refresh if profile changes, but run at least once on mount
 
 
 
