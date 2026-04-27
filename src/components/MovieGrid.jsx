@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { MovieRow } from './MovieRow';
 import { tmdb } from '../utils/tmdb';
 import { RowSkeleton } from './Skeleton';
+import { firestoreService } from '../utils/firestore';
 
 export function MovieGrid() {
-    const { activeProfile } = useAppContext();
+    const { activeProfile, user, setActiveMovieId, setCurrentView } = useAppContext();
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [historyItems, setHistoryItems] = useState([]);
 
     const loadContent = async () => {
         setLoading(true);
@@ -42,6 +44,18 @@ export function MovieGrid() {
 
             const allRowsToFetch = [...personalizedRows, ...baseRows];
 
+            // Fetch History for "Continue Watching"
+            let history = [];
+            if (user && activeProfile) {
+                const rawHistory = await firestoreService.getAllWatchProgress(user.uid, activeProfile.id);
+                // Filter out completed ones (>95%) and sort by recency
+                history = rawHistory
+                    .filter(item => item.progress < 95)
+                    .sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0))
+                    .slice(0, 15);
+                setHistoryItems(history);
+            }
+
             const results = await Promise.all(
                 allRowsToFetch.map(async (row) => ({
                     title: row.title,
@@ -49,8 +63,26 @@ export function MovieGrid() {
                 }))
             );
             
-            // Deduplicate movies across rows if needed, or just set
-            setRows(results.filter(r => r.movies.length > 0));
+            // Add history as the very first row if it exists
+            const finalRows = results.filter(r => r.movies.length > 0);
+            if (history.length > 0) {
+                const historyMovies = history.map(item => ({
+                    id: item.id,
+                    title: item.title || 'Unknown Title',
+                    poster: item.poster,
+                    backdrop: item.backdrop,
+                    year: item.year || '',
+                    type: item.contentType || 'movie',
+                    progress: item.progress
+                }));
+                finalRows.unshift({
+                    title: 'Continue Watching',
+                    movies: historyMovies,
+                    isHistory: true
+                });
+            }
+
+            setRows(finalRows);
         } catch (error) {
             console.error('Error loading personalized grid:', error);
         } finally {
@@ -76,7 +108,13 @@ export function MovieGrid() {
                 <MovieRow 
                     key={`${row.title}-${idx}`} 
                     title={row.title} 
-                    movies={row.movies} 
+                    movies={row.movies}
+                    isContinueWatching={row.isHistory}
+                    continueWatchingItems={row.isHistory ? historyItems : null}
+                    onMovieClick={(id) => {
+                        setActiveMovieId(id);
+                        setCurrentView('details');
+                    }}
                 />
             ))}
         </div>

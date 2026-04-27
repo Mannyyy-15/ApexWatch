@@ -67,7 +67,11 @@ export function VideoPlayer() {
                             progressSeconds: currentTime,
                             durationSeconds: duration,
                             completed: (currentTime / duration) >= 0.95,
-                            contentType: movie.type
+                            contentType: movie.type,
+                            title: movie.title,
+                            poster: movie.poster,
+                            backdrop: movie.backdrop,
+                            year: movie.year
                         });
                     }
                 }

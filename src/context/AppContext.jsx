@@ -108,15 +108,21 @@ export function AppProvider({ children }) {
     const loginWithGoogle = async () => {
         try {
             setLoadingAuth(true);
-            const result = await signInWithPopup(auth, googleProvider);
-            // Result handling is taken care of by onAuthStateChanged
-            return result;
+            // On mobile, Redirect is much more reliable than Popup
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                await signInWithRedirect(auth, googleProvider);
+            } else {
+                const result = await signInWithPopup(auth, googleProvider);
+                return result;
+            }
         } catch (error) {
             console.error('Google Login Error:', error);
             setLoadingAuth(false);
-            // Alert user if there's a specific block
-            if (error.code === 'auth/popup-blocked') {
-                alert('Please allow popups for this site to sign in with Google.');
+            if (error.code === 'auth/popup-blocked' || error.message.includes('Cross-Origin-Opener-Policy')) {
+                // Fallback to redirect if popup fails
+                await signInWithRedirect(auth, googleProvider);
             }
         }
     };

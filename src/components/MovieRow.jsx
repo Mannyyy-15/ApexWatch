@@ -8,19 +8,20 @@ export function MovieRow({ title, movies, isContinueWatching = false, continueWa
 
     if (!movies || movies.length === 0) return null;
 
-    // Create infinite loop by duplicating items
-    const infiniteMovies = [...movies, ...movies, ...movies];
+    // Only create infinite loop if we have enough items to justify it
+    const shouldLoop = movies.length >= 6;
+    const infiniteMovies = shouldLoop ? [...movies, ...movies, ...movies] : movies;
 
     useEffect(() => {
         // Start in the middle set of movies for infinite feel
-        if (rowRef.current) {
+        if (rowRef.current && shouldLoop) {
             const singleSetWidth = rowRef.current.scrollWidth / 3;
             rowRef.current.scrollLeft = singleSetWidth;
         }
-    }, [movies]);
+    }, [movies, shouldLoop]);
 
     const handleInfiniteScroll = () => {
-        if (!rowRef.current) return;
+        if (!rowRef.current || !shouldLoop) return;
         const { scrollLeft, scrollWidth } = rowRef.current;
         const singleSetWidth = scrollWidth / 3;
 
@@ -64,7 +65,7 @@ export function MovieRow({ title, movies, isContinueWatching = false, continueWa
             
             <div className="relative">
                 <AnimatePresence>
-                    {showArrows && (
+                    {showArrows && shouldLoop && (
                         <>
                             <motion.button 
                                 initial={{ opacity: 0, x: 20 }}
