@@ -5,6 +5,7 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --color-accent: #e50914; /* changed to red for netflix/vidking vibe */
+  --breakpoint-tv: 1800px;
 }
 
 :root {
@@ -160,20 +161,43 @@ body.is-tv .tv-sidebar {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 280px;
-  background: rgba(5, 5, 5, 0.8);
+  width: 90px; /* Collapsed width */
+  background: rgba(5, 5, 5, 0.95);
   backdrop-filter: blur(40px);
   border-right: 1px solid var(--glass-border);
   z-index: 100;
   flex-direction: column;
-  padding: 40px 20px;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 30px 10px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+body.is-tv .tv-sidebar:hover,
+body.is-tv .tv-sidebar:focus-within {
+  width: 300px; /* Expanded width */
+}
+
+body.is-tv .tv-sidebar .nav-label {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+body.is-tv .tv-sidebar:hover .nav-label,
+body.is-tv .tv-sidebar:focus-within .nav-label {
+  opacity: 1;
 }
 
 body.is-tv main {
-  margin-left: 280px;
-  width: calc(100% - 280px);
+  margin-left: 90px;
+  width: calc(100% - 90px);
   padding-bottom: 40px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.is-tv .tv-sidebar:hover ~ main,
+body.is-tv .tv-sidebar:focus-within ~ main {
+  /* margin-left: 300px; */ /* Optional: Uncomment if you want content to shift */
 }
 
 body.is-tv .navigation-island-desktop {

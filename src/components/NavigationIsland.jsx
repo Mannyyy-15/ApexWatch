@@ -37,7 +37,7 @@ export function NavigationIsland() {
 
     return (<>
       {/* TV Sidebar - Only shows when .is-tv class is on body */}
-      <div className="tv-sidebar">
+      <div className="tv-sidebar group/sidebar">
         <div 
           onClick={() => setCurrentView('home')} 
           onKeyDown={(e) => {
@@ -45,34 +45,34 @@ export function NavigationIsland() {
           }}
           tabIndex={0}
           role="button"
-          className="flex items-center gap-4 mb-16 px-4 outline-none group"
+          className="flex items-center gap-4 mb-12 px-3 py-2 outline-none group rounded-2xl"
         >
-          <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(229,9,20,0.4)] group-focus:scale-110 group-hover:scale-110 transition-all duration-500">
+          <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(229,9,20,0.4)] group-focus:scale-110 group-hover:scale-110 transition-all duration-500 flex-shrink-0">
             <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
           </div>
-          <span className="font-black text-2xl tracking-tighter uppercase italic">
+          <span className="font-black text-2xl tracking-tighter uppercase italic nav-label">
             Apex<span className="text-red-600">Watch</span>
           </span>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <NavItem icon={<Home size={24}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
-          <NavItem icon={<Film size={24}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
-          <NavItem icon={<Tv size={24}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
-          <NavItem icon={<Sparkles size={24}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')}/>
-          <NavItem icon={<Search size={24}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
+        <div className="flex flex-col gap-2">
+          <NavItem icon={<Home size={32}/>} label={<span className="nav-label ml-4 text-lg">Home</span>} active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
+          <NavItem icon={<Film size={32}/>} label={<span className="nav-label ml-4 text-lg">Movies</span>} active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
+          <NavItem icon={<Tv size={32}/>} label={<span className="nav-label ml-4 text-lg">TV Shows</span>} active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
+          <NavItem icon={<Sparkles size={32}/>} label={<span className="nav-label ml-4 text-lg">Anime</span>} active={currentView === 'anime'} onClick={() => setCurrentView('anime')}/>
+          <NavItem icon={<Search size={32}/>} label={<span className="nav-label ml-4 text-lg">Search</span>} active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
         </div>
 
-        <div className="mt-auto flex flex-col gap-4">
+        <div className="mt-auto flex flex-col gap-2">
           {user && (
             <NavItem 
-              icon={<div className="w-8 h-8 rounded-full overflow-hidden border border-white/20"><img src={avatarUrl} alt="" className="w-full h-full object-cover"/></div>} 
-              label={activeProfile?.name || "Profile"} 
+              icon={<div className="w-12 h-12 rounded-full overflow-hidden border border-white/20 flex-shrink-0"><img src={avatarUrl} alt="" className="w-full h-full object-cover"/></div>} 
+              label={<span className="nav-label ml-4 text-lg">{activeProfile?.name || "Profile"}</span>} 
               active={currentView === 'profiles'} 
               onClick={() => setCurrentView('profiles')}
             />
           )}
-          <NavItem icon={<LogOut size={24}/>} label="Sign Out" onClick={() => setShowSignOutConfirm(true)}/>
+          <NavItem icon={<LogOut size={32} className="ml-1"/>} label={<span className="nav-label ml-4 text-lg">Sign Out</span>} onClick={() => setShowSignOutConfirm(true)}/>
         </div>
       </div>
 
@@ -318,9 +318,9 @@ function MenuButton({ icon, label, onClick, variant = 'default' }) {
 }
 
 function NavItem({ icon, label, active = false, onClick }) {
-    return (<button onClick={onClick} className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 flex-shrink-0 ${active ? 'bg-white/10 text-white font-medium' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
+    return (<button onClick={onClick} className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 flex-shrink-0 ${active ? 'bg-white/10 text-white font-bold' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
       {icon}
-      <span className="text-sm whitespace-nowrap">{label}</span>
+      {typeof label === 'string' ? <span className="text-sm whitespace-nowrap ml-2">{label}</span> : label}
     </button>);
 }
 

@@ -78,8 +78,8 @@ export const tmdb = {
         return data.results || [];
     },
 
-    getPosterUrl: (path, size = 'w500') => path ? `${IMAGE_BASE_URL}/${size}${path}` : 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80',
-    getBackdropUrl: (path, size = 'original') => path ? `${IMAGE_BASE_URL}/${size}${path}` : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80',
+    getPosterUrl: (path, size = 'w342') => path ? `${IMAGE_BASE_URL}/${size}${path}` : 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=500&q=80',
+    getBackdropUrl: (path, size = 'w1280') => path ? `${IMAGE_BASE_URL}/${size}${path}` : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80',
 
     formatMovie: (item) => {
         if (!item || (!item.id && !item.tmdbId)) return null;
@@ -94,8 +94,8 @@ export const tmdb = {
             tmdbId: (item.id || item.tmdbId).toString(),
             type: item.media_type || (item.first_air_date ? 'tv' : 'movie'),
             title: item.title || item.name || 'Untitled',
-            backdrop: tmdb.getBackdropUrl(item.backdrop_path),
-            poster: tmdb.getPosterUrl(item.poster_path),
+            backdrop: tmdb.getBackdropUrl(item.backdrop_path, 'w1280'),
+            poster: tmdb.getPosterUrl(item.poster_path, 'w342'),
             match: item.vote_average ? `${Math.round(item.vote_average * 10)}%` : '85%',
             year: (item.release_date || item.first_air_date || '2024').split('-')[0],
             rating: item.adult ? 'R' : 'PG-13',

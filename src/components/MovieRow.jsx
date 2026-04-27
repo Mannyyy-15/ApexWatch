@@ -2,6 +2,59 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+const MovieCard = React.memo(({ movie, index, isContinueWatching, progress, onMovieClick }) => {
+    return (
+        <div 
+            className={`flex-shrink-0 snap-start cursor-pointer transition-all duration-500 ${isContinueWatching ? 'w-[280px] md:w-[320px]' : 'w-[150px] md:w-[190px] lg:w-[220px]'}`} 
+            onClick={() => onMovieClick(movie.id)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') onMovieClick(movie.id);
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={`View details for ${movie.title}`}
+        >
+            {/* Thumbnail Container */}
+            <div className={`group relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded-2xl overflow-hidden mb-4 border border-white/10 shadow-2xl transition-all duration-700 ease-[0.16,1,0.3,1] hover:border-white/30 hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]`}>
+                <img 
+                    src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster} 
+                    alt={movie.title} 
+                    loading="lazy" 
+                    className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16,1,0.3,1] group-hover:scale-110"
+                />
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
+
+                {isContinueWatching && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+                        <div className="h-full bg-red-600 shadow-[0_0_10px_rgba(229,9,20,0.8)]" style={{ width: `${progress}%` }}></div>
+                    </div>
+                )}
+                
+                {!isContinueWatching && (
+                    <div className="absolute top-3 left-3">
+                        <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white/90 text-[10px] font-black rounded-md shadow-lg border border-white/10 uppercase tracking-tighter">
+                            {movie.rating}
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* Text Content */}
+            <div className="px-1">
+                <h3 className="text-sm md:text-base font-bold text-white truncate mb-1.5 transition-colors duration-300 group-hover:text-red-500">
+                    {movie.title}
+                </h3>
+                <div className="flex items-center gap-2 text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-wider">
+                    <span>{movie.year}</span>
+                    <span className="w-1 h-1 bg-white/20 rounded-full"></span>
+                    <span>{movie.type === 'tv' ? 'TV Series' : 'Movie'}</span>
+                </div>
+            </div>
+        </div>
+    );
+});
+
 export function MovieRow({ title, movies, isContinueWatching = false, continueWatchingItems, onMovieClick, onRemoveFromContinueWatching }) {
     const rowRef = useRef(null);
     const [showArrows, setShowArrows] = useState(false);
@@ -103,55 +156,14 @@ export function MovieRow({ title, movies, isContinueWatching = false, continueWa
                         }
                         
                         return (
-                            <div 
-                                key={`${movie.id}-${index}`} 
-                                className={`flex-shrink-0 snap-start cursor-pointer transition-all duration-500 ${isContinueWatching ? 'w-[280px] md:w-[320px]' : 'w-[150px] md:w-[190px] lg:w-[220px]'}`} 
-                                onClick={() => onMovieClick(movie.id)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') onMovieClick(movie.id);
-                                }}
-                                tabIndex={0}
-                                role="button"
-                                aria-label={`View details for ${movie.title}`}
-                            >
-                                {/* Thumbnail Container */}
-                                <div className={`group relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded-2xl overflow-hidden mb-4 border border-white/10 shadow-2xl transition-all duration-700 ease-[0.16,1,0.3,1] hover:border-white/30 hover:shadow-[0_0_40px_rgba(255,255,255,0.15)]`}>
-                                    <img 
-                                        src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster} 
-                                        alt={movie.title} 
-                                        loading="lazy" 
-                                        className="w-full h-full object-cover transition-transform duration-1000 ease-[0.16,1,0.3,1] group-hover:scale-110"
-                                    />
-                                    
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
-
-                                    {isContinueWatching && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
-                                            <div className="h-full bg-red-600 shadow-[0_0_10px_rgba(229,9,20,0.8)]" style={{ width: `${progress}%` }}></div>
-                                        </div>
-                                    )}
-                                    
-                                    {!isContinueWatching && (
-                                        <div className="absolute top-3 left-3">
-                                            <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white/90 text-[10px] font-black rounded-md shadow-lg border border-white/10 uppercase tracking-tighter">
-                                                {movie.rating}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Text Content */}
-                                <div className="px-1">
-                                    <h3 className="text-sm md:text-base font-bold text-white truncate mb-1.5 transition-colors duration-300 group-hover:text-red-500">
-                                        {movie.title}
-                                    </h3>
-                                    <div className="flex items-center gap-2 text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-wider">
-                                        <span>{movie.year}</span>
-                                        <span className="w-1 h-1 bg-white/20 rounded-full"></span>
-                                        <span>{movie.type === 'tv' ? 'TV Series' : 'Movie'}</span>
-                                    </div>
-                                </div>
-                            </div>
+                            <MovieCard 
+                                key={`${movie.id}-${index}`}
+                                movie={movie}
+                                index={index}
+                                isContinueWatching={isContinueWatching}
+                                progress={progress}
+                                onMovieClick={onMovieClick}
+                            />
                         );
                     })}
                 </div>
