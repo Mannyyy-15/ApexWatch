@@ -12,7 +12,7 @@ import {
     serverTimestamp 
 } from 'firebase/firestore';
 
-// Fallback to LocalStorage for mock user or when Firestore permissions fail
+// Fallback to LocalStorage for guest users or when Firestore permissions fail
 const getStorageKey = (userId, profileId, type) => `apexwatch_${userId}_${profileId}_${type}`;
 
 const localFallback = {
@@ -38,24 +38,30 @@ const localFallback = {
 export const firestoreService = {
     // Watch Progress
     saveWatchProgress: async (userId, profileId, contentId, data) => {
-        if (userId === 'mock-user') {
-            localFallback.save(userId, profileId, 'progress', contentId, data);
+        const progress = data.durationSeconds > 0 
+            ? Math.round((data.progressSeconds / data.durationSeconds) * 100) 
+            : 0;
+        
+        const enhancedData = { ...data, progress };
+
+        if (!userId || userId === 'mock-user') {
+            localFallback.save(userId || 'guest', profileId || 'default', 'progress', contentId, enhancedData);
             return;
         }
         try {
             const progressRef = doc(db, 'users', userId, 'profiles', profileId, 'watchProgress', contentId);
             await setDoc(progressRef, {
-                ...data,
+                ...enhancedData,
                 updatedAt: serverTimestamp()
             }, { merge: true });
         } catch (error) {
             console.warn('Firestore Save Error (Progress):', error.message);
-            localFallback.save(userId, profileId, 'progress', contentId, data);
+            localFallback.save(userId, profileId, 'progress', contentId, enhancedData);
         }
     },
 
     getWatchProgress: async (userId, profileId, contentId) => {
-        if (userId === 'mock-user') return localFallback.get(userId, profileId, 'progress', contentId);
+        if (!userId || userId === 'mock-user') return localFallback.get(userId || 'guest', profileId || 'default', 'progress', contentId);
         try {
             const progressRef = doc(db, 'users', userId, 'profiles', profileId, 'watchProgress', contentId);
             const snap = await getDoc(progressRef);
@@ -67,7 +73,7 @@ export const firestoreService = {
     },
 
     getAllWatchProgress: async (userId, profileId) => {
-        if (userId === 'mock-user') return localFallback.get(userId, profileId, 'progress');
+        if (!userId || userId === 'mock-user') return localFallback.get(userId || 'guest', profileId || 'default', 'progress');
         try {
             const progressRef = collection(db, 'users', userId, 'profiles', profileId, 'watchProgress');
             const snap = await getDocs(progressRef);
@@ -81,8 +87,8 @@ export const firestoreService = {
     // Watchlist
     addToWatchlist: async (userId, profileId, contentId, contentType) => {
         const data = { contentId, contentType, addedAt: Date.now() };
-        if (userId === 'mock-user') {
-            localFallback.save(userId, profileId, 'watchlist', contentId, data);
+        if (!userId || userId === 'mock-user') {
+            localFallback.save(userId || 'guest', profileId || 'default', 'watchlist', contentId, data);
             return;
         }
         try {
@@ -98,8 +104,8 @@ export const firestoreService = {
     },
 
     removeFromWatchlist: async (userId, profileId, contentId) => {
-        if (userId === 'mock-user') {
-            localFallback.remove(userId, profileId, 'watchlist', contentId);
+        if (!userId || userId === 'mock-user') {
+            localFallback.remove(userId || 'guest', profileId || 'default', 'watchlist', contentId);
             return;
         }
         try {
@@ -112,7 +118,7 @@ export const firestoreService = {
     },
 
     getWatchlist: async (userId, profileId) => {
-        if (userId === 'mock-user') return localFallback.get(userId, profileId, 'watchlist');
+        if (!userId || userId === 'mock-user') return localFallback.get(userId || 'guest', profileId || 'default', 'watchlist');
         try {
             const watchlistRef = collection(db, 'users', userId, 'profiles', profileId, 'watchlist');
             const snap = await getDocs(watchlistRef);
@@ -125,7 +131,7 @@ export const firestoreService = {
 
     // User Data & Profiles
     updateUserProfile: async (userId, profileId, data) => {
-        if (userId === 'mock-user') return;
+        if (!userId || userId === 'mock-user') return;
         try {
             const profileRef = doc(db, 'users', userId, 'profiles', profileId);
             await updateDoc(profileRef, {
@@ -137,18 +143,18 @@ export const firestoreService = {
         }
     },
 
-    createNewProfile: async (userId, name, isKid) => {
+    createNewProfile: async (userId, name, isKid, avatarUrl = null) => {
         const profileId = Math.random().toString(36).substr(2, 9);
         const newProfile = {
             name,
             isKid,
-            avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=200`,
+            avatarUrl: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=200`,
             hasOnboarded: false,
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
         
-        if (userId === 'mock-user') return { id: profileId, ...newProfile };
+        if (!userId || userId === 'mock-user') return { id: profileId, ...newProfile };
         
         try {
             const profileRef = doc(db, 'users', userId, 'profiles', profileId);

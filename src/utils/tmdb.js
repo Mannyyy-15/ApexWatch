@@ -31,19 +31,19 @@ const fetchWithErrorHandling = async (url) => {
         }
         return await response.json();
     } catch (error) {
-        console.error('TMDB Fetch Error:', error);
+        console.error('TMDB Fetch Error (Check your network/VPN):', error);
         return { results: [] };
     }
 };
 
 export const tmdb = {
-    fetchTrending: async (type = 'movie') => {
-        const data = await fetchWithErrorHandling(`${BASE_URL}/trending/${type}/week`);
+    fetchTrending: async (type = 'movie', page = 1) => {
+        const data = await fetchWithErrorHandling(`${BASE_URL}/trending/${type}/week?page=${page}`);
         return data.results || [];
     },
 
-    fetchPopular: async (type = 'movie') => {
-        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/popular`);
+    fetchPopular: async (type = 'movie', page = 1) => {
+        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/popular?page=${page}`);
         return data.results || [];
     },
 
@@ -57,8 +57,8 @@ export const tmdb = {
         return await fetchWithErrorHandling(`${BASE_URL}/tv/${id}?append_to_response=credits,videos,recommendations`);
     },
 
-    fetchTopRated: async (type = 'movie') => {
-        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/top_rated`);
+    fetchTopRated: async (type = 'movie', page = 1) => {
+        const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/top_rated?page=${page}`);
         return data.results || [];
     },
 

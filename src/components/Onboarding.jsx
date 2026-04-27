@@ -16,13 +16,23 @@ const LANGUAGES = [
 export function Onboarding() {
     const { setCurrentView, activeProfile, user } = useAppContext();
     const [selectedGenres, setSelectedGenres] = useState([]);
-    const [selectedLanguage, setSelectedLanguage] = useState('English');
+    const [selectedLanguages, setSelectedLanguages] = useState(['English']);
 
     const toggleGenre = (genre) => {
         if (selectedGenres.includes(genre)) {
             setSelectedGenres(selectedGenres.filter(g => g !== genre));
         } else {
             setSelectedGenres([...selectedGenres, genre]);
+        }
+    };
+
+    const toggleLanguage = (lang) => {
+        if (selectedLanguages.includes(lang)) {
+            if (selectedLanguages.length > 1) {
+                setSelectedLanguages(selectedLanguages.filter(l => l !== lang));
+            }
+        } else {
+            setSelectedLanguages([...selectedLanguages, lang]);
         }
     };
 
@@ -33,7 +43,7 @@ export function Onboarding() {
             await firestoreService.updateUserProfile(user.uid, activeProfile.id, {
                 hasOnboarded: true,
                 preferredGenres: selectedGenres,
-                preferredLanguage: selectedLanguage
+                preferredLanguages: selectedLanguages
             });
             setCurrentView('home');
         } catch (error) {
@@ -92,15 +102,15 @@ export function Onboarding() {
                                 {LANGUAGES.map(lang => (
                                     <button
                                         key={lang}
-                                        onClick={() => setSelectedLanguage(lang)}
+                                        onClick={() => toggleLanguage(lang)}
                                         className={`px-6 py-4 rounded-2xl text-sm font-bold transition-all border flex items-center justify-between ${
-                                            selectedLanguage === lang
-                                                ? 'bg-white/10 text-white border-white/40'
+                                            selectedLanguages.includes(lang)
+                                                ? 'bg-white/10 text-white border-white/40 shadow-[0_0_20px_rgba(255,255,255,0.05)]'
                                                 : 'bg-white/5 text-white/40 border-white/10 hover:border-white/20'
                                         }`}
                                     >
                                         {lang}
-                                        {selectedLanguage === lang && <Check size={16} className="text-green-400" />}
+                                        {selectedLanguages.includes(lang) && <Check size={16} className="text-green-400" />}
                                     </button>
                                 ))}
                             </div>

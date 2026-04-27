@@ -1,10 +1,9 @@
 {
-  "projectId": "gen-lang-client-0123722468",
-  "appId": "1:207950461718:web:0247734e68a2db618cee37",
-  "apiKey": "AIzaSyDHJ8qGo6wVa2Qq2kwmjnGdSO7plkTOjzo",
-  "authDomain": "gen-lang-client-0123722468.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-2a86849c-d4fd-4ea7-83fe-3e4dd4402f58",
-  "storageBucket": "gen-lang-client-0123722468.firebasestorage.app",
-  "messagingSenderId": "207950461718",
-  "measurementId": ""
+  "apiKey": "AIzaSyBitH617b4fpJ824EpJFkdQaT84KwfqwTM",
+  "authDomain": "apexwatch-b13ee.firebaseapp.com",
+  "projectId": "apexwatch-b13ee",
+  "storageBucket": "apexwatch-b13ee.firebasestorage.app",
+  "messagingSenderId": "398715579842",
+  "appId": "1:398715579842:web:2e887dc46422e6b091fa5b",
+  "firestoreDatabaseId": "(default)"
 }

@@ -1,11 +1,37 @@
 import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 export function NavigationIsland() {
     const { currentView, setCurrentView, user, activeProfile, loadingAuth, login, logout, searchQuery, setSearchQuery, setLibraryTab } = useAppContext();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+    const profileMenuRef = useRef(null);
+    const mobileMenuRef = useRef(null);
+
+    // Close menu on click outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            const isDesktopMenu = profileMenuRef.current && profileMenuRef.current.contains(event.target);
+            const isMobileMenu = mobileMenuRef.current && mobileMenuRef.current.contains(event.target);
+            
+            if (!isDesktopMenu && !isMobileMenu) {
+                setShowProfileMenu(false);
+            }
+        }
+        if (showProfileMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showProfileMenu]);
+
+    // Close menu on navigation
+    useEffect(() => {
+        setShowProfileMenu(false);
+    }, [currentView]);
 
     const avatarUrl = activeProfile?.avatarUrl || user?.photoURL;
 
@@ -18,8 +44,8 @@ export function NavigationIsland() {
         className="hidden md:flex fixed top-8 left-1/2 -translate-x-1/2 z-50 items-center glass p-2 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-white/10"
       >
         <div onClick={() => setCurrentView('home')} className="flex items-center gap-3 pl-2 pr-6 cursor-pointer group flex-shrink-0">
-          <div className="flex items-center justify-center w-10 h-10 bg-red-600 rounded-full shadow-[0_0_20px_rgba(229,9,20,0.4)] group-hover:scale-110 transition-all duration-500">
-            <Play size={20} className="fill-white text-white ml-1"/>
+          <div className="w-10 h-10 rounded-full overflow-hidden shadow-[0_0_20px_rgba(229,9,20,0.3)] group-hover:scale-110 transition-all duration-500">
+            <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
           </div>
           <span className="font-black text-xl tracking-tighter uppercase italic">
             Apex<span className="text-red-600">Watch</span>
@@ -51,7 +77,7 @@ export function NavigationIsland() {
           />
         </div>
 
-        {!loadingAuth && (<div className="relative">
+        {!loadingAuth && (<div className="relative" ref={profileMenuRef}>
             {user ? (
               <>
                 <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/10 cursor-pointer hover:border-white/30 transition-colors bg-white/5" onClick={() => setShowProfileMenu(!showProfileMenu)}>
@@ -89,16 +115,20 @@ export function NavigationIsland() {
                       </div>
 
                       <div className="mt-1 pt-1 border-t border-white/5">
-                        <MenuButton icon={<LogOut size={16}/>} label="Sign Out" onClick={() => { logout(); setShowProfileMenu(false); }} variant="danger" />
+                        <MenuButton icon={<LogOut size={16}/>} label="Sign Out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </>
             ) : (
-              <button onClick={login} className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full font-bold text-sm hover:scale-105 transition-transform">
-                <LogIn size={16}/>
-                Sign In
+              <button 
+                onClick={() => setCurrentView('auth')} 
+                className="flex items-center gap-2 bg-white text-black px-3 py-2 md:px-5 md:py-2.5 rounded-full font-black text-[10px] md:text-sm hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+              >
+                <LogIn size={16} className="md:w-5 md:h-5"/>
+                <span className="hidden xs:inline uppercase tracking-widest">Sign In</span>
+                <span className="xs:hidden uppercase tracking-widest">Join</span>
               </button>
             )}
           </div>)}
@@ -107,8 +137,8 @@ export function NavigationIsland() {
       {/* Mobile Top Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 p-6 z-50 flex items-center justify-center bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
         <div className="flex items-center gap-2 pointer-events-auto cursor-pointer" onClick={() => setCurrentView('home')}>
-           <div className="flex items-center justify-center w-8 h-8 bg-red-600 rounded-full shadow-[0_0_15px_rgba(229,9,20,0.4)]">
-            <Play size={14} className="fill-white text-white ml-1"/>
+           <div className="w-8 h-8 rounded-full overflow-hidden shadow-[0_0_15px_rgba(229,9,20,0.3)]">
+            <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
            </div>
            <span className="font-black tracking-tighter text-xl uppercase italic">
             Apex<span className="text-red-600">Watch</span>
@@ -117,7 +147,12 @@ export function NavigationIsland() {
       </div>
 
       {/* Mobile Bottom Dock - Simplified */}
-      <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-8 bg-black/60 backdrop-blur-3xl border border-white/10 p-2 px-6 rounded-[2rem] shadow-2xl">
+      <motion.div 
+        ref={mobileMenuRef}
+        initial={{ y: 100 }} 
+        animate={{ y: 0 }} 
+        className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-8 bg-black/60 backdrop-blur-3xl border border-white/10 p-2 px-6 rounded-[2rem] shadow-2xl"
+      >
         <MobileNavItem icon={<Home size={22}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
         <MobileNavItem icon={<Compass size={22}/>} label="Explore" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
         <MobileNavItem icon={<Search size={22}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
@@ -139,7 +174,7 @@ export function NavigationIsland() {
              <span className="text-[10px] font-bold text-white/60">Profile</span>
           </button>
         ) : (
-          <MobileNavItem icon={<LogIn size={22}/>} label="Join" onClick={login}/>
+          <MobileNavItem icon={<LogIn size={22}/>} label="Join" onClick={() => setCurrentView('auth')}/>
         )}
 
         {/* Mobile Profile Dropup */}
@@ -164,12 +199,57 @@ export function NavigationIsland() {
                 <MenuButton icon={<BookMarked size={16}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<History size={16}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<Users size={16}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
-                <MenuButton icon={<LogOut size={16}/>} label="Log out" onClick={() => { logout(); setShowProfileMenu(false); }} variant="danger" />
+                <MenuButton icon={<LogOut size={16}/>} label="Log out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
+      
+      {/* Sign Out Confirmation Modal */}
+      <AnimatePresence>
+        {showSignOutConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setShowSignOutConfirm(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-sm glass p-8 rounded-[2.5rem] border border-white/10 text-center"
+            >
+              <div className="w-20 h-20 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <LogOut size={32} className="text-red-600 ml-1" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-3 uppercase tracking-tight italic">
+                Sign Out?
+              </h3>
+              <p className="text-white/40 text-sm mb-8 leading-relaxed">
+                You're about to leave your premium cinematic experience. Are you sure you want to log out?
+              </p>
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => { logout(); setShowSignOutConfirm(false); }}
+                  className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-[0_10px_20px_rgba(229,9,20,0.3)] active:scale-95"
+                >
+                  Confirm Sign Out
+                </button>
+                <button 
+                  onClick={() => setShowSignOutConfirm(false)}
+                  className="w-full py-4 glass text-white/60 hover:text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 border-white/5 hover:border-white/20"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>);
 }
 

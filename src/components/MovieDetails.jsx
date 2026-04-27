@@ -10,6 +10,7 @@ export function MovieDetails() {
     const { activeMovieId, setActiveMovieId, setCurrentView, user, activeProfile } = useAppContext();
     const [movie, setMovie] = useState(null);
     const [inWatchlist, setInWatchlist] = useState(false);
+    const [hasProgress, setHasProgress] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Overview');
 
@@ -42,8 +43,16 @@ export function MovieDetails() {
                 });
 
                 if (user && activeProfile) {
-                    const wl = await firestoreService.getWatchlist(user.uid, activeProfile.id);
+                    const [wl, progress] = await Promise.all([
+                        firestoreService.getWatchlist(user.uid, activeProfile.id),
+                        firestoreService.getWatchProgress(user.uid, activeProfile.id, activeMovieId)
+                    ]);
                     setInWatchlist(wl.some(item => item.contentId === activeMovieId));
+                    if (progress && progress.progressSeconds > 30) {
+                        setHasProgress(progress);
+                    } else {
+                        setHasProgress(null);
+                    }
                 }
             } catch (error) {
                 console.error('Error loading movie details:', error);
@@ -58,7 +67,11 @@ export function MovieDetails() {
     }, [activeMovieId, user, activeProfile]);
 
     const toggleWatchlist = async () => {
-        if (!activeProfile || !movie || !user) return;
+        if (!user) {
+            setCurrentView('auth');
+            return;
+        }
+        if (!activeProfile || !movie) return;
         try {
             if (inWatchlist) {
                 await firestoreService.removeFromWatchlist(user.uid, activeProfile.id, movie.id);
@@ -84,29 +97,29 @@ export function MovieDetails() {
             className="details-container absolute inset-0 w-full h-[100dvh] overflow-y-auto bg-[#050505] text-white z-40 hide-scrollbar"
         >
             {/* Close Button */}
-            <button onClick={() => setCurrentView('home')} className="fixed top-8 left-8 z-50 w-12 h-12 bg-white/10 backdrop-blur-xl rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all cursor-pointer shadow-2xl">
-                <X size={24}/>
+            <button onClick={() => setCurrentView('home')} className="fixed top-4 left-4 md:top-8 md:left-8 z-50 w-10 h-10 md:w-12 md:h-12 bg-black/40 md:bg-white/10 backdrop-blur-xl rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all cursor-pointer shadow-2xl">
+                <X size={20}/>
             </button>
 
             {/* Cinematic Hero Header */}
-            <div className="relative w-full h-[85vh] md:h-[90vh] overflow-hidden">
+            <div className="relative w-full min-h-[60vh] md:h-[90vh] overflow-hidden">
                 {/* Backdrop Layer */}
                 <div className="absolute inset-0">
                     <img src={movie.backdrop} className="w-full h-full object-cover" alt="" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent"></div>
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/60 via-transparent to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-transparent to-transparent"></div>
                 </div>
 
                 {/* Content Overlay */}
                 <div className="absolute inset-0 flex items-end">
-                    <div className="w-full px-8 md:px-20 pb-16 md:pb-24 grid md:grid-cols-[300px_1fr] gap-12 items-end">
-                        {/* Poster Column - Hidden on small mobile */}
+                    <div className="w-full px-6 md:px-20 pb-12 md:pb-24 grid lg:grid-cols-[280px_1fr] gap-8 md:gap-12 items-end">
+                        {/* Poster Column - Hidden on mobile */}
                         <motion.div 
                             initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                            className="hidden md:block relative group"
+                            className="hidden lg:block relative group"
                         >
-                            <img src={movie.poster} className="w-full aspect-[2/3] rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border border-white/10" alt="" />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl flex items-center justify-center backdrop-blur-sm">
+                            <img src={movie.poster} className="w-full aspect-[2/3] rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border border-white/10" alt="" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center backdrop-blur-sm">
                                 <Film size={40} className="text-white/40" />
                             </div>
                         </motion.div>
@@ -122,24 +135,32 @@ export function MovieDetails() {
                             </motion.div>
 
                             <div>
-                                <h1 className="display-text text-5xl md:text-8xl font-black tracking-tighter mb-4 leading-none uppercase">
+                                <h1 className="display-text text-4xl md:text-6xl lg:text-8xl font-black tracking-tighter mb-4 leading-[0.9] uppercase">
                                     {movie.title}
                                 </h1>
                                 {movie.tagline && (
-                                    <p className="text-xl md:text-2xl text-white/40 font-medium italic tracking-tight">{movie.tagline}</p>
+                                    <p className="text-lg md:text-xl lg:text-2xl text-white/40 font-medium italic tracking-tight line-clamp-2 md:line-clamp-none">{movie.tagline}</p>
                                 )}
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-4">
-                                <button onClick={() => setCurrentView('player')} className="flex items-center gap-4 bg-white text-black px-12 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-2xl active:scale-95">
-                                    <Play fill="currentColor" size={24}/> Play Now
+                            <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 w-full sm:w-auto">
+                                <button 
+                                    onClick={() => setCurrentView('player')} 
+                                    className={`w-full sm:w-auto flex items-center justify-center gap-4 px-10 md:px-12 py-4 md:py-5 rounded-2xl font-black text-lg md:text-xl hover:scale-105 transition-all shadow-2xl active:scale-95 ${
+                                        hasProgress ? 'bg-red-600 text-white shadow-[0_0_40px_rgba(229,9,20,0.4)]' : 'bg-white text-black'
+                                    }`}
+                                >
+                                    <Play fill="currentColor" size={20} className="md:w-6 md:h-6"/> 
+                                    {hasProgress ? `Resume (${hasProgress.progress}%)` : 'Play Now'}
                                 </button>
-                                <button onClick={toggleWatchlist} className="px-8 py-5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl font-bold text-lg hover:bg-white/20 transition-all">
-                                    {inWatchlist ? 'In Watchlist' : 'Add to List'}
-                                </button>
-                                <button className="w-16 h-16 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center hover:bg-white/20 transition-all">
-                                    <Share2 size={24} />
-                                </button>
+                                <div className="flex gap-3 w-full sm:w-auto">
+                                    <button onClick={toggleWatchlist} className="flex-1 sm:flex-none px-6 md:px-8 py-4 md:py-5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl font-bold text-base md:text-lg hover:bg-white/20 transition-all whitespace-nowrap">
+                                        {inWatchlist ? 'In Watchlist' : 'Add to List'}
+                                    </button>
+                                    <button className="w-14 h-14 md:w-16 md:h-16 bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center hover:bg-white/20 transition-all">
+                                        <Share2 size={22} className="md:w-6 md:h-6" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -147,8 +168,8 @@ export function MovieDetails() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="px-8 md:px-20 border-b border-white/5 sticky top-0 z-30 bg-[#050505]/80 backdrop-blur-xl">
-                <div className="flex gap-12">
+            <div className="px-6 md:px-20 border-b border-white/5 sticky top-0 z-30 bg-[#050505]/80 backdrop-blur-xl overflow-x-auto hide-scrollbar">
+                <div className="flex gap-8 md:gap-12 min-w-max">
                     {['Overview', 'Details', 'More Like This'].map(tab => (
                         <button 
                             key={tab} 
@@ -167,32 +188,32 @@ export function MovieDetails() {
             </div>
 
             {/* Tab Content */}
-            <div className="px-8 md:px-20 py-16">
+            <div className="px-6 md:px-20 py-10 md:py-16">
                 {activeTab === 'Overview' && (
-                    <div className="grid md:grid-cols-[1fr_400px] gap-20 max-w-[1600px]">
-                        <div className="space-y-16">
+                    <div className="flex flex-col lg:grid lg:grid-cols-[1fr_400px] gap-12 lg:gap-20 max-w-[1600px]">
+                        <div className="space-y-12 md:space-y-16">
                             {/* Synopsis */}
                             <section>
-                                <h3 className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mb-6">Storyline</h3>
-                                <p className="text-2xl md:text-3xl text-white/80 leading-snug font-medium max-w-4xl">
+                                <h3 className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mb-4 md:mb-6">Storyline</h3>
+                                <p className="text-lg md:text-2xl lg:text-3xl text-white/80 leading-snug font-medium max-w-4xl">
                                     {movie.description}
                                 </p>
                             </section>
 
                             {/* Main Cast */}
                             <section>
-                                <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center justify-between mb-6 md:mb-8">
                                     <h3 className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">Leading Cast</h3>
                                     <button className="text-xs font-bold text-white/40 hover:text-white">See Full Credits</button>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-8">
                                     {movie.cast.slice(0, 5).map((actor, idx) => (
                                         <div key={idx} className="group">
-                                            <div className="aspect-[3/4] rounded-2xl overflow-hidden mb-4 border border-white/5 shadow-xl transition-all duration-500 group-hover:border-white/20">
+                                            <div className="aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden mb-3 md:mb-4 border border-white/5 shadow-xl transition-all duration-500 group-hover:border-white/20">
                                                 <img src={actor.profilePath} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="" />
                                             </div>
-                                            <h4 className="font-bold text-sm text-white group-hover:text-red-500 transition-colors">{actor.name}</h4>
-                                            <p className="text-[10px] text-white/30 font-black uppercase tracking-tighter">{actor.character}</p>
+                                            <h4 className="font-bold text-xs md:text-sm text-white group-hover:text-red-500 transition-colors truncate">{actor.name}</h4>
+                                            <p className="text-[9px] md:text-[10px] text-white/30 font-black uppercase tracking-tighter truncate">{actor.character}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -200,38 +221,38 @@ export function MovieDetails() {
                         </div>
 
                         {/* Metadata Sidebar */}
-                        <div className="space-y-12 bg-white/5 border border-white/10 p-10 rounded-[40px] h-fit">
-                            <div className="grid grid-cols-2 gap-8">
+                        <div className="space-y-8 md:space-y-12 bg-white/5 border border-white/10 p-6 md:p-10 rounded-3xl md:rounded-[40px] h-fit">
+                            <div className="grid grid-cols-2 gap-6 md:gap-8">
                                 <div>
-                                    <h5 className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Director</h5>
-                                    <p className="font-bold text-lg">{movie.director}</p>
+                                    <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Director</h5>
+                                    <p className="font-bold text-base md:text-lg truncate">{movie.director}</p>
                                 </div>
                                 <div>
-                                    <h5 className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Status</h5>
-                                    <p className="font-bold text-lg">{movie.status}</p>
+                                    <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Status</h5>
+                                    <p className="font-bold text-base md:text-lg">{movie.status}</p>
                                 </div>
                                 {movie.budget && (
                                     <div>
-                                        <h5 className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Budget</h5>
-                                        <p className="font-bold text-lg text-green-400">{movie.budget}</p>
+                                        <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Budget</h5>
+                                        <p className="font-bold text-base md:text-lg text-green-400">{movie.budget}</p>
                                     </div>
                                 )}
                                 {movie.revenue && (
                                     <div>
-                                        <h5 className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Box Office</h5>
-                                        <p className="font-bold text-lg text-blue-400">{movie.revenue}</p>
+                                        <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Box Office</h5>
+                                        <p className="font-bold text-base md:text-lg text-blue-400">{movie.revenue}</p>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="space-y-6 pt-8 border-t border-white/5">
+                            <div className="space-y-4 md:space-y-6 pt-6 md:pt-8 border-t border-white/5">
                                 <div>
-                                    <h5 className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Production</h5>
-                                    <p className="text-white/60 font-medium">{movie.production}</p>
+                                    <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Production</h5>
+                                    <p className="text-white/60 text-sm md:text-base font-medium">{movie.production}</p>
                                 </div>
                                 <div>
-                                    <h5 className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-2">Languages</h5>
-                                    <p className="text-white/60 font-medium">{movie.languages}</p>
+                                    <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Languages</h5>
+                                    <p className="text-white/60 text-sm md:text-base font-medium">{movie.languages}</p>
                                 </div>
                             </div>
                         </div>

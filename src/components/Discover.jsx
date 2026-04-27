@@ -16,8 +16,11 @@ export function Discover() {
         const loadTrending = async () => {
             setLoading(true);
             try {
-                const results = await tmdb.fetchTrending();
-                setTrending(results.map(tmdb.formatMovie));
+                const results1 = await tmdb.fetchTrending();
+                // Fetch page 2 as well to get 24 items
+                const results2 = await tmdb.fetchTrending('movie', 2);
+                const combined = [...results1, ...results2];
+                setTrending(combined.map(tmdb.formatMovie).filter(Boolean).slice(0, 24));
             } catch (error) {
                 console.error('Error loading trending:', error);
             } finally {
@@ -93,9 +96,9 @@ export function Discover() {
             )}
 
             {/* Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-5 px-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-5 px-2">
                 {loading && displayMovies.length === 0 ? (
-                     [...Array(12)].map((_, i) => <MovieCardSkeleton key={i} />)
+                     [...Array(24)].map((_, i) => <MovieCardSkeleton key={i} />)
                 ) : (
                     <AnimatePresence mode="popLayout">
                         {displayMovies.map((movie) => (
