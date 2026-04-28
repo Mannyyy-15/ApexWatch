@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Play } from 'lucide-react';
+import { ArrowLeft, Play, RotateCw, X } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { tmdb } from '../utils/tmdb';
 import { useTVBackHandler } from '../hooks/useTV';
@@ -13,27 +13,36 @@ export function VideoPlayer() {
     const [movie, setMovie] = useState(null);
     const [startTime, setStartTime] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [showResumePrompt, setShowResumePrompt] = useState(false);
-    const [savedProgress, setSavedProgress] = useState(null);
     const [playerReady, setPlayerReady] = useState(false);
+    const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
+    const [savedProgress, setSavedProgress] = useState(null);
+    const [showResumeToast, setShowResumeToast] = useState(false);
 
     useEffect(() => {
+        const checkOrientation = () => setIsPortrait(window.innerHeight > window.innerWidth);
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+
         const lockOrientation = async () => {
             try {
                 // Request orientation lock if supported
                 if (window.screen.orientation && window.screen.orientation.lock) {
                     await window.screen.orientation.lock('landscape').catch(() => {
                         // Silently fail if not allowed by browser policy (usually requires fullscreen)
-                        console.log('Orientation lock requested.');
                     });
                 }
                 
-                // On mobile, try to enter fullscreen for better experience
+                // On mobile, try to enter fullscreen for better experience - wrap in check to avoid console noise
                 if (document.documentElement.requestFullscreen && window.innerHeight < 600) {
-                    document.documentElement.requestFullscreen().catch(() => {});
+                    // Only attempt if not already in fullscreen
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(() => {
+                            // This is expected to fail without direct user gesture in some cases
+                        });
+                    }
                 }
             } catch (error) {
-                console.warn('Orientation control error:', error);
+                // Silently handle
             }
         };
 
@@ -49,7 +58,11 @@ export function VideoPlayer() {
         };
 
         lockOrientation();
-        return () => unlockOrientation();
+        return () => {
+            unlockOrientation();
+            window.removeEventListener('resize', checkOrientation);
+            window.removeEventListener('orientationchange', checkOrientation);
+        };
     }, []);
 
     useEffect(() => {
@@ -77,15 +90,14 @@ export function VideoPlayer() {
                 // Fetch Progress
                 if (user && activeProfile) {
                     const progress = await firestoreService.getWatchProgress(user.uid, activeProfile.id, activeMovieId);
-                    if (progress && progress.progressSeconds > 30) { // Only prompt if more than 30s watched
+                    if (progress && progress.progressSeconds > 30) { 
                         setSavedProgress(progress);
-                        setShowResumePrompt(true);
-                    } else {
-                        setPlayerReady(true);
+                        setShowResumeToast(true);
+                        // Auto-hide after 10 seconds
+                        setTimeout(() => setShowResumeToast(false), 10000);
                     }
-                } else {
-                    setPlayerReady(true);
                 }
+                setPlayerReady(true);
             } catch (error) {
                 console.error('Error loading movie for player:', error);
             } finally {
@@ -130,18 +142,17 @@ export function VideoPlayer() {
         setCurrentView('details');
     };
 
-    const handleResume = () => {
-        if (savedProgress) {
-            setStartTime(savedProgress.progressSeconds);
+    const handleManualRotate = async () => {
+        try {
+            if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                await document.documentElement.requestFullscreen();
+            }
+            if (window.screen.orientation && window.screen.orientation.lock) {
+                await window.screen.orientation.lock('landscape');
+            }
+        } catch (err) {
+            console.error('Failed to rotate manually:', err);
         }
-        setShowResumePrompt(false);
-        setPlayerReady(true);
-    };
-
-    const handleStartOver = () => {
-        setStartTime(0);
-        setShowResumePrompt(false);
-        setPlayerReady(true);
     };
 
     if (loading || !movie) {
@@ -165,7 +176,7 @@ export function VideoPlayer() {
     });
 
     if (startTime > 5) {
-        params.set('progress', Math.floor(startTime).toString());
+        params.set('t', Math.floor(startTime).toString());
     }
 
     const embedUrl = `${baseUrl}?${params.toString()}`;
@@ -177,51 +188,6 @@ export function VideoPlayer() {
             exit={{ opacity: 0 }} 
             className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden"
         >
-            <AnimatePresence>
-                {showResumePrompt && (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 1.1, y: -20 }}
-                        className="relative z-[60] w-full max-w-md p-8 text-center"
-                    >
-                        <div className="glass rounded-[40px] p-10 border border-white/10 shadow-2xl relative overflow-hidden">
-                            {/* Glow Effect */}
-                            <div className="absolute -top-24 -left-24 w-48 h-48 bg-red-600/20 blur-[100px] rounded-full"></div>
-                            
-                            <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/10">
-                                <Play size={32} className="text-white fill-white ml-1" />
-                            </div>
-                            
-                            <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter mb-4">Resume Watching?</h2>
-                            <p className="text-white/40 mb-10 text-lg leading-relaxed">
-                                We saved your spot at <span className="text-white font-bold">{Math.floor(savedProgress.progressSeconds / 60)}m {Math.floor(savedProgress.progressSeconds % 60)}s</span> ({savedProgress.progress}%).
-                            </p>
-                            
-                            <div className="flex flex-col gap-4">
-                                <button 
-                                    onClick={handleResume}
-                                    className="w-full bg-white text-black py-5 rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)]"
-                                >
-                                    Resume at {savedProgress.progress}%
-                                </button>
-                                <button 
-                                    onClick={handleStartOver}
-                                    className="w-full bg-white/5 border border-white/10 text-white py-5 rounded-2xl font-black text-xl hover:bg-white/10 transition-all"
-                                >
-                                    Watch from Start
-                                </button>
-                                <button 
-                                    onClick={handleClose}
-                                    className="mt-4 text-white/40 hover:text-white font-bold transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             {playerReady && (
                 <motion.div 
@@ -244,6 +210,53 @@ export function VideoPlayer() {
                     <ArrowLeft size={24}/>
                 </button>
             </div>
+
+            {isPortrait && (
+                <div className="absolute top-6 right-6 pointer-events-auto z-[60]">
+                    <button 
+                        onClick={handleManualRotate} 
+                        className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/10 text-white hover:bg-white/20 transition-all shadow-xl"
+                    >
+                        <RotateCw size={16} className="text-red-500" />
+                        <span className="font-bold text-sm">Rotate</span>
+                    </button>
+                </div>
+            )}
+
+            <AnimatePresence>
+                {showResumeToast && savedProgress && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 50, scale: 0.9 }}
+                        className="absolute top-24 right-6 z-[70] pointer-events-auto"
+                    >
+                        <button 
+                            onClick={() => {
+                                setStartTime(savedProgress.progressSeconds);
+                                setShowResumeToast(false);
+                            }}
+                            className="bg-black/90 backdrop-blur-2xl border border-white/20 p-4 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all shadow-[0_30px_60px_rgba(0,0,0,0.8)] group border-l-4 border-l-red-600"
+                        >
+                            <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white shadow-[0_0_20px_rgba(229,9,20,0.4)] group-hover:scale-110 transition-transform">
+                                <Play size={20} fill="currentColor" className="ml-1" />
+                            </div>
+                            <div className="text-left pr-4">
+                                <p className="text-white font-black text-[10px] uppercase tracking-widest mb-0.5 opacity-50">Resume Playback?</p>
+                                <p className="text-white text-sm font-bold">
+                                    Last watched at {Math.floor(savedProgress.progressSeconds / 60)}:{(Math.floor(savedProgress.progressSeconds % 60)).toString().padStart(2, '0')}
+                                </p>
+                            </div>
+                            <div 
+                                onClick={(e) => { e.stopPropagation(); setShowResumeToast(false); }}
+                                className="p-2 hover:bg-white/10 rounded-full text-white/30 hover:text-white transition-all ml-2"
+                            >
+                                <X size={16} />
+                            </div>
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }

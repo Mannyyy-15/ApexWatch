@@ -132,7 +132,7 @@ export function MovieRow({ title, movies, isContinueWatching = false, continueWa
                             {title}
                         </h2>
                         <p className="text-[10px] md:text-xs text-white/30 font-black uppercase tracking-[0.3em] mt-2 md:mt-3">
-                            Nexus Curated Collection
+                            ApexWatch Curated Collection
                         </p>
                     </div>
                 </div>
