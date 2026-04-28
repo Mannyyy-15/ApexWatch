@@ -1,4 +1,4 @@
-import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked } from 'lucide-react';
+import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked, Smartphone, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -19,6 +19,29 @@ export function NavigationIsland() {
     const profileMenuRef = useRef(null);
     const mobileMenuRef = useRef(null);
     const searchRef = useRef(null);
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+    useEffect(() => {
+        const handleBeforeInstallPrompt = (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+        };
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    }, []);
+
+    const handleDownloadApp = async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                setDeferredPrompt(null);
+            }
+        } else {
+            // Fallback/Direct APK link - change this URL to your generated APK link
+            window.open('https://apexwatch.app/download', '_blank');
+        }
+    };
 
     // Close menus on click outside
     useEffect(() => {
@@ -124,6 +147,7 @@ export function NavigationIsland() {
               onClick={() => setCurrentView('profiles')}
             />
           )}
+          <NavItem icon={<Smartphone size={32}/>} label={<span className="nav-label ml-4 text-lg text-red-500 font-bold italic">Get App</span>} onClick={handleDownloadApp}/>
           <NavItem icon={<LogOut size={32} className="ml-1"/>} label={<span className="nav-label ml-4 text-lg">Sign Out</span>} onClick={() => setShowSignOutConfirm(true)}/>
         </div>
       </div>
@@ -262,6 +286,7 @@ export function NavigationIsland() {
                       <div className="space-y-0.5">
                         <MenuButton icon={<BookMarked size={16}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
                         <MenuButton icon={<History size={16}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                        <MenuButton icon={<Smartphone size={16} className="text-red-500"/>} label="Get Android App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
                         <MenuButton icon={<Users size={16}/>} label="Switch Profile" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                       </div>
 
@@ -352,6 +377,7 @@ export function NavigationIsland() {
               <div className="grid grid-cols-2 gap-2">
                 <MenuButton icon={<BookMarked size={16}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<History size={16}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                <MenuButton icon={<Smartphone size={16} className="text-red-500"/>} label="Get App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
                 <MenuButton icon={<Users size={16}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<LogOut size={16}/>} label="Log out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
               </div>

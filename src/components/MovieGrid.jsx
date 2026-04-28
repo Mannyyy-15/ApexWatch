@@ -15,6 +15,7 @@ export function MovieGrid() {
     });
 
     const loadContent = async () => {
+        // Only show full loading skeleton if we have NO cached rows at all
         if (movieRows.length === 0) setLoading(true);
         try {
             const baseRows = [

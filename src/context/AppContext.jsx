@@ -42,7 +42,10 @@ export function AppProvider({ children }) {
         const saved = localStorage.getItem('apexwatch_cached_watchlist');
         return saved ? JSON.parse(saved) : [];
     });
-    const [movieRows, setMovieRows] = useState([]); // Global cache for Home content
+    const [movieRows, setMovieRows] = useState(() => {
+        const saved = localStorage.getItem('apexwatch_cached_movie_rows');
+        return saved ? JSON.parse(saved) : [];
+    }); // Global cache for Home content
     const [cachedDetails, setCachedDetails] = useState({}); // Global cache for Movie Details
 
     useEffect(() => {
@@ -167,6 +170,13 @@ export function AppProvider({ children }) {
             localStorage.setItem('apexwatch_cached_profile', JSON.stringify(activeProfile));
         }
     }, [activeProfile, user]);
+
+    // Cache movie rows for instant re-hydration
+    useEffect(() => {
+        if (movieRows.length > 0) {
+            localStorage.setItem('apexwatch_cached_movie_rows', JSON.stringify(movieRows));
+        }
+    }, [movieRows]);
 
     // Cache watchlist changes
     useEffect(() => {

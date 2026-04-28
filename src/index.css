@@ -16,12 +16,19 @@
   --glass-border: rgba(255, 255, 255, 0.08);
 }
 
-body {
+html, body {
   background-color: var(--color-primary);
   color: white;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  overscroll-behavior: none; /* Prevents pull-to-refresh / browser bounce */
+  touch-action: manipulation; /* Improves touch response time */
+  user-select: none; /* Prevents accidental text selection like an app */
+  -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
+}
+
+body {
   selection-background-color: var(--color-accent);
 }
 
