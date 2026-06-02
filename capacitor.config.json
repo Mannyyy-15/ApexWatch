@@ -1,0 +1,6 @@
+{
+  "appId": "com.apexwatch.app",
+  "appName": "ApexWatch",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

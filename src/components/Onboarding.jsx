@@ -52,37 +52,39 @@ export function Onboarding() {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-[#050505] flex items-center justify-center overflow-y-auto p-6 md:p-12">
-            <div className="max-w-4xl w-full">
+        <div className="fixed inset-0 z-[100] bg-bg-base flex items-center justify-center overflow-y-auto p-6 md:p-12">
+            <div className="absolute inset-0 bg-radial-gradient from-accent/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+            
+            <div className="max-w-4xl w-full relative z-10">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-center mb-12"
+                    className="text-center mb-10"
                 >
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full mb-6">
-                        <Sparkles size={14} className="text-yellow-400" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Step 2 of 2</span>
+                    <div className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-white/5 border border-glass-border rounded-full mb-5">
+                        <Sparkles size={12} className="text-yellow-400" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-white/50">Step 2 of 2</span>
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-black text-white mb-6 uppercase tracking-tight">Personalize your experience</h1>
-                    <p className="text-white/50 text-lg max-w-2xl mx-auto">Select the genres and languages you love to help us curate your perfect cinematic universe.</p>
+                    <h1 className="text-3xl md:text-5xl font-black text-white mb-4 uppercase tracking-tight italic">Personalize your feed</h1>
+                    <p className="text-white/40 text-sm md:text-base max-w-xl mx-auto">Select your preferred genres and languages to curate your cinematic universe.</p>
                 </motion.div>
 
-                <div className="grid md:grid-cols-2 gap-12">
+                <div className="grid md:grid-cols-2 gap-10">
                     {/* Genres */}
-                    <div className="space-y-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                    <div className="space-y-5">
+                        <h3 className="text-lg font-black uppercase tracking-tight text-white flex items-center gap-2">
                             Favorite Genres
-                            <span className="text-xs font-medium text-white/30">Select at least 3</span>
+                            <span className="text-[10px] font-black text-white/30 uppercase ml-2 tracking-widest">Pick at least 3</span>
                         </h3>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2.5">
                             {GENRES.map(genre => (
                                 <button
                                     key={genre}
                                     onClick={() => toggleGenre(genre)}
-                                    className={`px-6 py-3 rounded-2xl text-sm font-bold transition-all border ${
+                                    className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border cursor-pointer ${
                                         selectedGenres.includes(genre)
-                                            ? 'bg-white text-black border-white shadow-[0_0_30px_rgba(255,255,255,0.2)]'
-                                            : 'bg-white/5 text-white/60 border-white/10 hover:border-white/30'
+                                            ? 'bg-accent text-white border-accent shadow-[0_0_20px_rgba(229,9,20,0.3)]'
+                                            : 'bg-glass-bg text-white/50 border-glass-border hover:border-white/20 hover:bg-glass-hover'
                                     }`}
                                 >
                                     {genre}
@@ -92,43 +94,43 @@ export function Onboarding() {
                     </div>
 
                     {/* Language */}
-                    <div className="space-y-8">
-                        <div className="space-y-6">
-                            <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                                <Languages size={24} className="text-white/40" />
+                    <div className="space-y-6">
+                        <div className="space-y-5">
+                            <h3 className="text-lg font-black uppercase tracking-tight text-white flex items-center gap-2">
+                                <Languages size={18} className="text-white/40" />
                                 Preferred Language
                             </h3>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-2 gap-2.5">
                                 {LANGUAGES.map(lang => (
                                     <button
                                         key={lang}
                                         onClick={() => toggleLanguage(lang)}
-                                        className={`px-6 py-4 rounded-2xl text-sm font-bold transition-all border flex items-center justify-between ${
+                                        className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all border flex items-center justify-between cursor-pointer ${
                                             selectedLanguages.includes(lang)
-                                                ? 'bg-white/10 text-white border-white/40 shadow-[0_0_20px_rgba(255,255,255,0.05)]'
-                                                : 'bg-white/5 text-white/40 border-white/10 hover:border-white/20'
+                                                ? 'bg-accent/15 text-white border-accent/40 shadow-[0_0_20px_rgba(229,9,20,0.15)]'
+                                                : 'bg-glass-bg text-white/40 border-glass-border hover:border-white/20 hover:bg-glass-hover'
                                         }`}
                                     >
                                         {lang}
-                                        {selectedLanguages.includes(lang) && <Check size={16} className="text-green-400" />}
+                                        {selectedLanguages.includes(lang) && <Check size={14} className="text-accent" />}
                                     </button>
                                 ))}
                             </div>
                         </div>
 
                         <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            whileHover={{ scale: selectedGenres.length >= 3 ? 1.02 : 1 }}
+                            whileTap={{ scale: selectedGenres.length >= 3 ? 0.98 : 1 }}
                             disabled={selectedGenres.length < 3}
                             onClick={handleComplete}
-                            className={`w-full py-5 rounded-3xl font-black text-xl flex items-center justify-center gap-3 transition-all ${
+                            className={`w-full py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2.5 transition-all uppercase tracking-widest cursor-pointer ${
                                 selectedGenres.length >= 3
-                                    ? 'bg-white text-black shadow-[0_0_40px_rgba(255,255,255,0.3)]'
+                                    ? 'bg-accent text-white shadow-[0_0_30px_rgba(229,9,20,0.4)] hover:bg-accent-hover'
                                     : 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
                             }`}
                         >
                             Finish Setup
-                            <ArrowRight size={24} />
+                            <ArrowRight size={18} />
                         </motion.button>
                     </div>
                 </div>

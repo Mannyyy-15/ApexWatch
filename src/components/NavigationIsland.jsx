@@ -120,7 +120,7 @@ export function NavigationIsland() {
           }}
           tabIndex={0}
           role="button"
-          className="flex items-center gap-4 mb-12 px-3 py-2 outline-none group rounded-2xl"
+          className="flex items-center gap-4 mb-12 px-3 py-2 outline-none group rounded-2xl tv-focusable"
         >
           <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(229,9,20,0.4)] group-focus:scale-110 group-hover:scale-110 transition-all duration-500 flex-shrink-0">
             <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
@@ -157,7 +157,7 @@ export function NavigationIsland() {
         initial={{ y: -100, opacity: 0 }} 
         animate={{ y: 0, opacity: 1 }} 
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }} 
-        className="hidden md:flex fixed top-8 left-1/2 -translate-x-1/2 z-50 items-center glass p-2 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-white/10 navigation-island-desktop"
+        className="hidden md:flex fixed top-6 left-1/2 -translate-x-1/2 z-50 items-center bg-glass-bg backdrop-blur-2xl border border-glass-border py-3.5 px-7 rounded-full shadow-[0_25px_50px_rgba(0,0,0,0.6)] navigation-island-desktop hover:border-white/10 transition-all duration-300 gap-2.5"
       >
         <div 
           onClick={() => setCurrentView('home')} 
@@ -166,30 +166,30 @@ export function NavigationIsland() {
           }}
           tabIndex={0}
           role="button"
-          className="flex items-center gap-3 pl-2 pr-6 cursor-pointer group flex-shrink-0 outline-none"
+          className="flex items-center gap-3 pl-4 pr-5 cursor-pointer group flex-shrink-0 outline-none tv-focusable"
         >
-          <div className="w-10 h-10 rounded-full overflow-hidden shadow-[0_0_20px_rgba(229,9,20,0.3)] group-hover:scale-110 transition-all duration-500">
+          <div className="w-11 h-11 rounded-full overflow-hidden shadow-[0_0_15px_rgba(229,9,20,0.4)] group-hover:scale-105 transition-all duration-500">
             <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
           </div>
-          <span className="font-black text-xl tracking-tighter uppercase italic">
-            Apex<span className="text-red-600">Watch</span>
+          <span className="font-black text-2xl tracking-tighter uppercase italic text-white/90 group-hover:text-white transition-colors">
+            Apex<span className="text-accent">Watch</span>
           </span>
         </div>
         
-        <div className="flex items-center gap-1 px-1 flex-shrink-0">
-          <NavItem icon={<Home size={18}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
-          <NavItem icon={<Film size={18}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
-          <NavItem icon={<Tv size={18}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
-          <NavItem icon={<Sparkles size={18}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')}/>
+        <div className="flex items-center gap-2 px-1 flex-shrink-0">
+          <NavItem icon={<Home size={20}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
+          <NavItem icon={<Film size={20}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
+          <NavItem icon={<Tv size={20}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
+          <NavItem icon={<Sparkles size={20}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')}/>
         </div>
 
-        <div className="w-[1px] h-6 bg-white/10 mx-4 flex-shrink-0"></div>
+        <div className="w-[1px] h-6 bg-white/10 mx-3 flex-shrink-0"></div>
 
         <div 
           ref={searchRef}
-          className="flex items-center bg-white/5 hover:bg-white/10 transition-all rounded-full px-5 py-2.5 mr-3 group border border-white/5 focus-within:border-white/20 flex-shrink-0 relative"
+          className="flex items-center bg-white/5 hover:bg-white/10 transition-all rounded-full px-6 py-3.5 mr-2 group border border-white/5 focus-within:border-accent/40 focus-within:bg-black/40 flex-shrink-0 relative"
         >
-          <Search size={16} className="text-white/40 group-focus-within:text-white transition-colors"/>
+          <Search size={18} className="text-white/40 group-focus-within:text-accent transition-colors"/>
           <input 
             type="text" 
             placeholder="Search content..." 
@@ -202,7 +202,7 @@ export function NavigationIsland() {
                 setShowSearchDropdown(false);
               }
             }}
-            className="bg-transparent border-none text-sm text-white placeholder-white/30 focus:outline-none w-32 focus:w-56 transition-all duration-500 ml-3 font-medium"
+            className="bg-transparent border-none text-base text-white placeholder-white/30 focus:outline-none w-32 focus:w-52 transition-all duration-500 ml-2.5 font-medium"
           />
 
           {/* Search Dropdown */}
@@ -212,55 +212,55 @@ export function NavigationIsland() {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute top-full left-0 right-0 mt-4 bg-[#0f0f0f] rounded-[1.5rem] border border-white/10 shadow-2xl p-2 z-50 overflow-hidden min-w-[300px]"
+                className="absolute top-full left-0 right-0 mt-3 bg-[#0a0a0a]/95 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-1.5 z-50 overflow-hidden min-w-[280px]"
               >
                 {isSearching ? (
-                  <div className="p-4 text-center text-white/40 text-xs font-bold uppercase tracking-widest">Searching...</div>
+                  <div className="p-4 text-center text-white/40 text-[10px] font-black uppercase tracking-widest">Searching...</div>
                 ) : instantResults.length > 0 ? (
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {instantResults.map(movie => (
                       <button
                         key={movie.id}
                         onClick={() => handleResultClick(movie)}
-                        className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-all text-left group/item"
+                        className="w-full flex items-center gap-3 p-1.5 rounded-xl hover:bg-glass-hover transition-all text-left group/item cursor-pointer"
                       >
-                        <div className="w-10 h-14 rounded-md overflow-hidden bg-white/5 flex-shrink-0">
+                        <div className="w-9 h-12 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 border border-white/5">
                           <img src={movie.poster} alt="" className="w-full h-full object-cover" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-bold text-white group-hover/item:text-red-500 transition-colors truncate">{movie.title}</span>
-                          <div className="flex items-center gap-2 text-[10px] text-white/40 font-black uppercase tracking-wider">
+                          <span className="text-xs font-bold text-white group-hover/item:text-accent transition-colors truncate">{movie.title}</span>
+                          <div className="flex items-center gap-1.5 text-[9px] text-white/30 font-black uppercase tracking-wider">
                             <span>{movie.year}</span>
                             <span>•</span>
-                            <span className="text-red-600/60">{movie.type === 'tv' ? 'TV' : 'Movie'}</span>
+                            <span className="text-accent/80">{movie.type === 'tv' ? 'TV' : 'Movie'}</span>
                           </div>
                         </div>
                       </button>
                     ))}
                     <button 
                       onClick={() => { setCurrentView('discover'); setShowSearchDropdown(false); }}
-                      className="w-full p-3 text-center text-[10px] font-black uppercase tracking-widest text-red-600 hover:text-red-500 transition-colors border-t border-white/5 mt-1"
+                      className="w-full p-2.5 text-center text-[9px] font-black uppercase tracking-widest text-accent hover:text-red-400 transition-colors border-t border-white/5 mt-1 cursor-pointer"
                     >
                       See all results
                     </button>
                   </div>
                 ) : (
-                  <div className="p-4 text-center text-white/40 text-xs font-bold uppercase tracking-widest">No results found</div>
+                  <div className="p-4 text-center text-white/40 text-[10px] font-black uppercase tracking-widest">No results found</div>
                 )}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {!loadingAuth && (<div className="relative" ref={profileMenuRef}>
+        {!loadingAuth && (<div className="relative mr-1.5" ref={profileMenuRef}>
             {user ? (
               <>
-                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/10 cursor-pointer hover:border-white/30 transition-colors bg-white/5" onClick={() => setShowProfileMenu(!showProfileMenu)}>
+                <div className="w-11 h-11 rounded-full overflow-hidden border border-white/10 hover:border-accent transition-all bg-white/5 cursor-pointer" onClick={() => setShowProfileMenu(!showProfileMenu)}>
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer"/>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <User size={20} className="text-white"/>
+                      <User size={18} className="text-white"/>
                     </div>
                   )}
                 </div>
@@ -271,27 +271,28 @@ export function NavigationIsland() {
                       initial={{ opacity: 0, y: 15, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-4 w-52 bg-[#0f0f0f] rounded-[1.5rem] border border-white/10 shadow-2xl p-2 z-50 overflow-hidden"
+                      className="absolute right-0 mt-3 w-48 bg-[#0a0a0a]/95 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-1.5 z-50 overflow-hidden"
                     >
-                      <div className="flex items-center gap-3 p-3 border-b border-white/5 mb-1">
-                        <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20">
+                      <div className="flex items-center gap-2.5 p-2.5 border-b border-white/5 mb-1">
+                        <div className="w-7 h-7 rounded-full overflow-hidden border border-white/15">
                           <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-white line-clamp-1">{activeProfile?.name || user.displayName}</span>
-                          <span className="text-[9px] text-white/40 font-black uppercase tracking-widest">Premium</span>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-bold text-white truncate">{activeProfile?.name || user.displayName}</span>
+                          <span className="text-[8px] text-accent font-black uppercase tracking-widest">Premium</span>
                         </div>
                       </div>
 
                       <div className="space-y-0.5">
-                        <MenuButton icon={<BookMarked size={16}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                        <MenuButton icon={<History size={16}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                        <MenuButton icon={<Smartphone size={16} className="text-red-500"/>} label="Get Android App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
-                        <MenuButton icon={<Users size={16}/>} label="Switch Profile" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
+                        <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                        <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                        <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                        <MenuButton icon={<Smartphone size={14} className="text-accent"/>} label="Get App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                        <MenuButton icon={<Users size={14}/>} label="Switch Profile" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                       </div>
 
                       <div className="mt-1 pt-1 border-t border-white/5">
-                        <MenuButton icon={<LogOut size={16}/>} label="Sign Out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
+                        <MenuButton icon={<LogOut size={14}/>} label="Sign Out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
                       </div>
                     </motion.div>
                   )}
@@ -300,24 +301,24 @@ export function NavigationIsland() {
             ) : (
               <button 
                 onClick={() => setCurrentView('auth')} 
-                className="flex items-center gap-2 bg-white text-black px-3 py-2 md:px-5 md:py-2.5 rounded-full font-black text-[10px] md:text-sm hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+                className="flex items-center gap-2.5 bg-white text-black px-6 py-3 rounded-full font-black text-[13px] hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.15)] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] cursor-pointer"
               >
-                <LogIn size={16} className="md:w-5 md:h-5"/>
-                <span className="hidden xs:inline uppercase tracking-widest">Sign In</span>
-                <span className="xs:hidden uppercase tracking-widest">Join</span>
+                <LogIn size={16}/>
+                <span className="hidden xs:inline uppercase tracking-wider">Sign In</span>
+                <span className="xs:hidden uppercase tracking-wider">Join</span>
               </button>
             )}
           </div>)}
       </motion.div>
 
       {/* Mobile Top Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 p-6 z-50 flex items-center justify-center bg-gradient-to-b from-black/80 to-transparent pointer-events-none navigation-island-mobile">
+      <div className="md:hidden fixed top-0 left-0 right-0 p-5 z-50 flex items-center justify-center bg-gradient-to-b from-black/80 to-transparent pointer-events-none navigation-island-mobile">
         <div className="flex items-center gap-2 pointer-events-auto cursor-pointer" onClick={() => setCurrentView('home')}>
-           <div className="w-8 h-8 rounded-full overflow-hidden shadow-[0_0_15px_rgba(229,9,20,0.3)]">
+           <div className="w-7 h-7 rounded-full overflow-hidden shadow-[0_0_10px_rgba(229,9,20,0.3)]">
             <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
            </div>
-           <span className="font-black tracking-tighter text-xl uppercase italic">
-            Apex<span className="text-red-600">Watch</span>
+           <span className="font-black tracking-tighter text-lg uppercase italic text-white/90">
+            Apex<span className="text-accent">Watch</span>
            </span>
         </div>
       </div>
@@ -327,33 +328,33 @@ export function NavigationIsland() {
         ref={mobileMenuRef}
         initial={{ y: 100 }} 
         animate={{ y: 0 }} 
-        className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-between bg-black/80 backdrop-blur-3xl border border-white/10 p-2 px-4 rounded-[2rem] shadow-2xl navigation-island-mobile max-w-[500px] mx-auto"
+        className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-between bg-black/80 backdrop-blur-3xl border border-glass-border p-1.5 px-3 rounded-[24px] shadow-2xl navigation-island-mobile max-w-[480px] mx-auto"
       >
-        <MobileNavItem icon={<Home size={20}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
-        <MobileNavItem icon={<Film size={20}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
-        <MobileNavItem icon={<Search size={20}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
-        <MobileNavItem icon={<Tv size={20}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
+        <MobileNavItem icon={<Home size={18}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
+        <MobileNavItem icon={<Film size={18}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
+        <MobileNavItem icon={<Search size={18}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
+        <MobileNavItem icon={<Tv size={18}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
         
         {!loadingAuth && user ? (
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${showProfileMenu ? 'bg-white/10' : ''}`}
+            className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all cursor-pointer ${showProfileMenu ? 'bg-white/5' : ''}`}
           >
-             <div className={`p-1 rounded-xl transition-all ${showProfileMenu ? 'bg-red-600/10' : ''}`}>
-                <div className={`w-6 h-6 rounded-full overflow-hidden border ${showProfileMenu ? 'border-red-500' : 'border-white/20'} bg-white/5`}>
+             <div className="p-1 rounded-lg">
+                <div className={`w-5.5 h-5.5 rounded-full overflow-hidden border ${showProfileMenu ? 'border-accent' : 'border-white/20'} bg-white/5`}>
                     {avatarUrl ? (
                        <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <User size={12} className="text-white"/>
+                        <User size={10} className="text-white"/>
                       </div>
                     )}
                 </div>
              </div>
-             <span className={`text-[9px] font-bold ${showProfileMenu ? 'text-white' : 'text-white/40'}`}>Profile</span>
+             <span className={`text-[8px] font-bold ${showProfileMenu ? 'text-white' : 'text-white/40'}`}>Profile</span>
           </button>
         ) : (
-          <MobileNavItem icon={<LogIn size={20}/>} label="Join" onClick={() => setCurrentView('auth')}/>
+          <MobileNavItem icon={<LogIn size={18}/>} label="Join" onClick={() => setCurrentView('auth')}/>
         )}
 
         {/* Mobile Profile Dropup */}
@@ -363,23 +364,26 @@ export function NavigationIsland() {
               initial={{ opacity: 0, y: 50, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 50, scale: 0.95 }}
-              className="absolute bottom-[110%] left-0 right-0 bg-[#0f0f0f] rounded-[2rem] border border-white/10 shadow-2xl p-4 z-[60]"
+              className="absolute bottom-[115%] left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur-3xl rounded-[24px] border border-glass-border shadow-2xl p-3.5 z-[60]"
             >
-              <div className="flex items-center gap-4 mb-4 p-2">
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-red-600">
+              <div className="flex items-center gap-3 mb-3 p-1.5">
+                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent">
                   <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <h4 className="text-white font-black uppercase text-lg italic tracking-tighter">{activeProfile?.name || user.displayName}</h4>
-                  <p className="text-red-600 text-[10px] font-black uppercase tracking-widest">Active Profile</p>
+                  <h4 className="text-white font-black uppercase text-base italic tracking-tight">{activeProfile?.name || user.displayName}</h4>
+                  <p className="text-accent text-[9px] font-black uppercase tracking-widest">Active Profile</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <MenuButton icon={<BookMarked size={16}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                <MenuButton icon={<History size={16}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                <MenuButton icon={<Smartphone size={16} className="text-red-500"/>} label="Get App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
-                <MenuButton icon={<Users size={16}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
-                <MenuButton icon={<LogOut size={16}/>} label="Log out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
+              <div className="grid grid-cols-2 gap-1.5">
+                <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                <MenuButton icon={<Smartphone size={14} className="text-accent"/>} label="Get App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                <MenuButton icon={<Users size={14}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
+                <div className="col-span-2 mt-1 border-t border-white/5 pt-1.5">
+                  <MenuButton icon={<LogOut size={14}/>} label="Log out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
+                </div>
               </div>
             </motion.div>
           )}
@@ -389,39 +393,39 @@ export function NavigationIsland() {
       {/* Sign Out Confirmation Modal */}
       <AnimatePresence>
         {showSignOutConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-5">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
               onClick={() => setShowSignOutConfirm(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              className="absolute inset-0 bg-black/75 backdrop-blur-md"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-sm glass p-8 rounded-[2.5rem] border border-white/10 text-center"
+              className="relative w-full max-w-xs bg-bg-surface border border-glass-border p-6 rounded-[28px] text-center shadow-2xl"
             >
-              <div className="w-20 h-20 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <LogOut size={32} className="text-red-600 ml-1" />
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogOut size={28} className="text-accent ml-1" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-3 uppercase tracking-tight italic">
+              <h3 className="text-xl font-black text-white mb-2 uppercase tracking-tight italic">
                 Sign Out?
               </h3>
-              <p className="text-white/40 text-sm mb-8 leading-relaxed">
+              <p className="text-white/40 text-xs mb-6 leading-relaxed">
                 You're about to leave your premium cinematic experience. Are you sure you want to log out?
               </p>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
                 <button 
                   onClick={() => { logout(); setShowSignOutConfirm(false); }}
-                  className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-[0_10px_20px_rgba(229,9,20,0.3)] active:scale-95"
+                  className="w-full py-3.5 bg-accent hover:bg-red-700 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-[0_10px_20px_rgba(229,9,20,0.3)] active:scale-95 cursor-pointer"
                 >
                   Confirm Sign Out
                 </button>
                 <button 
                   onClick={() => setShowSignOutConfirm(false)}
-                  className="w-full py-4 glass text-white/60 hover:text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 border-white/5 hover:border-white/20"
+                  className="w-full py-3.5 bg-white/5 text-white/60 hover:text-white hover:bg-white/10 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all active:scale-95 border border-white/5 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -437,22 +441,22 @@ function MenuButton({ icon, label, onClick, variant = 'default' }) {
   return (
     <button 
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all text-left cursor-pointer ${
         variant === 'danger' 
-        ? 'text-red-500 hover:bg-red-500/10' 
+        ? 'text-accent hover:bg-accent/10' 
         : 'text-white/70 hover:text-white hover:bg-white/5'
       }`}
     >
       {icon}
-      <span className="text-sm font-bold">{label}</span>
+      <span className="text-xs font-bold">{label}</span>
     </button>
   );
 }
 
 function NavItem({ icon, label, active = false, onClick }) {
-    return (<button onClick={onClick} className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-300 flex-shrink-0 ${active ? 'bg-white/10 text-white font-bold' : 'text-white/60 hover:text-white hover:bg-white/5'}`}>
+    return (<button onClick={onClick} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full transition-all duration-300 flex-shrink-0 cursor-pointer tv-focusable ${active ? 'bg-white/10 text-white font-bold shadow-inner' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
       {icon}
-      {typeof label === 'string' ? <span className="text-sm whitespace-nowrap ml-2">{label}</span> : label}
+      {typeof label === 'string' ? <span className="text-xs md:text-sm font-bold tracking-tight whitespace-nowrap ml-1.5">{label}</span> : label}
     </button>);
 }
 
@@ -460,14 +464,14 @@ function MobileNavItem({ icon, label, active = false, onClick }) {
     return (
       <button 
         onClick={onClick} 
-        className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${
-          active ? 'text-red-500 scale-110' : 'text-white/60'
+        className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all cursor-pointer ${
+          active ? 'text-accent scale-105' : 'text-white/65'
         }`}
       >
-        <div className={`p-1.5 rounded-xl transition-all ${active ? 'bg-red-600/10' : ''}`}>
+        <div className={`p-1 rounded-lg transition-all ${active ? 'bg-accent/10' : ''}`}>
           {icon}
         </div>
-        <span className={`text-[10px] font-bold tracking-tight ${active ? 'text-white' : 'text-white/40'}`}>
+        <span className={`text-[8px] font-bold tracking-tight ${active ? 'text-white' : 'text-white/40'}`}>
           {label}
         </span>
       </button>

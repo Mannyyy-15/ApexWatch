@@ -140,7 +140,7 @@ export function MovieGrid() {
     }
 
     return (
-        <div className="relative z-20 px-6 md:px-20 -mt-10 md:-mt-20 flex flex-col gap-8 md:gap-16">
+        <div className="relative z-20 px-4 md:px-16 lg:px-20 mt-8 md:mt-12 flex flex-col gap-10 md:gap-14 pb-20">
             {movieRows.map((row, idx) => (
                 <MovieRow
                     key={`${row.title}-${idx}`}

@@ -1,15 +1,18 @@
 // Fresh Build - Ensuring all icons are properly imported
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, X, Share2, Info, ChevronDown } from 'lucide-react';
+import { Play, X, Share2, Info, ChevronDown, Download, Check, Trash2, Users } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useState, useEffect } from 'react';
 import { useTVBackHandler } from '../hooks/useTV';
 import { tmdb } from '../utils/tmdb';
 import { firestoreService } from '../utils/firestore';
 import { MovieRow } from './MovieRow';
+import { MovieDetailsSkeleton } from './Skeleton';
 
 export function MovieDetails() {
-    const { activeMovieId, setActiveMovieId, setCurrentView, user, activeProfile, activeSeason, setActiveSeason, activeEpisode, setActiveEpisode, activeMediaType, setActiveMediaType, cachedDetails, setCachedDetails } = useAppContext();
+    const { activeMovieId, setActiveMovieId, setCurrentView, user, activeProfile, activeSeason, setActiveSeason, activeEpisode, setActiveEpisode, activeMediaType, setActiveMediaType, cachedDetails, setCachedDetails, downloads, addDownload, removeDownload, createWatchParty, joinWatchParty } = useAppContext();
+    const [showPartyModal, setShowPartyModal] = useState(false);
+    const [partyCodeInput, setPartyCodeInput] = useState('');
     
     useTVBackHandler(() => setCurrentView('home'));
     const [movie, setMovie] = useState(() => cachedDetails[activeMovieId] || null);
@@ -21,9 +24,15 @@ export function MovieDetails() {
     const [fetchingEpisodes, setFetchingEpisodes] = useState(false);
     const [showTrailer, setShowTrailer] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
+    const [isPipActive, setIsPipActive] = useState(false);
+    const [isPipDismissed, setIsPipDismissed] = useState(false);
+    const [downloadProgress, setDownloadProgress] = useState(null);
 
     useEffect(() => {
         if (!activeMovieId) return;
+        setIsPipActive(false);
+        setIsPipDismissed(false);
+        setDownloadProgress(null);
 
         const loadMovieDetails = async () => {
             setLoading(true);
@@ -90,6 +99,22 @@ export function MovieDetails() {
     }, [activeMovieId, user, activeProfile]);
 
     useEffect(() => {
+        const container = document.querySelector('.details-container');
+        if (!container) return;
+
+        const handleScroll = () => {
+            if (container.scrollTop > 380) {
+                setIsPipActive(true);
+            } else {
+                setIsPipActive(false);
+            }
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [movie]);
+
+    useEffect(() => {
         if (movie?.type === 'tv' && activeSeason) {
             const loadEpisodes = async () => {
                 setFetchingEpisodes(true);
@@ -123,15 +148,41 @@ export function MovieDetails() {
         } catch (error) { console.error('Error toggling watchlist:', error); }
     };
 
+    const isDownloaded = movie ? downloads.some(d => d.id === movie.id) : false;
+
+    const startDownloadSimulation = () => {
+        if (!movie) return;
+        setDownloadProgress(0);
+        let current = 0;
+        const interval = setInterval(() => {
+            current += 10;
+            if (current >= 100) {
+                clearInterval(interval);
+                setDownloadProgress(null);
+                addDownload(movie);
+            } else {
+                setDownloadProgress(current);
+            }
+        }, 300);
+    };
+
+    const handleDownloadClick = () => {
+        if (!user) {
+            setCurrentView('auth');
+            return;
+        }
+        if (isDownloaded) {
+            removeDownload(movie.id);
+        } else if (downloadProgress === null) {
+            startDownloadSimulation();
+        }
+    };
+
     if (loading || !movie) {
-        return (
-            <div className="absolute inset-0 bg-[#050505] z-40 flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-white/10 border-t-white rounded-full animate-spin"></div>
-            </div>
-        );
+        return <MovieDetailsSkeleton />;
     }
 
-    const tabs = ['Overview', 'Details', 'More Like This'];
+    const tabs = ['Overview', 'Details'];
     if (movie.type === 'tv') tabs.splice(1, 0, 'Episodes');
 
     return (
@@ -140,8 +191,8 @@ export function MovieDetails() {
             className="details-container absolute inset-0 w-full h-[100dvh] overflow-y-auto bg-[#050505] text-white z-40 hide-scrollbar"
         >
             {/* Close Button */}
-            <button onClick={() => setCurrentView('home')} className="fixed top-4 left-4 md:top-8 md:left-8 z-50 w-10 h-10 md:w-12 md:h-12 bg-black/40 md:bg-white/10 backdrop-blur-xl rounded-full border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all cursor-pointer shadow-2xl">
-                <X size={20}/>
+            <button onClick={() => setCurrentView('home')} className="close-button fixed top-6 left-6 z-50 w-10 h-10 bg-black/40 hover:bg-accent border border-glass-border hover:border-accent hover:text-white rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xl duration-300 tv-focusable">
+                <X size={18}/>
             </button>
 
             {/* Cinematic Hero Header */}
@@ -149,7 +200,7 @@ export function MovieDetails() {
                 {/* Backdrop Layer */}
                 <div className="absolute inset-0">
                     <AnimatePresence initial={false}>
-                        {!showTrailer || !movie.trailer ? (
+                        {!showTrailer || !movie.trailer || isPipActive ? (
                             <motion.img 
                                 key="backdrop"
                                 initial={{ opacity: 0 }}
@@ -180,8 +231,8 @@ export function MovieDetails() {
                         )}
                     </AnimatePresence>
 
-                    {/* Unmute Button - Only if trailer is playing */}
-                    {showTrailer && movie.trailer && (
+                    {/* Unmute Button - Only if trailer is playing and PIP not active */}
+                    {showTrailer && movie.trailer && !isPipActive && (
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -216,40 +267,101 @@ export function MovieDetails() {
 
                         {/* Title & Actions Column */}
                         <div className="flex-1 space-y-6 md:space-y-8">
-                            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-3 flex-wrap">
-                                <span className="px-2.5 py-1 bg-red-600 text-white text-[9px] md:text-[10px] font-black rounded-md tracking-tighter uppercase">Apex Original</span>
-                                <div className="flex items-center gap-2 px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-md border border-white/10">
-                                    <span className="text-green-400 text-[10px] md:text-xs font-black">{movie.match} Match</span>
+                            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-2.5 flex-wrap">
+                                <span className="px-2.5 py-0.5 bg-accent/20 border border-accent/40 text-white text-[9px] font-black rounded-md tracking-tighter uppercase shadow-[0_0_15px_rgba(229,9,20,0.2)]">Apex Original</span>
+                                <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-white/5 border border-glass-border rounded-md">
+                                    <span className="text-accent text-[10px] font-black uppercase">{movie.match} Match</span>
                                 </div>
-                                <span className="text-white/60 text-xs md:text-sm font-bold">{movie.year} • {movie.duration} • {movie.rating}</span>
+                                <span className="text-white/50 text-xs font-bold">{movie.year} • {movie.duration} • {movie.rating}</span>
                             </motion.div>
 
-                            <div className="space-y-3">
-                                <h1 className="display-text text-3xl md:text-6xl lg:text-8xl font-black tracking-tighter mb-2 md:mb-4 leading-[1] md:leading-[0.9] uppercase italic">
+                            <div className="space-y-2.5">
+                                <h1 className="display-text text-3xl md:text-5xl lg:text-7xl font-black tracking-tighter mb-2 leading-[0.95] uppercase italic">
                                     {movie.title}
                                 </h1>
                                 {movie.tagline && (
-                                    <p className="text-base md:text-xl lg:text-2xl text-white/50 font-medium italic tracking-tight line-clamp-2 md:line-clamp-none">{movie.tagline}</p>
+                                    <p className="text-sm md:text-lg lg:text-xl text-white/40 font-bold italic tracking-tight line-clamp-2 md:line-clamp-none">{movie.tagline}</p>
                                 )}
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 w-full">
+                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
                                 <button 
                                     onClick={() => setCurrentView('player')} 
-                                    className={`w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-3.5 md:px-12 md:py-5 rounded-xl md:rounded-2xl font-black text-base md:text-xl hover:scale-105 transition-all shadow-2xl active:scale-95 ${
-                                        hasProgress ? 'bg-red-600 text-white shadow-[0_0_40px_rgba(229,9,20,0.4)]' : 'bg-white text-black'
+                                    className={`w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3.5 md:px-9 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:scale-105 hover:shadow-[0_0_30px_rgba(229,9,20,0.4)] transition-all shadow-2xl active:scale-95 cursor-pointer tv-focusable ${
+                                        hasProgress ? 'bg-accent text-white shadow-[0_0_40px_rgba(229,9,20,0.4)]' : 'bg-white text-black hover:bg-white/95'
                                     }`}
                                 >
-                                    <Play fill="currentColor" size={20} className="md:w-6 md:h-6"/> 
+                                    <Play fill="currentColor" size={16} className="md:w-5 md:h-5"/> 
                                     {hasProgress ? `Resume (${hasProgress.progress}%)` : 'Play Now'}
                                 </button>
-                                <div className="flex gap-3 w-full sm:w-auto">
-                                    <button onClick={toggleWatchlist} className="flex-1 sm:flex-none px-6 py-3.5 md:px-8 md:py-5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg hover:bg-white/20 transition-all whitespace-nowrap text-center">
-                                        {inWatchlist ? 'In Watchlist' : 'Add to List'}
-                                    </button>
-                                    <button className="w-12 h-12 md:w-16 md:h-16 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl md:rounded-2xl flex items-center justify-center hover:bg-white/20 transition-all">
-                                        <Share2 size={18} className="md:w-6 md:h-6" />
-                                    </button>
+                                <div className="flex flex-col gap-2.5 w-full sm:w-auto">
+                                    <div className="flex gap-3 w-full sm:w-auto">
+                                        <button onClick={toggleWatchlist} className="flex-1 sm:flex-none px-6 py-3.5 md:px-8 md:py-4 bg-white/5 border border-glass-border rounded-xl md:rounded-2xl font-black text-xs md:text-sm uppercase tracking-wider hover:bg-white/10 hover:border-white/20 transition-all whitespace-nowrap text-center cursor-pointer tv-focusable">
+                                            {inWatchlist ? 'In Watchlist' : 'Add to List'}
+                                        </button>
+
+                                        <button 
+                                            onClick={handleDownloadClick}
+                                            className={`w-12 h-12 md:w-14 md:h-14 bg-white/5 border border-glass-border rounded-xl md:rounded-2xl flex items-center justify-center transition-all cursor-pointer relative group tv-focusable ${
+                                                isDownloaded ? 'text-green-500 border-green-500/20 bg-green-500/5 hover:bg-green-500/10' : 'hover:bg-white/10 hover:border-white/20'
+                                            }`}
+                                            title={isDownloaded ? "Remove Download" : downloadProgress !== null ? `Downloading ${downloadProgress}%` : "Download Offline"}
+                                        >
+                                            {downloadProgress !== null ? (
+                                                <div className="relative flex items-center justify-center w-6 h-6">
+                                                    <svg className="w-6 h-6 -rotate-90 absolute" viewBox="0 0 24 24">
+                                                        <circle
+                                                            className="text-white/10"
+                                                            strokeWidth="2.5"
+                                                            stroke="currentColor"
+                                                            fill="transparent"
+                                                            r="9"
+                                                            cx="12"
+                                                            cy="12"
+                                                        />
+                                                        <circle
+                                                            className="text-accent transition-all duration-300"
+                                                            strokeWidth="2.5"
+                                                            strokeDasharray={56.5}
+                                                            strokeDashoffset={56.5 - (downloadProgress / 100) * 56.5}
+                                                            strokeLinecap="round"
+                                                            stroke="currentColor"
+                                                            fill="transparent"
+                                                            r="9"
+                                                            cx="12"
+                                                            cy="12"
+                                                        />
+                                                    </svg>
+                                                    <span className="text-[7px] font-black text-white">{downloadProgress}</span>
+                                                </div>
+                                            ) : isDownloaded ? (
+                                                <Check size={16} className="md:w-5 md:h-5 text-green-500 group-hover:hidden" />
+                                            ) : (
+                                                <Download size={16} className="md:w-5 md:h-5 text-white" />
+                                            )}
+                                            {isDownloaded && (
+                                                <Trash2 size={16} className="md:w-5 md:h-5 text-red-500 hidden group-hover:block absolute" />
+                                            )}
+                                        </button>
+
+                                        <button className="w-12 h-12 md:w-14 md:h-14 bg-white/5 border border-glass-border rounded-xl md:rounded-2xl flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer tv-focusable">
+                                            <Share2 size={16} className="md:w-5 md:h-5" />
+                                        </button>
+
+                                        <button 
+                                            onClick={() => setShowPartyModal(true)}
+                                            className="w-12 h-12 md:w-14 md:h-14 bg-white/5 border border-glass-border rounded-xl md:rounded-2xl flex items-center justify-center hover:bg-[#e50914] hover:border-[#e50914] transition-all cursor-pointer tv-focusable group"
+                                            title="Watch Party"
+                                        >
+                                            <Users size={16} className="md:w-5 md:h-5 text-white group-hover:scale-110 transition-transform" />
+                                        </button>
+                                    </div>
+                                    {downloadProgress !== null && (
+                                        <div className="text-[10px] text-accent font-black uppercase tracking-wider flex items-center gap-2 mt-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />
+                                            <span>Downloading offline... {downloadProgress}% (Remaining: {Math.ceil((100 - downloadProgress) * 0.4)}s — 12.4 MB/s)</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -258,19 +370,19 @@ export function MovieDetails() {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="px-6 md:px-20 border-b border-white/5 sticky top-0 z-30 bg-[#050505]/80 backdrop-blur-xl overflow-x-auto hide-scrollbar">
-                <div className="flex gap-8 md:gap-12 min-w-max">
+            <div className="px-6 md:px-20 border-b border-glass-border sticky top-0 z-30 bg-[#020202]/85 backdrop-blur-xl overflow-x-auto hide-scrollbar">
+                <div className="flex gap-6 md:gap-9 min-w-max">
                     {tabs.map(tab => (
                         <button 
                             key={tab} 
                             onClick={() => setActiveTab(tab)}
-                            className={`py-6 text-sm font-black uppercase tracking-[0.2em] relative transition-colors ${
-                                activeTab === tab ? 'text-white' : 'text-white/30 hover:text-white/60'
+                            className={`tab-button py-5 text-xs font-black uppercase tracking-[0.25em] relative transition-colors cursor-pointer tv-focusable ${
+                                activeTab === tab ? 'text-white' : 'text-white/35 hover:text-white/60'
                             }`}
                         >
                             {tab}
                             {activeTab === tab && (
-                                <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-1 bg-red-600 shadow-[0_0_10px_rgba(229,9,20,0.8)]" />
+                                <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent shadow-[0_0_10px_rgba(229,9,20,0.8)]" />
                             )}
                         </button>
                     ))}
@@ -299,11 +411,11 @@ export function MovieDetails() {
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-8">
                                     {movie.cast.slice(0, 5).map((actor, idx) => (
                                         <div key={idx} className="group">
-                                            <div className="aspect-[3/4] rounded-xl md:rounded-2xl overflow-hidden mb-3 md:mb-4 border border-white/5 shadow-xl transition-all duration-500 group-hover:border-white/20">
-                                                <img src={actor.profilePath} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" alt="" />
+                                            <div className="aspect-[3/4] rounded-xl md:rounded-[20px] overflow-hidden mb-3 border border-glass-border shadow-xl transition-all duration-500 group-hover:border-accent/40 group-hover:shadow-[0_0_20px_rgba(229,9,20,0.15)]">
+                                                <img src={actor.profilePath} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" alt="" />
                                             </div>
-                                            <h4 className="font-bold text-xs md:text-sm text-white group-hover:text-red-500 transition-colors truncate">{actor.name}</h4>
-                                            <p className="text-[9px] md:text-[10px] text-white/30 font-black uppercase tracking-tighter truncate">{actor.character}</p>
+                                            <h4 className="font-bold text-xs md:text-sm text-white group-hover:text-accent transition-colors truncate">{actor.name}</h4>
+                                            <p className="text-[8px] md:text-[9px] text-white/30 font-black uppercase tracking-tighter truncate">{actor.character}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -311,38 +423,38 @@ export function MovieDetails() {
                         </div>
 
                         {/* Metadata Sidebar */}
-                        <div className="space-y-8 md:space-y-12 bg-white/5 border border-white/10 p-6 md:p-10 rounded-3xl md:rounded-[40px] h-fit">
-                            <div className="grid grid-cols-2 gap-6 md:gap-8">
+                        <div className="space-y-6 md:space-y-8 bg-glass-bg border border-glass-border p-6 md:p-8 rounded-[24px] h-fit shadow-2xl">
+                            <div className="grid grid-cols-2 gap-6">
                                 <div>
-                                    <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Director</h5>
-                                    <p className="font-bold text-base md:text-lg truncate">{movie.director}</p>
+                                    <h5 className="text-[8px] md:text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Director</h5>
+                                    <p className="font-bold text-sm md:text-base truncate text-white/95">{movie.director}</p>
                                 </div>
                                 <div>
-                                    <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Status</h5>
-                                    <p className="font-bold text-base md:text-lg">{movie.status}</p>
+                                    <h5 className="text-[8px] md:text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Status</h5>
+                                    <p className="font-bold text-sm md:text-base text-white/95">{movie.status}</p>
                                 </div>
                                 {movie.budget && (
                                     <div>
-                                        <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Budget</h5>
-                                        <p className="font-bold text-base md:text-lg text-green-400">{movie.budget}</p>
+                                        <h5 className="text-[8px] md:text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Budget</h5>
+                                        <p className="font-bold text-sm md:text-base text-green-400">{movie.budget}</p>
                                     </div>
                                 )}
                                 {movie.revenue && (
                                     <div>
-                                        <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Box Office</h5>
-                                        <p className="font-bold text-base md:text-lg text-blue-400">{movie.revenue}</p>
+                                        <h5 className="text-[8px] md:text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Box Office</h5>
+                                        <p className="font-bold text-sm md:text-base text-blue-400">{movie.revenue}</p>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="space-y-4 md:space-y-6 pt-6 md:pt-8 border-t border-white/5">
+                            <div className="space-y-4 pt-6 border-t border-white/5">
                                 <div>
-                                    <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Production</h5>
-                                    <p className="text-white/60 text-sm md:text-base font-medium">{movie.production}</p>
+                                    <h5 className="text-[8px] md:text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Production</h5>
+                                    <p className="text-white/60 text-xs md:text-sm font-semibold">{movie.production}</p>
                                 </div>
                                 <div>
-                                    <h5 className="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-widest mb-1 md:mb-2">Languages</h5>
-                                    <p className="text-white/60 text-sm md:text-base font-medium">{movie.languages}</p>
+                                    <h5 className="text-[8px] md:text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">Languages</h5>
+                                    <p className="text-white/60 text-xs md:text-sm font-semibold">{movie.languages}</p>
                                 </div>
                             </div>
                         </div>
@@ -371,67 +483,59 @@ export function MovieDetails() {
                         </div>
 
                         {fetchingEpisodes ? (
-                            <div className="py-20 flex justify-center">
-                                <div className="w-10 h-10 border-2 border-white/10 border-t-white rounded-full animate-spin"></div>
-                            </div>
-                        ) : (
-                            <div className="grid gap-3 md:gap-6">
-                                {episodes.map((ep) => (
-                                    <motion.div 
-                                        key={ep.id}
-                                        onClick={() => {
-                                            setActiveEpisode(ep.episode_number);
-                                            setCurrentView('player');
-                                        }}
-                                        className="group flex gap-4 md:gap-8 p-3 md:p-6 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl cursor-pointer transition-all items-start"
-                                    >
-                                        <div className="relative w-32 sm:w-40 md:w-72 aspect-video rounded-xl overflow-hidden flex-shrink-0 bg-white/5">
-                                            <img 
-                                                src={ep.still_path ? tmdb.getBackdropUrl(ep.still_path, 'w780') : movie.backdrop} 
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                                alt="" 
-                                            />
-                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-black shadow-2xl">
-                                                    <Play fill="currentColor" size={18} />
-                                                </div>
-                                            </div>
-                                            <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded text-[8px] md:text-[10px] font-black uppercase">
-                                                {ep.runtime ? `${ep.runtime}m` : '45m'}
-                                            </div>
+                            <div className="space-y-4 md:space-y-5">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="flex gap-4 md:gap-6 p-4 md:p-5 bg-white/3 border border-white/5 rounded-2xl shimmer items-start h-32">
+                                        <div className="w-32 sm:w-40 md:w-64 aspect-video rounded-xl bg-white/5 flex-shrink-0"></div>
+                                        <div className="flex-1 space-y-3 py-1">
+                                            <div className="h-5 bg-white/10 rounded w-1/3"></div>
+                                            <div className="h-3 bg-white/5 rounded w-full"></div>
+                                            <div className="h-3 bg-white/5 rounded w-5/6"></div>
                                         </div>
-                                        <div className="flex-1 min-w-0 py-1">
-                                            <div className="flex items-start justify-between gap-3 mb-1 md:mb-2">
-                                                <h4 className="text-sm md:text-2xl font-black italic tracking-tight leading-tight line-clamp-2 group-hover:text-red-500 transition-colors">
-                                                    {ep.episode_number}. {ep.name}
-                                                </h4>
-                                                <span className="text-[8px] md:text-xs font-bold text-white/20 uppercase tracking-widest mt-1">{ep.air_date?.split('-')[0]}</span>
-                                            </div>
-                                            <p className="text-white/40 text-[10px] md:text-base line-clamp-2 md:line-clamp-3 leading-snug md:leading-relaxed">
-                                                {ep.overview || "No overview available for this episode."}
-                                            </p>
-                                        </div>
-                                    </motion.div>
+                                    </div>
                                 ))}
                             </div>
-                        )}
-                    </div>
-                )}
-
-                {activeTab === 'More Like This' && (
-                    <div className="max-w-[1600px]">
-                        {movie.recommendations.length > 0 ? (
-                            <MovieRow 
-                                title="Curated Recommendations" 
-                                movies={movie.recommendations} 
-                                onMovieClick={(id, type) => {
-                                    setActiveMovieId(id);
-                                    setActiveMediaType(type || 'movie');
-                                }} 
-                            />
                         ) : (
-                            <div className="py-20 text-center border border-white/5 rounded-3xl">
-                                <p className="text-white/20 font-black uppercase tracking-[0.5em]">No similar titles found</p>
+                            <div className="grid gap-3.5 md:gap-5">
+                                {episodes.map((ep) => (
+                                     <motion.div 
+                                         key={ep.id}
+                                         onClick={() => {
+                                             setActiveEpisode(ep.episode_number);
+                                             setCurrentView('player');
+                                         }}
+                                         tabIndex={0}
+                                         role="button"
+                                         className="group flex gap-4 md:gap-6 p-4 md:p-5 bg-glass-bg hover:bg-glass-hover border border-glass-border hover:border-white/10 rounded-2xl cursor-pointer transition-all duration-300 items-start tv-focusable"
+                                     >
+                                         <div className="relative w-32 sm:w-40 md:w-64 aspect-video rounded-xl overflow-hidden flex-shrink-0 bg-white/5 border border-white/5">
+                                             <img 
+                                                 src={ep.still_path ? tmdb.getBackdropUrl(ep.still_path, 'w780') : movie.backdrop} 
+                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                                 alt="" 
+                                             />
+                                             <div className="absolute inset-0 bg-black/45 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                 <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-black shadow-2xl group-hover:scale-110 transition-transform">
+                                                     <Play fill="currentColor" size={14} />
+                                                 </div>
+                                             </div>
+                                             <div className="absolute bottom-2 right-2 bg-[#0a0a0a]/80 backdrop-blur-md px-2 py-0.5 rounded text-[8px] md:text-[9px] font-black uppercase border border-white/5">
+                                                 {ep.runtime ? `${ep.runtime}m` : '45m'}
+                                             </div>
+                                         </div>
+                                         <div className="flex-1 min-w-0 py-0.5">
+                                             <div className="flex items-start justify-between gap-3 mb-1.5">
+                                                 <h4 className="text-sm md:text-xl font-black italic tracking-tight leading-tight line-clamp-1 group-hover:text-accent transition-colors">
+                                                     {ep.episode_number}. {ep.name}
+                                                 </h4>
+                                                 <span className="text-[9px] font-black text-white/20 uppercase tracking-widest mt-0.5">{ep.air_date?.split('-')[0]}</span>
+                                             </div>
+                                             <p className="text-white/40 text-[10px] md:text-sm line-clamp-2 leading-relaxed">
+                                                 {ep.overview || "No overview available for this episode."}
+                                             </p>
+                                         </div>
+                                     </motion.div>
+                                 ))}
                             </div>
                         )}
                     </div>
@@ -473,6 +577,161 @@ export function MovieDetails() {
                     </div>
                 )}
             </div>
+
+            {/* You May Also Like / Recommendations Section */}
+            <div className="w-full px-6 md:px-20 pb-20 border-t border-white/5 pt-10 md:pt-16">
+                {movie.recommendations && movie.recommendations.length > 0 ? (
+                    <MovieRow 
+                        title="You May Also Like" 
+                        subtitle="More titles you might enjoy"
+                        movies={movie.recommendations} 
+                        onMovieClick={(id, type) => {
+                            setActiveMovieId(id);
+                            setActiveMediaType(type || 'movie');
+                            const container = document.querySelector('.details-container');
+                            if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+                        }} 
+                    />
+                ) : (
+                    <div className="py-12 text-center bg-white/3 border border-white/5 rounded-2xl">
+                        <p className="text-white/20 font-black uppercase tracking-[0.3em] text-xs">No similar titles found</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Floating Picture-in-Picture Video Player */}
+            <AnimatePresence>
+                {isPipActive && showTrailer && movie.trailer && !isPipDismissed && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8, y: 50, x: 0 }}
+                        animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 50, x: 0 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                        className="fixed bottom-6 right-6 z-[60] w-[280px] sm:w-[360px] md:w-[420px] aspect-video bg-[#0a0a0a] rounded-2xl border border-glass-border shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden group/pip"
+                    >
+                        <iframe 
+                            src={`https://www.youtube.com/embed/${movie.trailer}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&playlist=${movie.trailer}&loop=1&enablejsapi=1`}
+                            className="w-full h-full pointer-events-none scale-105"
+                            title="Mini Trailer"
+                            frameBorder="0"
+                            allow="autoplay; encrypted-media"
+                        />
+                        
+                        {/* Hover Overlay Controls */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/40 opacity-0 group-hover/pip:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3.5">
+                            {/* Top Bar: Title & Close */}
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-white/90 truncate max-w-[70%]">
+                                    {movie.title}
+                                </span>
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsPipDismissed(true);
+                                    }}
+                                    className="w-7 h-7 bg-black/60 hover:bg-accent border border-glass-border hover:border-accent hover:text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
+                                    title="Close Mini Player"
+                                >
+                                    <X size={12} />
+                                </button>
+                            </div>
+                            
+                            {/* Bottom Bar: Action & Mute */}
+                            <div className="flex items-center justify-between">
+                                <button
+                                    onClick={() => {
+                                        setCurrentView('player');
+                                    }}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-accent hover:bg-red-700 text-white rounded-lg font-black text-[9px] uppercase tracking-wider transition-all cursor-pointer shadow-lg active:scale-95"
+                                >
+                                    <Play size={10} fill="currentColor" /> Play Full
+                                </button>
+                                
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsMuted(!isMuted);
+                                    }}
+                                    className="w-7 h-7 bg-black/60 hover:bg-white hover:text-black border border-glass-border rounded-full flex items-center justify-center transition-all cursor-pointer"
+                                >
+                                    {isMuted ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m11 5-7 5H2v4h2l7 5V5z"></path><line x1="22" y1="9" x2="16" y2="15"></line><line x1="16" y1="9" x2="22" y2="15"></line></svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L4 10H2V14H4L11 19V5Z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            {/* Watch Party Dialog Modal */}
+            <AnimatePresence>
+                {showPartyModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-5">
+                        <motion.div 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            exit={{ opacity: 0 }} 
+                            onClick={() => setShowPartyModal(false)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-sm bg-[#0a0a0a] border border-glass-border p-6 rounded-[28px] text-center shadow-2xl"
+                        >
+                            <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Users size={28} className="text-accent" />
+                            </div>
+                            <h3 className="text-xl font-black text-white mb-2 uppercase tracking-tight italic">
+                                Sync Watch Party
+                            </h3>
+                            <p className="text-white/40 text-xs mb-6 leading-relaxed">
+                                Stream in perfect sync with your friends. Create a new room code or enter an existing code to join.
+                            </p>
+                            
+                            <div className="space-y-4">
+                                <button 
+                                    onClick={async () => {
+                                        setShowPartyModal(false);
+                                        await createWatchParty(movie);
+                                    }}
+                                    className="w-full py-3.5 bg-accent hover:bg-accent-hover text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-[0_10px_20px_rgba(229,9,20,0.3)] active:scale-95 cursor-pointer tv-focusable"
+                                >
+                                    Create Watch Party
+                                </button>
+                                
+                                <div className="relative flex items-center gap-2 border-t border-white/5 pt-4">
+                                    <input 
+                                        type="text" 
+                                        placeholder="ENTER PARTY CODE" 
+                                        value={partyCodeInput}
+                                        onChange={(e) => setPartyCodeInput(e.target.value.toUpperCase())}
+                                        maxLength={6}
+                                        className="flex-1 bg-white/5 border border-glass-border rounded-xl py-3 px-4 text-center font-bold text-sm tracking-widest text-white placeholder-white/20 focus:outline-none focus:border-accent/40 focus:bg-black"
+                                    />
+                                    <button 
+                                        onClick={async () => {
+                                            if (partyCodeInput.trim().length >= 4) {
+                                                setShowPartyModal(false);
+                                                const success = await joinWatchParty(partyCodeInput);
+                                                if (!success) {
+                                                    alert("Party room not found");
+                                                }
+                                            }
+                                        }}
+                                        className="py-3 px-5 bg-white text-black font-black uppercase text-[10px] rounded-xl hover:scale-105 active:scale-95 transition-all cursor-pointer tv-focusable"
+                                    >
+                                        Join
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }

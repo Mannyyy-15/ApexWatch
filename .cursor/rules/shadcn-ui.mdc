@@ -1,0 +1,33 @@
+---
+description: Conventions and guidelines for installing and utilizing shadcn/ui components in React 19 + Tailwind CSS v4 environment.
+globs: src/components/ui/*.{js,jsx,ts,tsx}, components.json
+alwaysApply: true
+---
+
+# shadcn/ui Standards
+
+This project utilizes `shadcn/ui` built on Radix UI and Tailwind CSS for accessible, customizable components.
+
+## Setup & Installation
+
+* **Vite + Tailwind v4 + React 19 Support:** Always use the canary CLI for installation and updates to ensure full compatibility with Tailwind CSS v4 and React 19:
+  ```bash
+  npx shadcn@canary init
+  npx shadcn@canary add <component_name>
+  ```
+* **Dependency Merging:** Use `tailwind-merge` and `clsx` via the `cn()` utility for conditional class merging:
+  ```jsx
+  import { cn } from "@/utils/cn"; // or appropriate path
+  
+  export function Button({ className, ...props }) {
+    return (
+      <button className={cn("px-4 py-2 bg-blue-500 rounded", className)} {...props} />
+    );
+  }
+  ```
+
+## Customization Rules
+
+1. **Composition Over Modification:** Avoid modifying files in `src/components/ui/` directly unless it's necessary to add custom animations or extend core functionality. Instead, compose them or wrap them in your feature components.
+2. **Accessible (a11y) Focus:** Ensure Radix UI primitives inside shadcn/ui components are not stripped of their aria-attributes or keyboard focus states. Keep focus rings visible for keyboard users.
+3. **Tailwind v4 Integration:** Tailwind CSS v4 does not use `tailwind.config.js`. Variables are set in `src/index.css` using CSS custom properties inside the `@theme` directive. Ensure shadcn components resolve their dynamic themes (`bg-primary`, `text-destructive-foreground`, etc.) through these CSS variables.

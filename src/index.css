@@ -4,16 +4,29 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --color-accent: #e50914; /* changed to red for netflix/vidking vibe */
+  
+  /* Redesigned Premium Color System */
+  --color-accent: #e50914;
+  --color-accent-hover: #f43f5e;
+  --color-accent-glow: rgba(229, 9, 20, 0.4);
+  
+  --color-bg-base: #020202;
+  --color-bg-surface: #0a0a0a;
+  --color-bg-card: #121212;
+  
+  --color-glass-bg: rgba(255, 255, 255, 0.03);
+  --color-glass-border: rgba(255, 255, 255, 0.06);
+  --color-glass-hover: rgba(255, 255, 255, 0.08);
+  
   --breakpoint-tv: 1800px;
 }
 
 :root {
-  --color-primary: #050505;
+  --color-primary: #020202;
   --color-accent: #e50914;
-  --color-accent-glow: rgba(229, 9, 20, 0.5);
+  --color-accent-glow: rgba(229, 9, 20, 0.4);
   --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.06);
 }
 
 html, body {
@@ -22,16 +35,18 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  overscroll-behavior: none; /* Prevents pull-to-refresh / browser bounce */
-  touch-action: manipulation; /* Improves touch response time */
-  user-select: none; /* Prevents accidental text selection like an app */
-  -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   selection-background-color: var(--color-accent);
+  selection-color: white;
 }
 
+/* Premium Ambient Backdrops */
 .atmosphere {
   position: fixed;
   inset: 0;
@@ -46,20 +61,19 @@ body {
   position: absolute;
   inset: -50%;
   background: 
-    radial-gradient(circle at 20% 30%, rgba(229, 9, 20, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(37, 99, 235, 0.03) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(229, 9, 20, 0.02) 0%, transparent 60%);
-  filter: blur(80px);
-  animation: mesh-float 20s ease-in-out infinite alternate;
+    radial-gradient(circle at 15% 20%, rgba(229, 9, 20, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(229, 9, 20, 0.03) 0%, transparent 65%);
+  filter: blur(100px);
+  animation: mesh-float 25s ease-in-out infinite alternate;
 }
 
 .atmosphere::after {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.025;
-  filter: contrast(120%) brightness(120%);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.015;
   mix-blend-mode: overlay;
 }
 
@@ -68,24 +82,25 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(0,0,0,0.4) 100%);
+  background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(0,0,0,0.6) 100%);
 }
 
 @keyframes mesh-float {
   0% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(5%, 5%) rotate(5deg); }
-  100% { transform: translate(-2%, 8%) rotate(-3deg); }
+  50% { transform: translate(3%, 4%) rotate(3deg); }
+  100% { transform: translate(-1%, 6%) rotate(-2deg); }
 }
 
 /* Premium Typography */
 h1, h2, h3, h4, .display-text {
   font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -93,24 +108,47 @@ h1, h2, h3, h4, .display-text {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
 }
 
-/* Glassmorphism utility */
+/* Glassmorphism & Liquid Glass Styles */
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-premium {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  backdrop-filter: blur(32px) saturate(130%);
+  -webkit-backdrop-filter: blur(32px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.05),
+    0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.glass-premium-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-premium-hover:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    0 25px 50px rgba(0, 0, 0, 0.6);
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
 }
 
 .animate-float {
@@ -135,55 +173,59 @@ h1, h2, h3, h4, .display-text {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.03) 75%,
+    rgba(255, 255, 255, 0.02) 20%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.02) 80%,
     transparent 100%
   );
-  animation: shimmer 2s infinite;
+  animation: shimmer 2.2s infinite;
 }
 
 @layer utilities {
   .hide-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   .hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
   }
 }
 
-/* Android TV Specific Styles */
+/* Android TV Specific Styles (Spatial Navigation & Focus rings) */
 body.is-tv {
-  cursor: none; /* Hide cursor on TV */
+  cursor: none;
   user-select: none;
 }
 
-body.is-tv :focus {
-  outline: 3px solid var(--color-accent) !important;
-  outline-offset: 4px;
-  box-shadow: 0 0 20px var(--color-accent-glow) !important;
-  transform: scale(1.05);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), outline 0.2s ease;
-  z-index: 50;
+/* TV Performance Tweaks - Disable heavy animations and filters */
+body.is-tv .atmosphere::before {
+  animation: none !important;
+  filter: none !important;
+  background: #020202 !important;
 }
 
-body.is-tv .tv-focusable {
-  cursor: default;
-  transition: all 0.2s ease;
+body.is-tv .glass, 
+body.is-tv .glass-premium,
+body.is-tv .tv-sidebar,
+body.is-tv .details-container {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: #0b0b0b !important; /* Fast solid fallback color */
 }
 
-/* Larger font sizes for TV (10-foot UI) */
-body.is-tv h1 { font-size: 4rem; }
-body.is-tv h2 { font-size: 3rem; }
-body.is-tv p { font-size: 1.25rem; }
+body.is-tv .shimmer::after {
+  animation: none !important; /* Disable active shimmer animations on TV */
+}
 
-/* Ensure focusable items have relative positioning for z-index */
 body.is-tv [tabindex="0"] {
   position: relative;
 }
 
-/* TV Sidebar Layout */
+/* 10-foot UI text configurations */
+body.is-tv h1 { font-size: 4.5rem; }
+body.is-tv h2 { font-size: 3.2rem; }
+body.is-tv p { font-size: 1.3rem; }
+
 .tv-sidebar {
   display: none !important;
 }
@@ -194,20 +236,19 @@ body.is-tv .tv-sidebar {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 90px; /* Collapsed width */
-  background: rgba(5, 5, 5, 0.95);
-  backdrop-filter: blur(40px);
-  border-right: 1px solid var(--glass-border);
+  width: 90px;
+  background: #080808 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   z-index: 100;
   flex-direction: column;
   padding: 30px 10px;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
 body.is-tv .tv-sidebar:hover,
 body.is-tv .tv-sidebar:focus-within {
-  width: 300px; /* Expanded width */
+  width: 300px;
 }
 
 body.is-tv .tv-sidebar .nav-label {
@@ -225,18 +266,69 @@ body.is-tv main {
   margin-left: 90px;
   width: calc(100% - 90px);
   padding-bottom: 40px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-body.is-tv .tv-sidebar:hover ~ main,
-body.is-tv .tv-sidebar:focus-within ~ main {
-  /* margin-left: 300px; */ /* Optional: Uncomment if you want content to shift */
+/* Premium OTT Focus Rules optimized for TV performance */
+.tv-focusable {
+  outline: none !important;
+  will-change: transform;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s !important;
 }
 
-body.is-tv .navigation-island-desktop {
-  display: none !important;
+.tv-focusable:focus {
+  outline: none !important;
+  transform: scale(1.06) !important;
+  z-index: 50 !important;
+  border: 2px solid #e50914 !important; /* Premium Netflix Red */
+  box-shadow: 0 0 15px rgba(229, 9, 20, 0.4) !important;
 }
 
+button.tv-focusable:focus {
+  background-color: #e50914 !important;
+  color: #ffffff !important;
+  border-color: #e50914 !important;
+}
+
+/* Specific overrides to prevent blocky red backgrounds on tab/filter buttons when focused on TV */
+button.tab-button.tv-focusable:focus {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: scale(1.08) !important;
+}
+
+button.tv-focusable:not(.bg-accent).library-tab-button:focus,
+button.tv-focusable:not(.bg-accent).genre-filter-button:focus {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.08) !important;
+  transform: scale(1.04) !important;
+}
+
+/* Hide standard desktop and mobile nav islands on TV */
+body.is-tv .navigation-island-desktop,
 body.is-tv .navigation-island-mobile {
   display: none !important;
 }
+
+/* Adjust top padding on TV since top navbar is hidden */
+body.is-tv .discover-container,
+body.is-tv .library-container {
+  padding-top: 40px !important;
+}
+
+/* Image scaling inside focused cards for premium organic look */
+.tv-focusable:focus img {
+  transform: scale(1.04) !important;
+}
+
+/* Show actions on focus */
+.tv-focusable:focus .watchlist-btn {
+  opacity: 1 !important;
+}
+
+
+

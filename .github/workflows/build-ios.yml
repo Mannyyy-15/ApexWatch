@@ -1,0 +1,82 @@
+name: 🍎 Build iOS IPA (Cloud)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+
+    steps:
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔑 Create .env file
+        run: |
+          echo "VITE_TMDB_API_KEY=${{ secrets.VITE_TMDB_API_KEY }}" >> .env
+          echo "VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}" >> .env
+          echo "VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}" >> .env
+          echo "VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}" >> .env
+          echo "VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}" >> .env
+          echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}" >> .env
+          echo "VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}" >> .env
+          echo "VITE_GEMINI_API_KEY=${{ secrets.VITE_GEMINI_API_KEY }}" >> .env
+
+      - name: 🏗️ Build Web App
+        run: npm run build
+
+      - name: 🔄 Sync Capacitor to iOS
+        run: npx cap sync ios
+
+      - name: 📱 Install CocoaPods
+        working-directory: ios/App
+        run: pod install
+
+      - name: 🔨 Build iOS (Simulator - No Signing Needed)
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -derivedDataPath ios/build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: 📦 Package as IPA (Unsigned)
+        run: |
+          APP_PATH=$(find ios/build -name "*.app" | head -1)
+          mkdir -p ios/ipa-output/Payload
+          cp -r "$APP_PATH" ios/ipa-output/Payload/
+          cd ios/ipa-output
+          zip -r ApexWatch-unsigned.ipa Payload/
+          cd ../..
+          echo "IPA created at ios/ipa-output/ApexWatch-unsigned.ipa"
+
+      - name: 📤 Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApexWatch-ios-unsigned-ipa
+          path: ios/ipa-output/ApexWatch-unsigned.ipa
+          retention-days: 30
+
+      - name: 🎉 Build Success
+        run: |
+          echo "✅ iOS build complete!"
+          echo "⚠️  This is an UNSIGNED IPA for simulator testing."
+          echo "    To install on a real device, you need an Apple Developer account."
+          echo "    The IPA can be installed on your own device via AltStore (free)."

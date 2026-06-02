@@ -47,6 +47,7 @@ export function AppProvider({ children }) {
         return saved ? JSON.parse(saved) : [];
     }); // Global cache for Home content
     const [cachedDetails, setCachedDetails] = useState({}); // Global cache for Movie Details
+    const [downloads, setDownloads] = useState([]);
 
     useEffect(() => {
         // Handle Google Redirect Result
@@ -246,6 +247,193 @@ export function AppProvider({ children }) {
         fetchWatchlist();
     }, [user?.uid, activeProfile?.id]); // Use specific IDs to avoid unnecessary refetching
 
+    // Fetch Downloads on Profile Change
+    useEffect(() => {
+        if (user && activeProfile) {
+            const saved = localStorage.getItem(`apexwatch_downloads_${user.uid}_${activeProfile.id}`);
+            setDownloads(saved ? JSON.parse(saved) : []);
+        } else {
+            setDownloads([]);
+        }
+    }, [user?.uid, activeProfile?.id]);
+
+    const addDownload = (movie) => {
+        if (!user || !activeProfile) return;
+        setDownloads(prev => {
+            if (prev.some(d => d.id === movie.id)) return prev;
+            const mockSize = movie.type === 'tv' ? '850 MB' : '1.4 GB';
+            const downloadItem = {
+                id: movie.id,
+                tmdbId: movie.tmdbId || movie.id,
+                title: movie.title,
+                poster: movie.poster,
+                backdrop: movie.backdrop,
+                year: movie.year,
+                type: movie.type || 'movie',
+                downloadedAt: Date.now(),
+                size: mockSize,
+                quality: '1080p'
+            };
+            const updated = [...prev, downloadItem];
+            localStorage.setItem(`apexwatch_downloads_${user.uid}_${activeProfile.id}`, JSON.stringify(updated));
+            return updated;
+        });
+    };
+
+    const removeDownload = (movieId) => {
+        if (!user || !activeProfile) return;
+        setDownloads(prev => {
+            const updated = prev.filter(d => d.id !== movieId);
+            localStorage.setItem(`apexwatch_downloads_${user.uid}_${activeProfile.id}`, JSON.stringify(updated));
+            return updated;
+        });
+    };
+
+    const [activeParty, setActiveParty] = useState(null);
+    const [isPartyHost, setIsPartyHost] = useState(false);
+
+    // Watch Party Real-time Listener
+    useEffect(() => {
+        if (!activeParty || !user || user.uid === 'mock-user') return;
+        const code = activeParty.partyCode;
+        const partyRef = doc(db, 'watchParties', code);
+
+        const unsubscribe = onSnapshot(partyRef, (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                setActiveParty(data);
+            }
+        });
+        return () => unsubscribe();
+    }, [activeParty?.partyCode, user?.uid]);
+
+    const createWatchParty = async (movie) => {
+        if (!movie) return;
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const partyRef = doc(db, 'watchParties', code);
+        const hostName = activeProfile?.name || user?.displayName || 'Host';
+        const hostAvatar = activeProfile?.avatarUrl || user?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Host';
+        
+        const initialParty = {
+            partyCode: code,
+            hostId: user?.uid || 'mock-host',
+            contentId: movie.id,
+            contentType: movie.type || 'movie',
+            contentTitle: movie.title,
+            contentPoster: movie.poster,
+            isPlaying: false,
+            currentTime: 0,
+            members: [{ name: hostName, avatar: hostAvatar, joinedAt: Date.now() }],
+            createdAt: Date.now()
+        };
+
+        setIsPartyHost(true);
+        setActiveParty(initialParty);
+
+        if (user && user.uid !== 'mock-user') {
+            try {
+                await setDoc(partyRef, initialParty);
+            } catch (error) {
+                console.warn('Firestore WatchParty Create Error:', error.message);
+            }
+        }
+        
+        setActiveMovieId(movie.id);
+        setActiveMediaType(movie.type || 'movie');
+        setCurrentView('player');
+        return code;
+    };
+
+    const joinWatchParty = async (code) => {
+        if (!code) return false;
+        const cleanCode = code.trim().toUpperCase();
+        const partyRef = doc(db, 'watchParties', cleanCode);
+        const memberName = activeProfile?.name || user?.displayName || 'Guest';
+        const memberAvatar = activeProfile?.avatarUrl || user?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest';
+
+        let partyData = null;
+
+        if (user && user.uid !== 'mock-user') {
+            try {
+                const snap = await getDoc(partyRef);
+                if (snap.exists()) {
+                    partyData = snap.data();
+                    const updatedMembers = [...(partyData.members || [])];
+                    if (!updatedMembers.some(m => m.name === memberName)) {
+                        updatedMembers.push({ name: memberName, avatar: memberAvatar, joinedAt: Date.now() });
+                        await setDoc(partyRef, { members: updatedMembers }, { merge: true });
+                    }
+                }
+            } catch (error) {
+                console.warn('Firestore WatchParty Join Error:', error.message);
+            }
+        }
+
+        if (!partyData) {
+            partyData = {
+                partyCode: cleanCode,
+                hostId: 'simulated-host',
+                contentId: activeMovieId || '273240',
+                contentType: activeMediaType || 'tv',
+                contentTitle: 'Off Campus',
+                contentPoster: '',
+                isPlaying: false,
+                currentTime: 0,
+                members: [
+                    { name: 'Host', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Host', joinedAt: Date.now() - 10000 },
+                    { name: memberName, avatar: memberAvatar, joinedAt: Date.now() }
+                ]
+            };
+        }
+
+        setIsPartyHost(partyData.hostId === (user?.uid || 'mock-host'));
+        setActiveParty(partyData);
+        setActiveMovieId(partyData.contentId);
+        setActiveMediaType(partyData.contentType);
+        setCurrentView('player');
+        return true;
+    };
+
+    const leaveWatchParty = async () => {
+        if (activeParty) {
+            const cleanCode = activeParty.partyCode;
+            const partyRef = doc(db, 'watchParties', cleanCode);
+            const memberName = activeProfile?.name || user?.displayName || 'Guest';
+
+            if (user && user.uid !== 'mock-user') {
+                try {
+                    const snap = await getDoc(partyRef);
+                    if (snap.exists()) {
+                        const partyData = snap.data();
+                        const updatedMembers = (partyData.members || []).filter(m => m.name !== memberName);
+                        await setDoc(partyRef, { members: updatedMembers }, { merge: true });
+                    }
+                } catch (error) {
+                    console.warn('Firestore WatchParty Leave Error:', error.message);
+                }
+            }
+        }
+        setActiveParty(null);
+        setIsPartyHost(false);
+        setCurrentView('home');
+    };
+
+    const updatePartyState = async (fields) => {
+        if (!activeParty) return;
+        const code = activeParty.partyCode;
+        const partyRef = doc(db, 'watchParties', code);
+        
+        setActiveParty(prev => prev ? { ...prev, ...fields } : null);
+
+        if (user && user.uid !== 'mock-user') {
+            try {
+                await setDoc(partyRef, fields, { merge: true });
+            } catch (error) {
+                // Ignore silent warnings
+            }
+        }
+    };
+
     const toggleWatchlist = async (movie) => {
         if (!user || !activeProfile) return;
         
@@ -279,7 +467,9 @@ export function AppProvider({ children }) {
             activeEpisode, setActiveEpisode,
             watchlist, toggleWatchlist,
             movieRows, setMovieRows,
-            cachedDetails, setCachedDetails
+            cachedDetails, setCachedDetails,
+            downloads, addDownload, removeDownload,
+            activeParty, isPartyHost, createWatchParty, joinWatchParty, leaveWatchParty, updatePartyState
         }}>
       {children}
     </AppContext.Provider>);

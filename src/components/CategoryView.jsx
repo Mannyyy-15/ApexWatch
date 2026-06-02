@@ -4,6 +4,7 @@ import { tmdb } from '../utils/tmdb';
 import { MovieRow } from './MovieRow';
 import { Play, Info } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { HeroSkeleton, RowSkeleton } from './Skeleton';
 
 export function CategoryView({ type, title }) {
     const { setActiveMovieId, setActiveMediaType, setCurrentView } = useAppContext();
@@ -91,8 +92,13 @@ export function CategoryView({ type, title }) {
 
     if (loading) {
         return (
-            <div className="w-full h-screen flex items-center justify-center bg-[#050505]">
-                <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-full min-h-screen bg-[#020202] pb-20 overflow-hidden">
+                <HeroSkeleton />
+                <div className="-mt-12 md:-mt-20 space-y-8 md:space-y-12 relative z-20">
+                    <RowSkeleton />
+                    <RowSkeleton />
+                    <RowSkeleton />
+                </div>
             </div>
         );
     }
@@ -101,74 +107,79 @@ export function CategoryView({ type, title }) {
         <div className="w-full min-h-screen hide-scrollbar scroll-smooth">
             {/* Category Hero - Matching Hero.jsx Scale */}
             {heroMovie && (
-                <div className="relative w-full h-[85vh] md:h-[95vh] flex items-end overflow-hidden group mb-12">
-                    <div className="absolute inset-0">
-                        <img src={heroMovie.backdrop} className="w-full h-full object-cover transform scale-105" alt="" />
+                <div className="relative w-full h-[90dvh] md:h-[95vh] flex items-end overflow-hidden group">
+                    <div className="absolute inset-0 overflow-hidden">
+                        <img src={heroMovie.backdrop} className="w-full h-full object-cover transform scale-102" alt="" />
                         {/* Moody Cinematic Overlays */}
                         <div className="absolute inset-0 bg-black/40"></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/20 to-transparent"></div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-transparent hidden md:block"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-[#020202]/60 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#020202] via-transparent to-transparent hidden md:block"></div>
                     </div>
 
-                    <div className="relative z-10 w-full px-6 md:px-20 pb-12 md:pb-24 max-w-4xl">
-                        <motion.div
-                            initial={{ y: 30, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                            className="space-y-8"
-                        >
-                            <div className="flex items-center gap-3">
-                                <span className="px-3 py-1 bg-red-600 text-white text-[10px] font-black rounded-md tracking-tighter uppercase">Featured {title}</span>
-                                <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-xl border border-white/10 rounded-full">
-                                    <span className="text-white/60 text-xs font-bold">{heroMovie.year}</span>
-                                    <span className="text-white/30 text-[10px]">•</span>
-                                    <span className="text-white/60 text-xs font-bold">{heroMovie.rating}</span>
+                    <div className="relative z-10 w-full px-6 md:px-20 pb-20 md:pb-24 grid md:grid-cols-2 gap-4 md:gap-8 items-end">
+                        <div className="flex flex-col items-start min-h-[200px] md:min-h-[300px] justify-end">
+                            <motion.div
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ duration: 0.5, delay: 0.1 }}
+                                className="w-full"
+                            >
+                                <div className="flex items-center gap-2.5 mb-4 md:mb-6">
+                                    <span className="px-2.5 py-0.5 bg-accent/15 border border-accent/30 rounded-full text-[9px] font-black tracking-[0.2em] uppercase text-white shadow-[0_0_15px_rgba(229,9,20,0.2)]">Featured {title}</span>
+                                    <div className="flex items-center gap-1 px-2.5 py-0.5 bg-black/40 backdrop-blur-xl border border-white/5 rounded-full">
+                                        <span className="text-white text-[10px] font-black">{heroMovie.year}</span>
+                                        <span className="text-white/30 text-[10px]">•</span>
+                                        <span className="text-white text-[10px] font-black">{heroMovie.rating || 'PG-13'}</span>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <h1 className="display-text text-4xl md:text-[5.5rem] font-black tracking-tighter mb-4 leading-[0.95] text-white filter drop-shadow-2xl uppercase italic">
-                                {heroMovie.title}
-                            </h1>
+                                <h1 className="display-text text-4xl md:text-[5rem] lg:text-[6rem] font-black tracking-tighter mb-4 md:mb-5 leading-[0.9] text-white filter drop-shadow-xl uppercase italic">
+                                    {heroMovie.title}
+                                </h1>
 
-                            <p className="max-w-2xl text-lg text-white/70 font-medium leading-relaxed drop-shadow-md hidden md:block line-clamp-3">
-                                {heroMovie.description}
-                            </p>
+                                <p className="max-w-xl text-sm md:text-base text-white/60 mb-6 md:mb-8 font-medium leading-relaxed drop-shadow-md hidden md:block line-clamp-3">
+                                    {heroMovie.description}
+                                </p>
 
-                            <div className="flex flex-col gap-3 w-full md:flex-row md:items-center md:gap-4 pt-4">
-                                <button 
-                                    onClick={() => { 
-                                        setActiveMovieId(heroMovie.id); 
-                                        setActiveMediaType(heroMovie.type);
-                                        setCurrentView('player'); 
-                                    }} 
-                                    className="w-full md:w-auto flex items-center justify-center gap-3 bg-white text-black px-8 py-3.5 md:px-10 md:py-4 rounded-xl md:rounded-2xl font-black text-base md:text-xl hover:scale-105 transition-all shadow-2xl active:scale-95"
-                                >
-                                    <Play fill="currentColor" size={20} className="md:w-6 md:h-6" /> Play Now
-                                </button>
-                                <button 
-                                    onClick={() => { 
-                                        setActiveMovieId(heroMovie.id); 
-                                        setActiveMediaType(heroMovie.type);
-                                        setCurrentView('details'); 
-                                    }} 
-                                    className="w-full md:w-auto flex items-center justify-center gap-3 glass px-8 py-3.5 md:px-10 md:py-4 rounded-xl md:rounded-2xl font-black text-base md:text-xl text-white hover:bg-white/10 transition-all active:scale-95"
-                                >
-                                    <Info size={20} className="md:w-6 md:h-6" /> More Info
-                                </button>
-                            </div>
-                        </motion.div>
+                                <div className="flex flex-col gap-3 w-full md:flex-row md:flex-wrap md:items-center md:gap-3.5">
+                                    <button 
+                                        onClick={() => { 
+                                            setActiveMovieId(heroMovie.id); 
+                                            setActiveMediaType(heroMovie.type);
+                                            setCurrentView('player'); 
+                                        }} 
+                                        className="w-full md:w-auto flex items-center justify-center gap-3 bg-accent text-white px-8 py-3.5 md:px-9 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:bg-accent-hover hover:scale-105 hover:shadow-[0_0_30px_rgba(229,9,20,0.4)] transition-all duration-300 active:scale-95 cursor-pointer tv-focusable"
+                                    >
+                                        <Play fill="currentColor" size={16} className="md:w-5 md:h-5" />
+                                        PLAY NOW
+                                    </button>
+
+                                    <button 
+                                        onClick={() => { 
+                                            setActiveMovieId(heroMovie.id); 
+                                            setActiveMediaType(heroMovie.type);
+                                            setCurrentView('details'); 
+                                        }} 
+                                        className="w-full md:w-auto flex items-center justify-center gap-3 bg-glass-bg border border-glass-border px-8 py-3.5 md:px-9 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:bg-glass-hover hover:border-white/15 transition-all text-white hover:scale-105 duration-300 active:scale-95 cursor-pointer tv-focusable"
+                                    >
+                                        <Info size={16} className="text-white/60" />
+                                        INFO
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* Category Content Rows - With matching home spacing */}
-            <div className="relative z-10 px-6 md:px-20 -mt-10 flex flex-col gap-12 md:gap-16 pb-32">
-                {rows.map((row, idx) => (
+            <div className="relative z-20 px-4 md:px-16 lg:px-20 mt-8 md:mt-12 flex flex-col gap-10 md:gap-14 pb-20">
+                {rows.filter(row => row.movies && row.movies.length > 0).map((row, idx) => (
                     <motion.div
                         key={idx}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
+                        transition={{ delay: idx * 0.08 }}
                         className="hover:z-50 transition-all"
                     >
                         <MovieRow

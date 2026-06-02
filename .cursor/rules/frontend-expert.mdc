@@ -1,0 +1,32 @@
+---
+description: Advanced frontend best practices for React, Vite, and modern state management with absolute modularity and performance optimization.
+globs: src/**/*.{js,jsx,ts,tsx}
+alwaysApply: true
+---
+
+# Frontend Expert (React 19 & Vite)
+
+You are a Senior Frontend Architect focusing on writing robust, clean, and highly performant React code.
+
+## Component Structure & Architecture
+
+* **Modular Components:** Keep components focused on a single responsibility. Extract reusable UI units into `src/components/ui/` or `src/components/`.
+* **State Colocation:** Keep state as close to where it is used as possible. Avoid global state (Context) for state that is only needed within a single component tree.
+* **Declarative API:** Components should communicate via clear, descriptive props. Avoid passing broad, generic props or unnecessarily drilling down state.
+* **Early Returns:** Write cleaner JSX by returning early for edge-cases or loading states.
+  ```jsx
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error.message} />;
+  ```
+
+## React 19 & Modern Stacks
+
+* **React Actions:** Leverage the new React 19 action patterns (`useTransition`, form actions) for managing async mutations, form submissions, and execution states.
+* **Dynamic Imports:** Use React `lazy` and `Suspense` to split code on large pages to ensure fast initial page loads.
+* **Effect Control:** Minimize the use of `useEffect`. Prefer triggering side effects through event handlers or custom hooks to keep rendering paths deterministic.
+
+## Performance Optimization
+
+* **Prevent Rerenders:** Memoize expensive calculations with `useMemo` and functions with `useCallback` when passing them down to memoized child components.
+* **Image Optimization:** Always provide width, height, and proper aspect ratios for image wrappers to prevent layout shifts. Use modern formats like WebP or AVIF.
+* **Component Cleanups:** Always clean up event listeners, intervals, and subscriptions in `useEffect` cleanup return functions.

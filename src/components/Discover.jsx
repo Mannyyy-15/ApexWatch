@@ -10,6 +10,19 @@ export function Discover() {
     const [searchResults, setSearchResults] = useState([]);
     const [trending, setTrending] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [activeGenre, setActiveGenre] = useState('trending');
+
+    const GENRES = [
+        { id: 'trending', name: 'Trending Now' },
+        { id: 28, name: 'Action', type: 'movie' },
+        { id: 35, name: 'Comedy', type: 'movie' },
+        { id: 18, name: 'Drama', type: 'movie' },
+        { id: 878, name: 'Sci-Fi', type: 'movie' },
+        { id: 27, name: 'Horror', type: 'movie' },
+        { id: 10749, name: 'Romance', type: 'movie' },
+        { id: 99, name: 'Documentaries', type: 'movie' },
+        { id: 16, name: 'Anime', type: 'tv' }
+    ];
 
     // Initial Trending/Mixed Data
     useEffect(() => {
@@ -70,9 +83,32 @@ export function Discover() {
 
     useEffect(() => {
         if (searchQuery) {
+            setActiveGenre(null);
             performSearch(searchQuery);
         }
     }, [searchQuery, performSearch]);
+
+    const handleGenreClick = async (genre) => {
+        setSearchQuery('');
+        setActiveGenre(genre.id);
+        if (genre.id === 'trending') {
+            return;
+        }
+        setLoading(true);
+        try {
+            let results = [];
+            if (genre.name === 'Anime') {
+                results = await tmdb.fetchDiscover('tv', { with_genres: 16, with_keywords: '210024' });
+            } else {
+                results = await tmdb.fetchByGenre(genre.id, genre.type);
+            }
+            setSearchResults(results.map(tmdb.formatMovie).filter(Boolean));
+        } catch (error) {
+            console.error('Error fetching genre results:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleMovieClick = (id, type) => {
         setActiveMovieId(id);
@@ -80,13 +116,15 @@ export function Discover() {
         setCurrentView('details');
     };
 
-    const displayMovies = searchQuery.trim() ? searchResults : trending;
+    const displayMovies = searchQuery.trim() 
+        ? searchResults 
+        : (activeGenre && activeGenre !== 'trending' ? searchResults : trending);
 
     return (
-        <div className="min-h-screen pt-32 md:pt-40 px-2 md:px-20 pb-32 w-full max-w-[1600px] mx-auto relative z-10">
+        <div className="discover-container min-h-screen pt-28 md:pt-36 px-4 md:px-16 lg:px-20 pb-32 w-full max-w-[1600px] mx-auto relative z-10">
             
             {/* Search Bar - Only Visible on Mobile (Desktop uses Global Search) */}
-            <div className="mb-8 md:mb-12 max-w-2xl mx-auto px-2 md:hidden">
+            <div className="mb-6 md:mb-8 max-w-2xl mx-auto px-2 md:hidden">
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-4 md:left-5 flex items-center pointer-events-none text-white/40 group-focus-within:text-red-500 transition-colors">
                         <Search size={18} className="md:w-[22px] md:h-[22px]" />
@@ -109,6 +147,26 @@ export function Discover() {
                 </div>
             </div>
 
+            {/* Horizontal Genre Filters Strip */}
+            <div className="flex items-center gap-2.5 overflow-x-auto hide-scrollbar py-3.5 mb-8 -mx-4 px-4 md:-mx-0 md:px-0 scroll-smooth border-b border-white/5">
+                {GENRES.map((genre) => {
+                    const isActive = activeGenre === genre.id;
+                    return (
+                        <button
+                            key={genre.id}
+                            onClick={() => handleGenreClick(genre)}
+                            className={`genre-filter-button flex-shrink-0 px-5 py-2.5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300 border cursor-pointer select-none active:scale-95 tv-focusable ${
+                                isActive
+                                    ? 'bg-accent border-accent text-white shadow-[0_0_20px_rgba(229,9,20,0.3)] scale-105'
+                                    : 'bg-white/5 border-white/5 text-white/50 hover:text-white hover:bg-white/10 hover:border-white/10'
+                            }`}
+                        >
+                            {genre.name}
+                        </button>
+                    );
+                })}
+            </div>
+
             {/* Results Header - Only if searching */}
             {searchQuery.trim() && (
                 <div className="mb-8 md:mb-12 relative z-20">
@@ -127,7 +185,7 @@ export function Discover() {
             )}
 
             {/* Grid */}
-            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 tv:grid-cols-8 gap-3 md:gap-6 px-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 tv:grid-cols-8 gap-4 md:gap-6 px-1">
                 {loading && displayMovies.length === 0 ? (
                      [...Array(24)].map((_, i) => <MovieCardSkeleton key={i} />)
                 ) : (

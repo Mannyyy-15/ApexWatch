@@ -75,18 +75,15 @@ export function Hero() {
         <AnimatePresence initial={true} mode="wait">
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
-            <motion.img 
+            <img 
               src={heroMovie.backdrop} 
               alt={heroMovie.title} 
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 10, ease: "linear" }}
               className="w-full h-full object-cover" 
             />
             {/* Moody Cinematic Overlays */}
@@ -98,16 +95,16 @@ export function Hero() {
       </div>
 
       {/* Navigation Arrows - Repositioned to Bottom Right */}
-      <div className="absolute right-12 bottom-12 z-40 hidden md:flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        <button onClick={prevSlide} className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-90 shadow-2xl">
+      <div className="absolute right-12 bottom-12 z-40 hidden md:flex items-center gap-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+        <button onClick={prevSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
           <ChevronLeft size={20} />
         </button>
-        <div className="flex items-center gap-2 font-black text-[10px] text-white/20 uppercase tracking-[0.2em]">
+        <div className="flex items-center gap-2 font-black text-[9px] text-white/20 uppercase tracking-[0.25em]">
           <span className="text-white/60">{currentIndex + 1}</span>
           <span>/</span>
           <span>{heroesList.length}</span>
         </div>
-        <button onClick={nextSlide} className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-90 shadow-2xl">
+        <button onClick={nextSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
           <ChevronRight size={20} />
         </button>
       </div>
@@ -125,42 +122,42 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="w-full"
             >
-              <div className="flex items-center gap-3 mb-3 md:mb-6">
-                <span className="px-3 py-1 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase text-white">Trending</span>
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full">
-                  <span className="text-[#e50914] text-xs font-bold">Match</span>
-                  <span className="text-white text-xs font-bold">{heroMovie.match}</span>
+              <div className="flex items-center gap-2.5 mb-4 md:mb-6">
+                <span className="px-2.5 py-0.5 bg-accent/15 border border-accent/30 rounded-full text-[9px] font-black tracking-[0.2em] uppercase text-white shadow-[0_0_15px_rgba(229,9,20,0.2)]">Trending</span>
+                <div className="flex items-center gap-1 px-2.5 py-0.5 bg-black/40 backdrop-blur-xl border border-white/5 rounded-full">
+                  <span className="text-accent text-[10px] font-black uppercase">Match</span>
+                  <span className="text-white text-[10px] font-black">{heroMovie.match}</span>
                 </div>
-                <span className="text-white/60 text-xs font-medium tracking-wider hidden sm:inline">{heroMovie.year} • {heroMovie.duration} • {heroMovie.rating || '18+'}</span>
+                <span className="text-white/50 text-[11px] font-bold tracking-wider hidden sm:inline">{heroMovie.year} • {heroMovie.duration} • {heroMovie.rating || '18+'}</span>
               </div>
 
-              <h1 className="display-text text-4xl md:text-[5.5rem] font-black tracking-tighter mb-4 md:mb-6 leading-[0.95] text-white filter drop-shadow-xl uppercase">
+              <h1 className="display-text text-4xl md:text-[5rem] lg:text-[6rem] font-black tracking-tighter mb-4 md:mb-5 leading-[0.9] text-white filter drop-shadow-xl uppercase italic">
                 {heroMovie.title}
               </h1>
 
-              <p className="max-w-xl text-lg text-white/80 mb-6 md:mb-8 font-medium leading-relaxed drop-shadow-md hidden md:block line-clamp-3">
+              <p className="max-w-xl text-sm md:text-base text-white/60 mb-6 md:mb-8 font-medium leading-relaxed drop-shadow-md hidden md:block line-clamp-3">
                 {heroMovie.description}
               </p>
 
-              <div className="flex flex-col gap-3 w-full md:flex-row md:flex-wrap md:items-center md:gap-4">
+              <div className="flex flex-col gap-3 w-full md:flex-row md:flex-wrap md:items-center md:gap-3.5">
                 <button 
                   onClick={() => { 
                     setActiveMovieId(heroMovie.id); 
                     setActiveMediaType(heroMovie.type);
                     setCurrentView('player'); 
                   }} 
-                  className="w-full md:w-auto flex items-center justify-center gap-3 bg-red-600 text-white px-8 py-3.5 md:px-10 md:py-4 rounded-xl md:rounded-2xl font-black text-base md:text-xl hover:scale-105 md:hover:scale-110 transition-all duration-500 active:scale-95"
+                  className="w-full md:w-auto flex items-center justify-center gap-3 bg-accent text-white px-8 py-3.5 md:px-9 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:bg-accent-hover hover:scale-105 hover:shadow-[0_0_30px_rgba(229,9,20,0.4)] transition-all duration-300 active:scale-95 cursor-pointer tv-focusable"
                 >
-                  <Play fill="currentColor" size={20} className="md:w-6 md:h-6" />
+                  <Play fill="currentColor" size={16} className="md:w-5 md:h-5" />
                   PLAY NOW
                 </button>
 
-                <div className="flex gap-3 w-full md:w-auto">
+                <div className="flex gap-2.5 w-full md:w-auto">
                   <button 
                     onClick={toggleWatchlist} 
-                    className="flex-1 md:w-14 md:h-14 glass flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 rounded-2xl font-bold text-xs md:text-lg hover:bg-white/10 hover:border-white/40 transition-all text-white group py-3 md:py-0"
+                    className="flex-1 md:w-12 md:h-12 bg-glass-bg border border-glass-border flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs hover:bg-glass-hover hover:border-white/15 transition-all text-white group py-3 md:py-0 cursor-pointer tv-focusable"
                   >
-                    {inWatchlist ? <Check size={20} className="text-white" /> : <Plus size={20} className="text-white group-hover:scale-125 transition-transform" />}
+                    {inWatchlist ? <Check size={16} className="text-white" /> : <Plus size={16} className="text-white group-hover:scale-110 transition-transform" />}
                     <span className="md:hidden">LIST</span>
                   </button>
 
@@ -170,9 +167,9 @@ export function Hero() {
                       setActiveMediaType(heroMovie.type);
                       setCurrentView('details'); 
                     }} 
-                    className="flex-1 md:w-14 md:h-14 glass flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 rounded-2xl font-bold text-xs md:text-lg hover:bg-white/10 hover:border-white/40 transition-all text-white group py-3 md:py-0"
+                    className="flex-1 md:w-12 md:h-12 bg-glass-bg border border-glass-border flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs hover:bg-glass-hover hover:border-white/15 transition-all text-white group py-3 md:py-0 cursor-pointer tv-focusable"
                   >
-                    <Info size={20} className="text-white/60 group-hover:text-white transition-colors" />
+                    <Info size={16} className="text-white/60 group-hover:text-white transition-colors" />
                     <span className="md:hidden">INFO</span>
                   </button>
                 </div>
@@ -184,21 +181,21 @@ export function Hero() {
 
       {/* Vertical Cinematic Navigation - Right Center */}
       <div className="hidden md:flex flex-col justify-center items-end absolute right-12 top-0 bottom-0 z-30 pointer-events-none">
-        <div className="flex flex-col gap-10 items-end pointer-events-auto pr-4 border-r border-white/5">
+        <div className="flex flex-col gap-8 items-end pointer-events-auto pr-4 border-r border-white/5">
           {heroesList.map((movie, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}
-              className="relative group text-right"
+              className="relative group text-right cursor-pointer"
             >
               <div className="flex flex-col items-end gap-1">
-                <span className={`text-[9px] font-black tracking-[0.3em] uppercase transition-all duration-700 ${
-                  idx === currentIndex ? 'text-red-500' : 'text-white/20 group-hover:text-white/60'
+                <span className={`text-[8px] font-black tracking-[0.25em] uppercase transition-all duration-700 ${
+                  idx === currentIndex ? 'text-accent' : 'text-white/20 group-hover:text-white/50'
                 }`}>
                   {idx === currentIndex ? 'Now Playing' : `Next 0${idx + 1}`}
                 </span>
-                <span className={`text-sm font-bold tracking-tight transition-all duration-500 ${
-                  idx === currentIndex ? 'text-white translate-x-0' : 'text-white/30 group-hover:text-white/70 translate-x-2'
+                <span className={`text-xs font-bold tracking-tight transition-all duration-500 ${
+                  idx === currentIndex ? 'text-white translate-x-0' : 'text-white/30 group-hover:text-white/60 translate-x-1.5'
                 }`}>
                   {movie.title}
                 </span>
@@ -210,7 +207,7 @@ export function Hero() {
                       initial={{ height: 0 }}
                       animate={{ height: '100%' }}
                       transition={{ duration: 8, ease: "linear" }}
-                      className="w-full bg-red-600 shadow-[0_0_15px_rgba(229,9,20,0.6)]"
+                      className="w-full bg-accent shadow-[0_0_15px_rgba(229,9,20,0.6)]"
                     />
                   </div>
                 )}
