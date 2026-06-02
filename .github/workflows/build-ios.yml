@@ -5,19 +5,22 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-ios:
-    name: Build iOS IPA
+    name: Build iOS (Unsigned)
     runs-on: macos-latest
 
     steps:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js 20
+      - name: 🟢 Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: 📦 Install Dependencies
@@ -40,32 +43,51 @@ jobs:
       - name: 🔄 Sync Capacitor to iOS
         run: npx cap sync ios
 
-      - name: 📱 Install CocoaPods
+      - name: 🔍 List available schemes
         working-directory: ios/App
-        run: pod install
+        run: xcodebuild -list -project App.xcodeproj
 
-      - name: 🔨 Build iOS (Simulator - No Signing Needed)
+      - name: 🔧 Resolve Swift Package Manager dependencies
+        working-directory: ios/App
         run: |
           xcodebuild \
-            -workspace ios/App/App.xcworkspace \
+            -resolvePackageDependencies \
+            -project App.xcodeproj \
+            -scheme App \
+            -clonedSourcePackagesDirPath ./spm-packages
+
+      - name: 🔨 Build iOS for Simulator (No Signing)
+        working-directory: ios/App
+        run: |
+          xcodebuild \
+            -project App.xcodeproj \
             -scheme App \
             -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
             -configuration Debug \
-            -derivedDataPath ios/build \
+            -derivedDataPath ./build \
+            -clonedSourcePackagesDirPath ./spm-packages \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            build
+            ONLY_ACTIVE_ARCH=NO \
+            build | xcpretty || true
 
-      - name: 📦 Package as IPA (Unsigned)
+      - name: 📦 Package .app as unsigned IPA
         run: |
-          APP_PATH=$(find ios/build -name "*.app" | head -1)
+          APP_PATH=$(find ios/App/build -name "*.app" -not -path "*/PackageFrameworks/*" | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ No .app found. Listing build output:"
+            find ios/App/build -type f -name "*.app" || true
+            exit 1
+          fi
+          echo "Found app at: $APP_PATH"
           mkdir -p ios/ipa-output/Payload
           cp -r "$APP_PATH" ios/ipa-output/Payload/
           cd ios/ipa-output
           zip -r ApexWatch-unsigned.ipa Payload/
-          cd ../..
-          echo "IPA created at ios/ipa-output/ApexWatch-unsigned.ipa"
+          echo "✅ IPA created"
+          ls -lh ApexWatch-unsigned.ipa
 
       - name: 📤 Upload IPA Artifact
         uses: actions/upload-artifact@v4
@@ -74,9 +96,11 @@ jobs:
           path: ios/ipa-output/ApexWatch-unsigned.ipa
           retention-days: 30
 
-      - name: 🎉 Build Success
+      - name: 🎉 Summary
         run: |
-          echo "✅ iOS build complete!"
-          echo "⚠️  This is an UNSIGNED IPA for simulator testing."
-          echo "    To install on a real device, you need an Apple Developer account."
-          echo "    The IPA can be installed on your own device via AltStore (free)."
+          echo "## ✅ iOS Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Download the IPA from the **Artifacts** section above." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📲 Install on iPhone" >> $GITHUB_STEP_SUMMARY
+          echo "Use **AltStore** (free) to sideload the unsigned IPA onto your device." >> $GITHUB_STEP_SUMMARY
+          echo "No Apple Developer account required." >> $GITHUB_STEP_SUMMARY
