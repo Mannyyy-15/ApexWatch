@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Play, RotateCw, X, Server, Globe, Users, Subtitles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
@@ -44,8 +44,26 @@ export function VideoPlayer() {
     const [showNextEpPopup, setShowNextEpPopup] = useState(false);
     const [cancelAutoPlay, setCancelAutoPlay] = useState(false);
 
-    // Controls are always visible now since we removed the iframe click-blocking overlay
-    const showControls = true;
+    // Auto-hide controls state
+    const [showControls, setShowControls] = useState(true);
+    const controlsTimeoutRef = useRef(null);
+
+    const resetControlsTimeout = useCallback(() => {
+        setShowControls(true);
+        if (controlsTimeoutRef.current) {
+            clearTimeout(controlsTimeoutRef.current);
+        }
+        controlsTimeoutRef.current = setTimeout(() => {
+            setShowControls(false);
+        }, 4000);
+    }, []);
+
+    useEffect(() => {
+        resetControlsTimeout();
+        return () => {
+            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+        };
+    }, [resetControlsTimeout]);
 
     const SERVERS = [
         { id: 'vidking', name: 'Server 1 (Vidking - Fast)' },
@@ -366,6 +384,14 @@ export function VideoPlayer() {
                     )}
 
 
+                    {/* Invisible Trigger Area to show controls when hovering/tapping the top of the screen */}
+                    <div 
+                        className="absolute top-0 left-0 right-0 h-32 z-40"
+                        onMouseMove={resetControlsTimeout}
+                        onTouchStart={resetControlsTimeout}
+                        onClick={resetControlsTimeout}
+                    />
+
                     {/* Top-Left Controls: Back */}
                     <AnimatePresence>
                         {showControls && (
@@ -397,15 +423,6 @@ export function VideoPlayer() {
                                 transition={{ duration: 0.2 }}
                                 className="absolute top-6 right-6 pointer-events-auto z-50 flex items-center gap-2.5"
                             >
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setShowSubMenu(true); }}
-                                    className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
-                                    title="Subtitle Options"
-                                >
-                                    <Subtitles size={15} className="text-accent" />
-                                    <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">Subtitles</span>
-                                </button>
-
                                 {isPortrait && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleManualRotate(); }}
@@ -415,15 +432,6 @@ export function VideoPlayer() {
                                         <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">Rotate</span>
                                     </button>
                                 )}
-
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setShowServerMenu(true); }}
-                                    className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
-                                    title="Change Streaming Server"
-                                >
-                                    <Server size={15} className="text-accent" />
-                                    <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">Server</span>
-                                </button>
                             </motion.div>
                         )}
                     </AnimatePresence>
