@@ -317,8 +317,8 @@ export function VideoPlayer() {
             const params = new URLSearchParams({
                 color: 'e50914',
                 autoPlay: 'true',
-                episodeSelector: 'true',
-                nextEpisode: 'true',
+                episodeSelector: 'false',
+                nextEpisode: 'false',
             });
             if (startTime > 5) {
                 params.set('t', Math.floor(startTime).toString());
