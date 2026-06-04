@@ -10,7 +10,7 @@ import { MovieRow } from './MovieRow';
 import { MovieDetailsSkeleton } from './Skeleton';
 
 export function MovieDetails() {
-    const { activeMovieId, setActiveMovieId, setCurrentView, user, activeProfile, activeSeason, setActiveSeason, activeEpisode, setActiveEpisode, activeMediaType, setActiveMediaType, cachedDetails, setCachedDetails, downloads, addDownload, removeDownload, createWatchParty, joinWatchParty } = useAppContext();
+    const { activeMovieId, setActiveMovieId, setCurrentView, goBack, user, activeProfile, activeSeason, setActiveSeason, activeEpisode, setActiveEpisode, activeMediaType, setActiveMediaType, cachedDetails, setCachedDetails, downloads, addDownload, removeDownload, createWatchParty, joinWatchParty } = useAppContext();
     const [showPartyModal, setShowPartyModal] = useState(false);
     const [partyCodeInput, setPartyCodeInput] = useState('');
     
@@ -468,7 +468,6 @@ export function MovieDetails() {
                                      <motion.div 
                                          key={ep.id}
                                          onClick={() => {
-                                             const { setActiveEpisode, goBack } = useAppContext();
                                              setActiveEpisode(ep.episode_number);
                                              setCurrentView('player');
                                          }}

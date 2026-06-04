@@ -112,10 +112,13 @@ export function AppProvider({ children }) {
         const checkForUpdates = async () => {
             if (!Capacitor.isNativePlatform()) return;
             try {
+                console.log('[UpdateCheck] Checking GitHub API for new version...');
                 const response = await fetch(`https://api.github.com/repos/Mannyyy-15/ApexWatch/contents/package.json?t=${Date.now()}`, {
                     headers: { 'Accept': 'application/vnd.github.v3.raw' }
                 });
                 const data = await response.json();
+                
+                console.log(`[UpdateCheck] Local version: ${pkg.version} | GitHub version: ${data.version}`);
                 
                 const oldParts = pkg.version.split('.').map(Number);
                 const newParts = data.version.split('.').map(Number);
@@ -124,8 +127,11 @@ export function AppProvider({ children }) {
                     if (newParts[i] > oldParts[i]) { isNewer = true; break; }
                     if (newParts[i] < oldParts[i]) break;
                 }
+                console.log(`[UpdateCheck] Is newer version available? ${isNewer}`);
                 if (isNewer) setUpdateAvailable(true);
-            } catch (error) {}
+            } catch (error) {
+                console.error('[UpdateCheck] Failed to check for updates:', error.message);
+            }
         };
         setTimeout(checkForUpdates, 3000);
 
