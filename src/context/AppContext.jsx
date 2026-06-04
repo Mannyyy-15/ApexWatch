@@ -112,7 +112,9 @@ export function AppProvider({ children }) {
         const checkForUpdates = async () => {
             if (!Capacitor.isNativePlatform()) return;
             try {
-                const response = await fetch(`https://raw.githubusercontent.com/Mannyyy-15/ApexWatch/main/package.json?t=${Date.now()}`);
+                const response = await fetch(`https://api.github.com/repos/Mannyyy-15/ApexWatch/contents/package.json?t=${Date.now()}`, {
+                    headers: { 'Accept': 'application/vnd.github.v3.raw' }
+                });
                 const data = await response.json();
                 
                 const oldParts = pkg.version.split('.').map(Number);

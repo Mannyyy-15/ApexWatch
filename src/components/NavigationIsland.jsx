@@ -357,6 +357,13 @@ export function NavigationIsland() {
           }}
           onPointerUp={() => clearTimeout(devHoldTimeoutRef.current)}
           onPointerLeave={() => clearTimeout(devHoldTimeoutRef.current)}
+          onTouchStart={() => {
+            devHoldTimeoutRef.current = setTimeout(() => {
+              window.dispatchEvent(new Event('toggle_dev_console'));
+            }, 2000);
+          }}
+          onTouchEnd={() => clearTimeout(devHoldTimeoutRef.current)}
+          onTouchCancel={() => clearTimeout(devHoldTimeoutRef.current)}
         />
         <MobileNavItem icon={<Film size={18}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
         <MobileNavItem icon={<Search size={18}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
@@ -497,13 +504,16 @@ function NavItem({ icon, label, active = false, onClick }) {
     </button>);
 }
 
-function MobileNavItem({ icon, label, active = false, onClick, onPointerDown, onPointerUp, onPointerLeave }) {
+function MobileNavItem({ icon, label, active = false, onClick, onPointerDown, onPointerUp, onPointerLeave, onTouchStart, onTouchEnd, onTouchCancel }) {
     return (
       <button 
         onClick={onClick} 
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerLeave}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchCancel}
         className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all cursor-pointer ${
           active ? 'text-accent scale-105' : 'text-white/65'
         }`}
