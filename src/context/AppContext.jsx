@@ -236,9 +236,12 @@ export function AppProvider({ children }) {
         } catch (error) {
             console.error('Google Login Error:', error);
             setLoadingAuth(false);
+            if (Capacitor.isNativePlatform()) {
+                alert(`Google Login Failed: ${error.message || error}`);
+            }
             if (!Capacitor.isNativePlatform() && (error.code === 'auth/popup-blocked' || error.message?.includes('Cross-Origin-Opener-Policy'))) {
                 await signInWithRedirect(auth, googleProvider);
-            } else {
+            } else if (!Capacitor.isNativePlatform()) {
                 throw error;
             }
         }
@@ -254,6 +257,7 @@ export function AppProvider({ children }) {
             localStorage.removeItem('apexwatch_cached_user');
             localStorage.removeItem('apexwatch_cached_profile');
             localStorage.removeItem('apexwatch_cached_watchlist');
+            localStorage.removeItem('apexwatch_cached_history');
             setCurrentView('auth');
         } catch (error) {
             console.error('Logout Error:', error);

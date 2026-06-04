@@ -92,7 +92,11 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
                     {movie.title}
                 </h3>
                 <div className="flex items-center gap-1.5 text-[8px] md:text-[10px] text-white/40 font-black uppercase tracking-wider">
-                    <span>{movie.year}</span>
+                    {isContinueWatching && movie.type === 'tv' && movie.season !== undefined ? (
+                        <span className="text-accent">S{movie.season} E{movie.episode}</span>
+                    ) : (
+                        <span>{movie.year}</span>
+                    )}
                     <span className="w-0.5 h-0.5 bg-white/20 rounded-full"></span>
                     <span>{movie.type === 'tv' ? 'TV' : 'Movie'}</span>
                 </div>

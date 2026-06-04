@@ -36,20 +36,38 @@ const localFallback = {
 };
 
 export const firestoreService = {
-    // Watch Progress
     saveWatchProgress: async (userId, profileId, contentId, data) => {
         const progress = data.durationSeconds > 0 
             ? Math.round((data.progressSeconds / data.durationSeconds) * 100) 
             : 0;
         
-        const enhancedData = { ...data, progress };
+        let enhancedData = { ...data, progress };
 
         if (!userId || userId === 'mock-user') {
+            const key = getStorageKey(userId || 'guest', profileId || 'default', 'progress');
+            const stored = JSON.parse(localStorage.getItem(key) || '{}');
+            const existing = stored[contentId];
+            if (existing && existing.season !== undefined && data.season !== undefined) {
+                if ((data.season * 1000 + data.episode) < (existing.season * 1000 + existing.episode)) {
+                    enhancedData = { ...existing, updatedAt: Date.now() };
+                }
+            }
             localFallback.save(userId || 'guest', profileId || 'default', 'progress', contentId, enhancedData);
             return;
         }
+        
         try {
             const progressRef = doc(db, 'users', userId, 'profiles', profileId, 'watchProgress', contentId);
+            const existingSnap = await getDoc(progressRef);
+            if (existingSnap.exists()) {
+                const existing = existingSnap.data();
+                if (existing.season !== undefined && data.season !== undefined) {
+                    if ((data.season * 1000 + data.episode) < (existing.season * 1000 + existing.episode)) {
+                        enhancedData = { ...existing, updatedAt: serverTimestamp() };
+                    }
+                }
+            }
+
             await setDoc(progressRef, {
                 ...enhancedData,
                 updatedAt: serverTimestamp()

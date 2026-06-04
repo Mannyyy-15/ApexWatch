@@ -566,72 +566,7 @@ export function MovieDetails() {
                 )}
             </div>
 
-            {/* Floating Picture-in-Picture Video Player */}
-            <AnimatePresence>
-                {isPipActive && showTrailer && movie.trailer && !isPipDismissed && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.8, y: 50, x: 0 }}
-                        animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.8, y: 50, x: 0 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed bottom-6 right-6 z-[60] w-[280px] sm:w-[360px] md:w-[420px] aspect-video bg-[#0a0a0a] rounded-2xl border border-glass-border shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden group/pip"
-                    >
-                        <iframe 
-                            src={`https://www.youtube.com/embed/${movie.trailer}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&playlist=${movie.trailer}&loop=1&enablejsapi=1`}
-                            className="w-full h-full pointer-events-none scale-105"
-                            title="Mini Trailer"
-                            frameBorder="0"
-                            allow="autoplay; encrypted-media"
-                        />
-                        
-                        {/* Hover Overlay Controls */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/40 opacity-0 group-hover/pip:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3.5">
-                            {/* Top Bar: Title & Close */}
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/90 truncate max-w-[70%]">
-                                    {movie.title}
-                                </span>
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setIsPipDismissed(true);
-                                    }}
-                                    className="w-7 h-7 bg-black/60 hover:bg-accent border border-glass-border hover:border-accent hover:text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
-                                    title="Close Mini Player"
-                                >
-                                    <X size={12} />
-                                </button>
-                            </div>
-                            
-                            {/* Bottom Bar: Action & Mute */}
-                            <div className="flex items-center justify-between">
-                                <button
-                                    onClick={() => {
-                                        setCurrentView('player');
-                                    }}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-accent hover:bg-red-700 text-white rounded-lg font-black text-[9px] uppercase tracking-wider transition-all cursor-pointer shadow-lg active:scale-95"
-                                >
-                                    <Play size={10} fill="currentColor" /> Play Full
-                                </button>
-                                
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setIsMuted(!isMuted);
-                                    }}
-                                    className="w-7 h-7 bg-black/60 hover:bg-white hover:text-black border border-glass-border rounded-full flex items-center justify-center transition-all cursor-pointer"
-                                >
-                                    {isMuted ? (
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m11 5-7 5H2v4h2l7 5V5z"></path><line x1="22" y1="9" x2="16" y2="15"></line><line x1="16" y1="9" x2="22" y2="15"></line></svg>
-                                    ) : (
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L4 10H2V14H4L11 19V5Z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+
             {/* Watch Party Dialog Modal */}
             <AnimatePresence>
                 {showPartyModal && (
