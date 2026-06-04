@@ -13,13 +13,16 @@ export function NavigationIsland() {
         searchQuery, 
         setSearchQuery,
         loadingAuth,
+        logout,
         setLibraryTab,
         setActiveMovieId,
         setActiveMediaType,
-        updateAvailable
+        updateAvailable,
+        manualCheckForUpdates
     } = useAppContext();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+    const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
     const [instantResults, setInstantResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [showSearchDropdown, setShowSearchDropdown] = useState(false);
@@ -47,7 +50,19 @@ export function NavigationIsland() {
             }
         } else {
             // Fallback/Direct APK link - change this URL to your generated APK link
-            window.open('https://apexwatch.app/download', '_blank');
+            window.open('https://github.com/Mannyyy-15/ApexWatch/raw/main/ApexWatch.apk', '_blank');
+        }
+    };
+
+    const handleCheckUpdate = async () => {
+        setIsCheckingUpdate(true);
+        const hasUpdate = await manualCheckForUpdates();
+        setIsCheckingUpdate(false);
+        setShowProfileMenu(false);
+        if (hasUpdate) {
+            handleDownloadApp();
+        } else {
+            alert("No updates available. You are on the latest version!");
         }
     };
 
@@ -302,7 +317,11 @@ export function NavigationIsland() {
                         <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
                         <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
                         <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                        {updateAvailable && <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />}
+                        {updateAvailable ? (
+                            <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                        ) : (
+                            <MenuButton icon={<Download size={14} className={isCheckingUpdate ? "animate-spin" : ""}/>} label={isCheckingUpdate ? "Checking..." : "Check Update"} onClick={handleCheckUpdate} />
+                        )}
                         <MenuButton icon={<Users size={14}/>} label="Switch Profile" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                       </div>
 
@@ -423,7 +442,11 @@ export function NavigationIsland() {
                 <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                {updateAvailable && <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />}
+                {updateAvailable ? (
+                    <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                ) : (
+                    <MenuButton icon={<Download size={14} className={isCheckingUpdate ? "animate-spin" : ""}/>} label={isCheckingUpdate ? "Checking..." : "Check Update"} onClick={handleCheckUpdate} />
+                )}
                 <MenuButton icon={<Users size={14}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                 <div className="col-span-2 mt-1 border-t border-white/5 pt-1.5">
                   <MenuButton icon={<LogOut size={14}/>} label="Log out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />

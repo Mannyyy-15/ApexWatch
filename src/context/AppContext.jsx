@@ -109,8 +109,8 @@ export function AppProvider({ children }) {
         setupBackHandler();
 
         // ── Check For App Updates ──────────────────────────────────────
-        const checkForUpdates = async () => {
-            if (!Capacitor.isNativePlatform()) return;
+        const checkForUpdates = async (manual = false) => {
+            if (!Capacitor.isNativePlatform() && !manual) return false;
             try {
                 console.log('[UpdateCheck] Checking GitHub API for new version...');
                 const response = await fetch(`https://api.github.com/repos/Mannyyy-15/ApexWatch/contents/package.json?t=${Date.now()}`, {
@@ -129,11 +129,15 @@ export function AppProvider({ children }) {
                 }
                 console.log(`[UpdateCheck] Is newer version available? ${isNewer}`);
                 if (isNewer) setUpdateAvailable(true);
+                return isNewer;
             } catch (error) {
                 console.error('[UpdateCheck] Failed to check for updates:', error.message);
+                return false;
             }
         };
-        setTimeout(checkForUpdates, 3000);
+        // Expose to window for manual calls if needed, but we will pass it in context
+        window.manualCheckForUpdates = () => checkForUpdates(true);
+        setTimeout(() => checkForUpdates(false), 3000);
 
         return () => {
             if (backListener) backListener.remove();
@@ -536,7 +540,7 @@ export function AppProvider({ children }) {
             heroCache, setHeroCache,
             downloads, addDownload, removeDownload,
             activeParty, isPartyHost, createWatchParty, joinWatchParty, leaveWatchParty, updatePartyState,
-            updateAvailable
+            updateAvailable, manualCheckForUpdates: window.manualCheckForUpdates
         }}>
       {children}
     </AppContext.Provider>);
