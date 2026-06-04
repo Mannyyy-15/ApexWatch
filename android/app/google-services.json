@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "398715579842",
+    "project_id": "apexwatch-b13ee",
+    "storage_bucket": "apexwatch-b13ee.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398715579842:android:cc6f46cc009e822d91fa5b",
+        "android_client_info": {
+          "package_name": "com.apexwatch.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "398715579842-u99rmthngfpvfp23ro12gtbi2uiblaa2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5J6r4yBAWEtvX3pPAfipJy3VAQL8F_tw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "398715579842-u99rmthngfpvfp23ro12gtbi2uiblaa2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

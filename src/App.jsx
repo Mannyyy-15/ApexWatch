@@ -7,6 +7,7 @@ import { Discover } from './components/Discover';
 import { ProfilesSelection } from './components/ProfilesSelection';
 import { Auth } from './components/Auth';
 import { Onboarding } from './components/Onboarding';
+import { StatsDashboard } from './components/StatsDashboard';
 import { CategoryView } from './components/CategoryView';
 import { ProfileLibrary } from './components/ProfileLibrary';
 import { AppProvider, useAppContext } from './context/AppContext';
@@ -178,6 +179,17 @@ function MainLayout() {
               exit="exit"
             >
               <ProfileLibrary />
+            </motion.div>
+          )}
+          {currentView === 'stats' && (
+            <motion.div 
+              key="stats"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <StatsDashboard />
             </motion.div>
           )}
         </AnimatePresence>

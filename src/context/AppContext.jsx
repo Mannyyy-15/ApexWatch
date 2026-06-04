@@ -4,7 +4,8 @@ import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectRes
 import { doc, getDoc, setDoc, collection, onSnapshot, query } from 'firebase/firestore';
 import { firestoreService } from '../utils/firestore';
 import { App as CapApp } from '@capacitor/app';
-// import { mockAuth } from '../utils/mockAuth';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 const AppContext = createContext(undefined);
 
@@ -217,19 +218,28 @@ export function AppProvider({ children }) {
     const loginWithGoogle = async () => {
         try {
             setLoadingAuth(true);
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             
-            if (isMobile) {
-                await signInWithRedirect(auth, googleProvider);
+            if (Capacitor.isNativePlatform()) {
+                // NATIVE GOOGLE LOGIN (Capacitor WebView)
+                const result = await FirebaseAuthentication.signInWithGoogle();
+                const credential = await import('firebase/auth').then(m => m.GoogleAuthProvider.credential(result.credential?.idToken));
+                return await import('firebase/auth').then(m => m.signInWithCredential(auth, credential));
             } else {
-                const result = await signInWithPopup(auth, googleProvider);
-                return result;
+                // WEB BROWSER LOGIN
+                const isMobileBrowser = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobileBrowser) {
+                    await signInWithRedirect(auth, googleProvider);
+                } else {
+                    return await signInWithPopup(auth, googleProvider);
+                }
             }
         } catch (error) {
             console.error('Google Login Error:', error);
             setLoadingAuth(false);
-            if (error.code === 'auth/popup-blocked' || error.message.includes('Cross-Origin-Opener-Policy')) {
+            if (!Capacitor.isNativePlatform() && (error.code === 'auth/popup-blocked' || error.message?.includes('Cross-Origin-Opener-Policy'))) {
                 await signInWithRedirect(auth, googleProvider);
+            } else {
+                throw error;
             }
         }
     };

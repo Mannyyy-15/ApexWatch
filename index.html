@@ -15,7 +15,29 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <style>
+      .app-loader-container {
+        position: fixed; inset: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 99999;
+      }
+      .app-loader-logo {
+        width: 80px; height: 80px; border-radius: 20px; box-shadow: 0 0 40px rgba(229, 9, 20, 0.4); animation: pulse 2s infinite ease-in-out; margin-bottom: 24px;
+      }
+      .app-loader-spinner {
+        width: 40px; height: 40px; border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: #e50914; border-radius: 50%; animation: spin 1s infinite linear;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes pulse { 
+        0% { transform: scale(0.95); box-shadow: 0 0 20px rgba(229, 9, 20, 0.2); } 
+        50% { transform: scale(1.05); box-shadow: 0 0 50px rgba(229, 9, 20, 0.6); } 
+        100% { transform: scale(0.95); box-shadow: 0 0 20px rgba(229, 9, 20, 0.2); } 
+      }
+    </style>
+    <div class="app-loader-container">
+      <img src="/logo.png" alt="ApexWatch Logo" class="app-loader-logo" />
+      <div class="app-loader-spinner"></div>
+    </div>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
   <script>
     if ('serviceWorker' in navigator) {

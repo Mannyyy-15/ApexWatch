@@ -190,7 +190,8 @@ export function VideoPlayer() {
                             backdrop: movie.backdrop,
                             year: movie.year,
                             season: activeSeason,
-                            episode: activeEpisode
+                            episode: activeEpisode,
+                            genres: movie.tags || []
                         });
                     }
                 }

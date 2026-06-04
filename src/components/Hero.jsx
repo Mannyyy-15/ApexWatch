@@ -64,7 +64,11 @@ export function Hero() {
   };
 
   if (loading || !heroMovie)
-    return <div className="w-full h-[85vh] bg-[#050505] animate-pulse"></div>;
+    return (
+      <div className="w-full h-[90dvh] md:h-[95vh] bg-[#050505] flex items-end px-6 pb-20">
+        <div className="w-2/3 h-12 bg-white/5 animate-pulse rounded-xl mb-4"></div>
+      </div>
+    );
 
   const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % heroesList.length);
   const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + heroesList.length) % heroesList.length);
@@ -81,11 +85,16 @@ export function Hero() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
-            <img 
-              src={heroMovie.backdrop} 
-              alt={heroMovie.title} 
-              className="w-full h-full object-cover" 
-            />
+            <picture>
+              <source media="(max-width: 768px)" srcSet={heroMovie.backdrop.replace('/w1280/', '/w780/')} />
+              <img 
+                src={heroMovie.backdrop} 
+                alt={heroMovie.title} 
+                className="w-full h-full object-cover" 
+                loading={currentIndex === 0 ? "eager" : "lazy"}
+                fetchPriority={currentIndex === 0 ? "high" : "auto"}
+              />
+            </picture>
             {/* Moody Cinematic Overlays */}
             <div className="absolute inset-0 bg-black/40"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-[#020202]/60 to-transparent"></div>

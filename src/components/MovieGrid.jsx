@@ -82,9 +82,9 @@ export function MovieGrid() {
             let history = [];
             if (user && activeProfile) {
                 const rawHistory = await firestoreService.getAllWatchProgress(user.uid, activeProfile.id);
-                // Filter out completed ones (>95%) and sort by recency
+                // Filter out completed movies (>95%) but keep all TV shows, and sort by recency
                 history = rawHistory
-                    .filter(item => item.progress < 95)
+                    .filter(item => (item.type || item.contentType) === 'tv' || item.progress < 95)
                     .sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0))
                     .slice(0, 15);
                 setHistoryItems(history);

@@ -22,8 +22,7 @@ export function MovieDetails() {
     const [activeTab, setActiveTab] = useState('Overview');
     const [episodes, setEpisodes] = useState([]);
     const [fetchingEpisodes, setFetchingEpisodes] = useState(false);
-    const [showTrailer, setShowTrailer] = useState(false);
-    const [isMuted, setIsMuted] = useState(true);
+
     const [isPipActive, setIsPipActive] = useState(false);
     const [isPipDismissed, setIsPipDismissed] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(null);
@@ -72,7 +71,7 @@ export function MovieDetails() {
                         firestoreService.getWatchProgress(user.uid, activeProfile.id, activeMovieId)
                     ]);
                     setInWatchlist(wl.some(item => item.contentId === activeMovieId));
-                    if (progress && progress.progressSeconds > 30) {
+                    if (progress && (progress.progressSeconds > 30 || movie?.type === 'tv' || activeMediaType === 'tv')) {
                         setHasProgress(progress);
                     } else {
                         setHasProgress(null);
@@ -89,13 +88,7 @@ export function MovieDetails() {
         const container = document.querySelector('.details-container');
         if (container) container.scrollTo(0, 0);
 
-        // Auto-play trailer after 5 seconds
-        setShowTrailer(false);
-        const timer = setTimeout(() => {
-            setShowTrailer(true);
-        }, 5000);
-
-        return () => clearTimeout(timer);
+        return () => {};
     }, [activeMovieId, user, activeProfile]);
 
     useEffect(() => {
@@ -200,53 +193,17 @@ export function MovieDetails() {
                 {/* Backdrop Layer */}
                 <div className="absolute inset-0">
                     <AnimatePresence initial={false}>
-                        {!showTrailer || !movie.trailer || isPipActive ? (
-                            <motion.img 
-                                key="backdrop"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 1 }}
-                                src={movie.backdrop} 
-                                className="w-full h-full object-cover transform scale-105" 
-                                alt="" 
-                            />
-                        ) : (
-                            <motion.div 
-                                key="trailer"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 1.5 }}
-                                className="absolute inset-0 w-full h-full overflow-hidden"
-                            >
-                                <iframe 
-                                    src={`https://www.youtube.com/embed/${movie.trailer}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&playlist=${movie.trailer}&loop=1&enablejsapi=1`}
-                                    className="w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none scale-110"
-                                    title="Background Trailer"
-                                    frameBorder="0"
-                                    allow="autoplay; encrypted-media"
-                                />
-                            </motion.div>
-                        )}
+                        <motion.img 
+                            key="backdrop"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 1 }}
+                            src={movie.backdrop} 
+                            className="w-full h-full object-cover transform scale-105" 
+                            alt="" 
+                        />
                     </AnimatePresence>
-
-                    {/* Unmute Button - Only if trailer is playing and PIP not active */}
-                    {showTrailer && movie.trailer && !isPipActive && (
-                        <button 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsMuted(!isMuted);
-                            }}
-                            className="absolute bottom-10 right-6 md:bottom-24 md:right-20 z-30 p-4 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full hover:bg-white hover:text-black transition-all group"
-                        >
-                            {isMuted ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-6 md:h-6"><path d="m11 5-7 5H2v4h2l7 5V5z"></path><line x1="22" y1="9" x2="16" y2="15"></line><line x1="16" y1="9" x2="22" y2="15"></line></svg>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-6 md:h-6"><path d="M11 5L4 10H2V14H4L11 19V5Z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
-                            )}
-                        </button>
-                    )}
 
                     {/* Stronger mobile gradients for visibility */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 md:via-[#050505]/40 to-transparent"></div>
