@@ -10,6 +10,7 @@ import { Onboarding } from './components/Onboarding';
 import { StatsDashboard } from './components/StatsDashboard';
 import { CategoryView } from './components/CategoryView';
 import { ProfileLibrary } from './components/ProfileLibrary';
+import { DevConsole } from './components/DevConsole';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
@@ -42,11 +43,66 @@ const pageVariants = {
     }
 };
 
+function ShortcutsModal({ onClose }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9, y: 20 }}
+      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+      className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 p-6 md:p-8 rounded-[28px] shadow-2xl"
+    >
+      <button 
+        onClick={onClose}
+        className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all cursor-pointer"
+      >
+        <X size={18} />
+      </button>
+
+      <div className="flex items-center gap-3.5 mb-6">
+        <div className="w-10 h-10 bg-accent/15 border border-accent/20 rounded-xl flex items-center justify-center text-accent">
+          <Keyboard size={20} />
+        </div>
+        <div>
+          <h3 className="text-lg font-black uppercase tracking-wider text-white italic">Keyboard Shortcuts</h3>
+          <p className="text-[10px] text-white/40 font-black uppercase tracking-widest">Controls & Navigation</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {[
+          { keys: ['?'], desc: 'Toggle this Shortcuts Guide' },
+          { keys: ['Space'], desc: 'Play / Pause active video or trailer' },
+          { keys: ['M'], desc: 'Toggle Mute / Unmute audio' },
+          { keys: ['Esc'], desc: 'Close active video player or detail panel' },
+          { keys: ['↑', '↓', '←', '→'], desc: 'TV navigation and layout focus' },
+        ].map((item, idx) => (
+          <div key={idx} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+            <span className="text-xs font-bold text-white/60">{item.desc}</span>
+            <div className="flex gap-1.5">
+              {item.keys.map((k, i) => (
+                <kbd key={i} className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest text-white/80 font-mono shadow-md">
+                  {k}
+                </kbd>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="text-[9px] text-white/30 font-black uppercase tracking-widest text-center mt-6 pt-4 border-t border-white/5">
+        ApexWatch Navigation System
+      </div>
+    </motion.div>
+  );
+}
+
 function MainLayout() {
     const { currentView } = useAppContext();
     const isTV = useTV();
     const [showScrollUp, setShowScrollUp] = useState(false);
     const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+    const [showDevConsole, setShowDevConsole] = useState(false);
     const scrollContainerRef = useRef(null);
 
     useEffect(() => {
@@ -58,7 +114,16 @@ function MainLayout() {
         };
 
         container.addEventListener('scroll', handleScroll);
-        return () => container.removeEventListener('scroll', handleScroll);
+        
+        const handleToggleDevConsole = () => {
+            setShowDevConsole(prev => !prev);
+        };
+        window.addEventListener('toggle_dev_console', handleToggleDevConsole);
+
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('toggle_dev_console', handleToggleDevConsole);
+        };
     }, []);
 
     useEffect(() => {
@@ -212,70 +277,23 @@ function MainLayout() {
       </AnimatePresence>
 
       {/* Shortcuts Help Modal */}
+      {/* Overlays */}
       <AnimatePresence>
-        {showShortcutsHelp && (
+        {(showShortcutsHelp || showDevConsole) && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 pointer-events-auto">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              onClick={() => setShowShortcutsHelp(false)}
+              onClick={() => { setShowShortcutsHelp(false); setShowDevConsole(false); }}
               className="absolute inset-0 bg-black/80 backdrop-blur-md"
             />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 p-6 md:p-8 rounded-[28px] shadow-2xl"
-            >
-              <button 
-                onClick={() => setShowShortcutsHelp(false)}
-                className="absolute top-4 right-4 p-1.5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-
-              <div className="flex items-center gap-3.5 mb-6">
-                <div className="w-10 h-10 bg-accent/15 border border-accent/20 rounded-xl flex items-center justify-center text-accent">
-                  <Keyboard size={20} />
-                </div>
-                <div>
-                  <h3 className="text-lg font-black uppercase tracking-wider text-white italic">Keyboard Shortcuts</h3>
-                  <p className="text-[10px] text-white/40 font-black uppercase tracking-widest">Controls & Navigation</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {[
-                  { keys: ['?'], desc: 'Toggle this Shortcuts Guide' },
-                  { keys: ['Space'], desc: 'Play / Pause active video or trailer' },
-                  { keys: ['M'], desc: 'Toggle Mute / Unmute audio' },
-                  { keys: ['Esc'], desc: 'Close active video player or detail panel' },
-                  { keys: ['↑', '↓', '←', '→'], desc: 'TV navigation and layout focus' },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-                    <span className="text-xs font-bold text-white/60">{item.desc}</span>
-                    <div className="flex gap-1.5">
-                      {item.keys.map((k, i) => (
-                        <kbd key={i} className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest text-white/80 font-mono shadow-md">
-                          {k}
-                        </kbd>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-[9px] text-white/30 font-black uppercase tracking-widest text-center mt-6 pt-4 border-t border-white/5">
-                ApexWatch Navigation System
-              </div>
-            </motion.div>
+            {showShortcutsHelp && <ShortcutsModal onClose={() => setShowShortcutsHelp(false)} />}
+            {showDevConsole && <DevConsole onClose={() => setShowDevConsole(false)} />}
           </div>
         )}
       </AnimatePresence>
 
-      {/* Overlays */}
       <AnimatePresence>
         {currentView === 'auth' && <Auth key="auth"/>}
         {currentView === 'onboarding' && <Onboarding key="onboarding"/>}
@@ -285,7 +303,38 @@ function MainLayout() {
       </AnimatePresence>
     </div>);
 }
+
 export default function App() {
+    useEffect(() => {
+        // Setup Dev Console Interceptor
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        const pushLog = (type, args) => {
+            try {
+                window.__DEV_LOGS__ = window.__DEV_LOGS__ || [];
+                window.__DEV_LOGS__.push({
+                    type,
+                    timestamp: new Date().toLocaleTimeString(),
+                    message: args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
+                });
+                if (window.__DEV_LOGS__.length > 100) window.__DEV_LOGS__.shift();
+                window.dispatchEvent(new Event('dev_logs_updated'));
+            } catch (e) {}
+        };
+
+        console.log = (...args) => { pushLog('info', args); originalLog.apply(console, args); };
+        console.warn = (...args) => { pushLog('warn', args); originalWarn.apply(console, args); };
+        console.error = (...args) => { pushLog('error', args); originalError.apply(console, args); };
+
+        return () => {
+            console.log = originalLog;
+            console.warn = originalWarn;
+            console.error = originalError;
+        };
+    }, []);
+
     return (<AppProvider>
       <MainLayout />
     </AppProvider>);

@@ -52,6 +52,7 @@ export function AppProvider({ children }) {
     const [cachedDetails, setCachedDetails] = useState({}); // Global cache for Movie Details
     const [categoryCache, setCategoryCache] = useState({}); // Cache for Movies, TV, Anime tabs
     const [discoverCache, setDiscoverCache] = useState(null); // Cache for Discover tab
+    const [heroCache, setHeroCache] = useState(null); // Cache for Hero trending movies
     const [downloads, setDownloads] = useState([]);
     const [updateAvailable, setUpdateAvailable] = useState(false);
 
@@ -524,6 +525,7 @@ export function AppProvider({ children }) {
             cachedDetails, setCachedDetails,
             categoryCache, setCategoryCache,
             discoverCache, setDiscoverCache,
+            heroCache, setHeroCache,
             downloads, addDownload, removeDownload,
             activeParty, isPartyHost, createWatchParty, joinWatchParty, leaveWatchParty, updatePartyState,
             updateAvailable

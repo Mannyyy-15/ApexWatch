@@ -26,6 +26,7 @@ export function NavigationIsland() {
     const profileMenuRef = useRef(null);
     const mobileMenuRef = useRef(null);
     const searchRef = useRef(null);
+    const devHoldTimeoutRef = useRef(null);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
 
     useEffect(() => {
@@ -344,7 +345,19 @@ export function NavigationIsland() {
         animate={{ y: 0 }} 
         className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-between bg-black/80 backdrop-blur-3xl border border-glass-border p-1.5 px-3 rounded-[24px] shadow-2xl navigation-island-mobile max-w-[480px] mx-auto"
       >
-        <MobileNavItem icon={<Home size={18}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
+        <MobileNavItem 
+          icon={<Home size={18}/>} 
+          label="Home" 
+          active={currentView === 'home'} 
+          onClick={() => setCurrentView('home')}
+          onPointerDown={() => {
+            devHoldTimeoutRef.current = setTimeout(() => {
+              window.dispatchEvent(new Event('toggle_dev_console'));
+            }, 2000);
+          }}
+          onPointerUp={() => clearTimeout(devHoldTimeoutRef.current)}
+          onPointerLeave={() => clearTimeout(devHoldTimeoutRef.current)}
+        />
         <MobileNavItem icon={<Film size={18}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
         <MobileNavItem icon={<Search size={18}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
         <MobileNavItem icon={<Tv size={18}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
@@ -484,10 +497,13 @@ function NavItem({ icon, label, active = false, onClick }) {
     </button>);
 }
 
-function MobileNavItem({ icon, label, active = false, onClick }) {
+function MobileNavItem({ icon, label, active = false, onClick, onPointerDown, onPointerUp, onPointerLeave }) {
     return (
       <button 
         onClick={onClick} 
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerLeave}
         className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all cursor-pointer ${
           active ? 'text-accent scale-105' : 'text-white/65'
         }`}

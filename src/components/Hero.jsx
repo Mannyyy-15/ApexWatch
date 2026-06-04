@@ -6,19 +6,21 @@ import { tmdb } from '../utils/tmdb';
 import { firestoreService } from '../utils/firestore';
 
 export function Hero() {
-  const { setActiveMovieId, setActiveMediaType, setCurrentView, user, activeProfile } = useAppContext();
-  const [heroesList, setHeroesList] = useState([]);
+  const { setActiveMovieId, setActiveMediaType, setCurrentView, user, activeProfile, heroCache, setHeroCache } = useAppContext();
+  const [heroesList, setHeroesList] = useState(heroCache || []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const heroMovie = heroesList[currentIndex];
   const [inWatchlist, setInWatchlist] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!heroCache);
 
   useEffect(() => {
     const loadHeroes = async () => {
+      if (heroCache) return; // Skip if we already have it
       try {
         const trending = await tmdb.fetchTrending();
-        const formatted = trending.map(tmdb.formatMovie).filter(Boolean);
-        setHeroesList(formatted.slice(0, 5));
+        const formatted = trending.map(tmdb.formatMovie).filter(Boolean).slice(0, 5);
+        setHeroesList(formatted);
+        setHeroCache(formatted);
       } catch (error) {
         console.error('Error loading heroes:', error);
       } finally {
@@ -26,7 +28,7 @@ export function Hero() {
       }
     };
     loadHeroes();
-  }, []);
+  }, [heroCache, setHeroCache]);
 
   useEffect(() => {
     const timer = setInterval(() => {
