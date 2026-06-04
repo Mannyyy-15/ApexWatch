@@ -9,13 +9,13 @@ import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { Capacitor } from '@capacitor/core';
 
 export function VideoPlayer() {
-    const { activeMovieId, setCurrentView, user, activeProfile, activeSeason, activeEpisode, setActiveEpisode, activeMediaType, activeParty, isPartyHost, leaveWatchParty, updatePartyState } = useAppContext();
+    const { activeMovieId, setCurrentView, user, activeProfile, activeSeason, activeEpisode, setActiveEpisode, activeMediaType, activeParty, isPartyHost, leaveWatchParty, updatePartyState, goBack } = useAppContext();
 
     useTVBackHandler(() => {
         if (activeParty) {
             leaveWatchParty();
         } else {
-            setCurrentView('details');
+            goBack();
         }
     });
 
@@ -44,22 +44,8 @@ export function VideoPlayer() {
     const [showNextEpPopup, setShowNextEpPopup] = useState(false);
     const [cancelAutoPlay, setCancelAutoPlay] = useState(false);
 
-    // Controls auto-hide
-    const [showControls, setShowControls] = useState(true);
-    const hideTimerRef = React.useRef(null);
-
-    const showControlsTemporarily = () => {
-        setShowControls(true);
-        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-        hideTimerRef.current = setTimeout(() => setShowControls(false), 3500);
-    };
-
-    // Show controls on mount briefly
-    React.useEffect(() => {
-        showControlsTemporarily();
-        return () => { if (hideTimerRef.current) clearTimeout(hideTimerRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // Controls are always visible now since we removed the iframe click-blocking overlay
+    const showControls = true;
 
     const SERVERS = [
         { id: 'vidking', name: 'Server 1 (Vidking - Fast)' },
@@ -68,15 +54,6 @@ export function VideoPlayer() {
         { id: 'superembed', name: 'Server 4 (Superembed - Ad-Free)' }
     ];
 
-    const mockCaptions = [
-        { start: 5, end: 11, text: "[ Dramatic orchestrations playing ]" },
-        { start: 12, end: 20, text: "Host: Welcome to ApexWatch Watch Party!" },
-        { start: 22, end: 32, text: "Host: We are streaming in real-time sync with high-fidelity speed." },
-        { start: 35, end: 44, text: "System: You can customize caption settings in the subtitles menu." },
-        { start: 46, end: 55, text: "System: If you seek the video, other members will sync instantly." }
-    ];
-
-    const currentCaption = mockCaptions.find(c => localTime >= c.start && localTime <= c.end);
 
     useEffect(() => {
         // Lock to landscape when player opens
@@ -283,7 +260,7 @@ export function VideoPlayer() {
         if (activeParty) {
             leaveWatchParty();
         } else {
-            setCurrentView('details');
+            goBack();
         }
     };
 
@@ -388,13 +365,6 @@ export function VideoPlayer() {
                         </motion.div>
                     )}
 
-                    {/* Tap overlay — catches taps on the iframe to toggle controls */}
-                    <div
-                        className="absolute inset-0 z-20 cursor-pointer"
-                        onClick={showControlsTemporarily}
-                        onTouchEnd={(e) => { e.preventDefault(); showControlsTemporarily(); }}
-                        style={{ background: 'transparent' }}
-                    />
 
                     {/* Top-Left Controls: Back */}
                     <AnimatePresence>
@@ -469,41 +439,6 @@ export function VideoPlayer() {
                         </div>
                     )}
 
-                    {/* Custom Styled Subtitles Overlay */}
-                    {currentCaption && (
-                        <div 
-                            style={{
-                                fontSize: subStyles.size === 'small' ? '14px' : subStyles.size === 'large' ? '24px' : '18px',
-                                color: subStyles.color,
-                                backgroundColor: subStyles.bgOpacity === '0' ? 'transparent' : `rgba(0, 0, 0, ${subStyles.bgOpacity})`,
-                                padding: subStyles.bgOpacity === '0' ? '0px' : '6px 16px',
-                                borderRadius: '8px',
-                                fontWeight: 'bold',
-                                textShadow: '0 2px 8px rgba(0,0,0,0.95)',
-                                display: 'inline-block'
-                            }}
-                            className="absolute bottom-28 left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center font-sans tracking-wide transition-all duration-300 max-w-[85vw] whitespace-pre-wrap select-none"
-                        >
-                            {currentCaption.text}
-                        </div>
-                    )}
-
-                    {/* Skip Intro Overlay Button */}
-                    {localTime > 10 && localTime < 80 && (
-                        <motion.button
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
-                            onClick={() => {
-                                setStartTime(85);
-                                setPlayerReady(false);
-                                setTimeout(() => setPlayerReady(true), 200);
-                            }}
-                            className="absolute bottom-24 right-8 z-[60] bg-black/80 hover:bg-accent border border-white/10 hover:border-accent text-white px-6 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all shadow-[0_15px_30px_rgba(0,0,0,0.5)] cursor-pointer"
-                        >
-                            Skip Intro
-                        </motion.button>
-                    )}
 
                     {/* Netflix-style Next Episode Auto-Play Countdown Popup */}
                     <AnimatePresence>

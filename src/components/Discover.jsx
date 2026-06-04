@@ -6,11 +6,24 @@ import { tmdb } from '../utils/tmdb';
 import { MovieCardSkeleton } from './Skeleton';
 
 export function Discover() {
-    const { setActiveMovieId, setActiveMediaType, setCurrentView, searchQuery, setSearchQuery } = useAppContext();
+    const { setActiveMovieId, setActiveMediaType, setCurrentView, searchQuery, setSearchQuery, discoverCache, setDiscoverCache } = useAppContext();
     const [searchResults, setSearchResults] = useState([]);
     const [trending, setTrending] = useState([]);
     const [loading, setLoading] = useState(false);
     const [activeGenre, setActiveGenre] = useState('trending');
+    const [recentSearches, setRecentSearches] = useState(() => {
+        const saved = localStorage.getItem('apexwatch_recent_searches');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const saveRecentSearch = (query) => {
+        if (!query.trim()) return;
+        setRecentSearches(prev => {
+            const updated = [query.trim(), ...prev.filter(q => q.toLowerCase() !== query.trim().toLowerCase())].slice(0, 3);
+            localStorage.setItem('apexwatch_recent_searches', JSON.stringify(updated));
+            return updated;
+        });
+    };
 
     const GENRES = [
         { id: 'trending', name: 'Trending Now' },
@@ -27,6 +40,11 @@ export function Discover() {
     // Initial Trending/Mixed Data
     useEffect(() => {
         const loadContent = async () => {
+            if (discoverCache) {
+                setTrending(discoverCache);
+                return;
+            }
+
             setLoading(true);
             try {
                 const isMobile = window.innerWidth < 768;
@@ -49,9 +67,10 @@ export function Discover() {
                     // Shuffle for variety
                     const shuffled = uniqueMixed.sort(() => 0.5 - Math.random());
                     setTrending(shuffled.slice(0, 60));
-                } else {
                     const results = await tmdb.fetchTrending();
-                    setTrending(results.map(tmdb.formatMovie).filter(Boolean).slice(0, 30));
+                    const formatted = results.map(tmdb.formatMovie).filter(Boolean).slice(0, 30);
+                    setTrending(formatted);
+                    setDiscoverCache(formatted);
                 }
             } catch (error) {
                 console.error('Error loading content:', error);
@@ -111,6 +130,9 @@ export function Discover() {
     };
 
     const handleMovieClick = (id, type) => {
+        if (searchQuery.trim()) {
+            saveRecentSearch(searchQuery);
+        }
         setActiveMovieId(id);
         setActiveMediaType(type || 'movie');
         setCurrentView('details');
@@ -146,6 +168,26 @@ export function Discover() {
                     )}
                 </div>
             </div>
+
+            {/* Recent Searches (Only visible when search bar is empty) */}
+            {!searchQuery.trim() && recentSearches.length > 0 && (
+                <div className="mb-8 max-w-2xl mx-auto px-4 md:hidden">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] text-white/40 font-black uppercase tracking-widest">Recent Searches</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2.5">
+                        {recentSearches.map((term, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setSearchQuery(term)}
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-all font-bold text-xs uppercase tracking-wider cursor-pointer"
+                            >
+                                <span>{term}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Horizontal Genre Filters Strip */}
             <div className="flex items-center gap-2.5 overflow-x-auto hide-scrollbar py-3.5 mb-8 -mx-4 px-4 md:-mx-0 md:px-0 scroll-smooth border-b border-white/5">

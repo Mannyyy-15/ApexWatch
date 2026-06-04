@@ -14,7 +14,7 @@ export function MovieDetails() {
     const [showPartyModal, setShowPartyModal] = useState(false);
     const [partyCodeInput, setPartyCodeInput] = useState('');
     
-    useTVBackHandler(() => setCurrentView('home'));
+    useTVBackHandler(() => goBack());
     const [movie, setMovie] = useState(() => cachedDetails[activeMovieId] || null);
     const [inWatchlist, setInWatchlist] = useState(false);
     const [hasProgress, setHasProgress] = useState(null);
@@ -184,7 +184,7 @@ export function MovieDetails() {
             className="details-container absolute inset-0 w-full h-[100dvh] overflow-y-auto bg-[#050505] text-white z-40 hide-scrollbar"
         >
             {/* Close Button */}
-            <button onClick={() => setCurrentView('home')} className="close-button fixed top-6 left-6 z-50 w-10 h-10 bg-black/40 hover:bg-accent border border-glass-border hover:border-accent hover:text-white rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xl duration-300 tv-focusable">
+            <button onClick={() => goBack()} className="close-button fixed top-6 left-6 z-50 w-10 h-10 bg-black/40 hover:bg-accent border border-glass-border hover:border-accent hover:text-white rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xl duration-300 tv-focusable">
                 <X size={18}/>
             </button>
 
@@ -468,6 +468,7 @@ export function MovieDetails() {
                                      <motion.div 
                                          key={ep.id}
                                          onClick={() => {
+                                             const { setActiveEpisode, goBack } = useAppContext();
                                              setActiveEpisode(ep.episode_number);
                                              setCurrentView('player');
                                          }}

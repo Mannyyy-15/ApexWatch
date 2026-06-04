@@ -6,10 +6,17 @@ import { tmdb } from '../utils/tmdb';
 
 export function NavigationIsland() {
     const { 
-        currentView, setCurrentView, 
-        user, activeProfile, loadingAuth, 
-        logout, searchQuery, setSearchQuery, 
-        setLibraryTab, setActiveMovieId, setActiveMediaType 
+        currentView, 
+        setCurrentView, 
+        user, 
+        activeProfile, 
+        searchQuery, 
+        setSearchQuery,
+        loadingAuth,
+        setLibraryTab,
+        setActiveMovieId,
+        setActiveMediaType,
+        updateAvailable
     } = useAppContext();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
@@ -147,7 +154,7 @@ export function NavigationIsland() {
               onClick={() => setCurrentView('profiles')}
             />
           )}
-          <NavItem icon={<Smartphone size={32}/>} label={<span className="nav-label ml-4 text-lg text-red-500 font-bold italic">Get App</span>} onClick={handleDownloadApp}/>
+          {updateAvailable && <NavItem icon={<Download size={32} className="text-accent" />} label={<span className="nav-label ml-4 text-lg text-red-500 font-bold italic">Update App</span>} onClick={handleDownloadApp}/>}
           <NavItem icon={<LogOut size={32} className="ml-1"/>} label={<span className="nav-label ml-4 text-lg">Sign Out</span>} onClick={() => setShowSignOutConfirm(true)}/>
         </div>
       </div>
@@ -255,14 +262,17 @@ export function NavigationIsland() {
         {!loadingAuth && (<div className="relative mr-1.5" ref={profileMenuRef}>
             {user ? (
               <>
-                <div className="w-11 h-11 rounded-full overflow-hidden border border-white/10 hover:border-accent transition-all bg-white/5 cursor-pointer" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer"/>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <User size={18} className="text-white"/>
-                    </div>
-                  )}
+                <div className="relative" onClick={() => setShowProfileMenu(!showProfileMenu)}>
+                  <div className="w-11 h-11 rounded-full overflow-hidden border border-white/10 hover:border-accent transition-all bg-white/5 cursor-pointer">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer"/>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User size={18} className="text-white"/>
+                      </div>
+                    )}
+                  </div>
+                  {updateAvailable && <div className="absolute top-0 right-0 w-3 h-3 bg-red-600 rounded-full border-2 border-black z-10" />}
                 </div>
 
                 <AnimatePresence>
@@ -287,7 +297,7 @@ export function NavigationIsland() {
                         <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
                         <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
                         <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                        <MenuButton icon={<Smartphone size={14} className="text-accent"/>} label="Get App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                        {updateAvailable && <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />}
                         <MenuButton icon={<Users size={14}/>} label="Switch Profile" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                       </div>
 
@@ -340,7 +350,7 @@ export function NavigationIsland() {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all cursor-pointer ${showProfileMenu ? 'bg-white/5' : ''}`}
           >
-             <div className="p-1 rounded-lg">
+             <div className="p-1 rounded-lg relative">
                 <div className={`w-5.5 h-5.5 rounded-full overflow-hidden border ${showProfileMenu ? 'border-accent' : 'border-white/20'} bg-white/5`}>
                     {avatarUrl ? (
                        <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -350,6 +360,7 @@ export function NavigationIsland() {
                       </div>
                     )}
                 </div>
+                {updateAvailable && <div className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full border border-black z-10 translate-x-1/4 -translate-y-1/4" />}
              </div>
              <span className={`text-[8px] font-bold ${showProfileMenu ? 'text-white' : 'text-white/40'}`}>Profile</span>
           </button>
@@ -379,7 +390,7 @@ export function NavigationIsland() {
                 <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                <MenuButton icon={<Smartphone size={14} className="text-accent"/>} label="Get App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                {updateAvailable && <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />}
                 <MenuButton icon={<Users size={14}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                 <div className="col-span-2 mt-1 border-t border-white/5 pt-1.5">
                   <MenuButton icon={<LogOut size={14}/>} label="Log out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />

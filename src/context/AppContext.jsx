@@ -6,6 +6,7 @@ import { firestoreService } from '../utils/firestore';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import pkg from '../../package.json';
 
 const AppContext = createContext(undefined);
 
@@ -49,7 +50,10 @@ export function AppProvider({ children }) {
         return saved ? JSON.parse(saved) : [];
     }); // Global cache for Home content
     const [cachedDetails, setCachedDetails] = useState({}); // Global cache for Movie Details
+    const [categoryCache, setCategoryCache] = useState({}); // Cache for Movies, TV, Anime tabs
+    const [discoverCache, setDiscoverCache] = useState(null); // Cache for Discover tab
     const [downloads, setDownloads] = useState([]);
+    const [updateAvailable, setUpdateAvailable] = useState(false);
 
     // ── View History Stack (for hardware back button) ──────────────────
     // Root views where back should EXIT the app, not go back
@@ -102,6 +106,25 @@ export function AppProvider({ children }) {
             }
         };
         setupBackHandler();
+
+        // ── Check For App Updates ──────────────────────────────────────
+        const checkForUpdates = async () => {
+            if (!Capacitor.isNativePlatform()) return;
+            try {
+                const response = await fetch(`https://raw.githubusercontent.com/Mannyyy-15/ApexWatch/main/package.json?t=${Date.now()}`);
+                const data = await response.json();
+                
+                const oldParts = pkg.version.split('.').map(Number);
+                const newParts = data.version.split('.').map(Number);
+                let isNewer = false;
+                for (let i = 0; i < 3; i++) {
+                    if (newParts[i] > oldParts[i]) { isNewer = true; break; }
+                    if (newParts[i] < oldParts[i]) break;
+                }
+                if (isNewer) setUpdateAvailable(true);
+            } catch (error) {}
+        };
+        setTimeout(checkForUpdates, 3000);
 
         return () => {
             if (backListener) backListener.remove();
@@ -496,11 +519,14 @@ export function AppProvider({ children }) {
             libraryTab, setLibraryTab,
             activeSeason, setActiveSeason,
             activeEpisode, setActiveEpisode,
-            watchlist, toggleWatchlist,
+            watchlist, setWatchlist,
             movieRows, setMovieRows,
             cachedDetails, setCachedDetails,
+            categoryCache, setCategoryCache,
+            discoverCache, setDiscoverCache,
             downloads, addDownload, removeDownload,
-            activeParty, isPartyHost, createWatchParty, joinWatchParty, leaveWatchParty, updatePartyState
+            activeParty, isPartyHost, createWatchParty, joinWatchParty, leaveWatchParty, updatePartyState,
+            updateAvailable
         }}>
       {children}
     </AppContext.Provider>);

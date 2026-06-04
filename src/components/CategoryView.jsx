@@ -7,17 +7,26 @@ import { useAppContext } from '../context/AppContext';
 import { HeroSkeleton, RowSkeleton } from './Skeleton';
 
 export function CategoryView({ type, title }) {
-    const { setActiveMovieId, setActiveMediaType, setCurrentView } = useAppContext();
+    const { setActiveMovieId, setActiveMediaType, setCurrentView, categoryCache, setCategoryCache } = useAppContext();
     const [heroMovie, setHeroMovie] = useState(null);
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadCategoryData = async () => {
+            if (categoryCache[type]) {
+                setHeroMovie(categoryCache[type].heroMovie);
+                setRows(categoryCache[type].rows);
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             try {
                 let trending;
                 const tmdbType = type === 'movies' ? 'movie' : 'tv';
+
+                let finalRows = [];
 
                 if (type === 'anime') {
                     // Fetch comprehensive Anime rows
@@ -34,7 +43,7 @@ export function CategoryView({ type, title }) {
                     ]);
 
                     trending = trendingAnime.map(tmdb.formatMovie).filter(Boolean);
-                    setRows([
+                    finalRows = [
                         { title: 'Trending Anime Series', movies: trending },
                         { title: 'Anime Movie Hits', movies: movies.map(tmdb.formatMovie).filter(Boolean) },
                         { title: 'Action & Shonen', movies: shonen.map(tmdb.formatMovie).filter(Boolean) },
@@ -44,7 +53,7 @@ export function CategoryView({ type, title }) {
                         { title: 'Romantic Anime', movies: romance.map(tmdb.formatMovie).filter(Boolean) },
                         { title: 'Adventure Quests', movies: adventure.map(tmdb.formatMovie).filter(Boolean) },
                         { title: 'Adrenaline Rush', movies: action.map(tmdb.formatMovie).filter(Boolean) }
-                    ]);
+                    ];
                 } else {
                     const [trendingData, topRated, nowPlaying, indianHits, action, comedy, horror, sciFi, romance, family, mystery] = await Promise.all([
                         tmdb.fetchTrending(tmdbType),
@@ -61,7 +70,7 @@ export function CategoryView({ type, title }) {
                     ]);
 
                     trending = trendingData.map(tmdb.formatMovie).filter(Boolean);
-                    const categoryRows = [
+                    finalRows = [
                         { title: `Trending ${title}`, movies: trending },
                         { title: 'New Releases', movies: nowPlaying.map(tmdb.formatMovie).filter(Boolean) },
                         { title: 'Popular in India', movies: indianHits.map(tmdb.formatMovie).filter(Boolean) },
@@ -74,11 +83,12 @@ export function CategoryView({ type, title }) {
                         { title: 'Family Night', movies: family.map(tmdb.formatMovie).filter(Boolean) },
                         { title: 'Mystery & Thriller', movies: mystery.map(tmdb.formatMovie).filter(Boolean) }
                     ];
-
-                    setRows(categoryRows);
                 }
 
-                setHeroMovie(trending[0]);
+                const newHero = trending[0];
+                setHeroMovie(newHero);
+                setRows(finalRows);
+                setCategoryCache(prev => ({ ...prev, [type]: { rows: finalRows, heroMovie: newHero } }));
             } catch (error) {
                 console.error('Error loading category data:', error);
             } finally {
