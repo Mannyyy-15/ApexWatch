@@ -42,6 +42,23 @@ export function VideoPlayer() {
     const [showNextEpPopup, setShowNextEpPopup] = useState(false);
     const [cancelAutoPlay, setCancelAutoPlay] = useState(false);
 
+    // Controls auto-hide
+    const [showControls, setShowControls] = useState(true);
+    const hideTimerRef = React.useRef(null);
+
+    const showControlsTemporarily = () => {
+        setShowControls(true);
+        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = setTimeout(() => setShowControls(false), 3500);
+    };
+
+    // Show controls on mount briefly
+    React.useEffect(() => {
+        showControlsTemporarily();
+        return () => { if (hideTimerRef.current) clearTimeout(hideTimerRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const SERVERS = [
         { id: 'vidking', name: 'Server 1 (Vidking - Fast)' },
         { id: 'vidsrc_xyz', name: 'Server 2 (Vidsrc.xyz - Multi-Subtitles)' },
@@ -370,43 +387,75 @@ export function VideoPlayer() {
                         </motion.div>
                     )}
 
+                    {/* Tap overlay — catches taps on the iframe to toggle controls */}
+                    <div
+                        className="absolute inset-0 z-20 cursor-pointer"
+                        onClick={showControlsTemporarily}
+                        onTouchEnd={(e) => { e.preventDefault(); showControlsTemporarily(); }}
+                        style={{ background: 'transparent' }}
+                    />
+
                     {/* Top-Left Controls: Back */}
-                    <div className="absolute top-6 left-6 pointer-events-auto z-50">
-                        <button onClick={handleClose} className="w-12 h-12 bg-black/40 backdrop-blur-md rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:bg-white hover:text-black hover:scale-110 transition-all opacity-40 hover:opacity-100 group cursor-pointer shadow-lg" title="Go Back">
-                            <ArrowLeft size={24}/>
-                        </button>
-                    </div>
-
-                    {/* Top-Right Controls: Subtitles, Servers & Rotate */}
-                    <div className="absolute top-6 right-6 pointer-events-auto z-50 flex items-center gap-3">
-                        <button 
-                            onClick={() => setShowSubMenu(true)} 
-                            className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/10 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
-                            title="Subtitle Options"
-                        >
-                            <Subtitles size={16} className="text-accent" />
-                            <span className="font-bold text-xs uppercase tracking-wider">Subtitles</span>
-                        </button>
-
-                        {isPortrait && (
-                            <button 
-                                onClick={handleManualRotate} 
-                                className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/10 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
+                    <AnimatePresence>
+                        {showControls && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute top-6 left-6 pointer-events-auto z-50"
                             >
-                                <RotateCw size={16} className="text-accent" />
-                                <span className="font-bold text-xs uppercase tracking-wider">Rotate</span>
-                            </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleClose(e); }}
+                                    className="w-12 h-12 bg-black/60 backdrop-blur-md rounded-full border border-white/15 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg cursor-pointer"
+                                    title="Go Back"
+                                >
+                                    <ArrowLeft size={22} />
+                                </button>
+                            </motion.div>
                         )}
-                        
-                        <button 
-                            onClick={() => setShowServerMenu(true)} 
-                            className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/10 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
-                            title="Change Streaming Server"
-                        >
-                            <Server size={16} className="text-accent" />
-                            <span className="font-bold text-xs uppercase tracking-wider">Server</span>
-                        </button>
-                    </div>
+                    </AnimatePresence>
+
+                    {/* Top-Right Controls: Subtitles, Server, Rotate */}
+                    <AnimatePresence>
+                        {showControls && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute top-6 right-6 pointer-events-auto z-50 flex items-center gap-2.5"
+                            >
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowSubMenu(true); }}
+                                    className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
+                                    title="Subtitle Options"
+                                >
+                                    <Subtitles size={15} className="text-accent" />
+                                    <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">Subtitles</span>
+                                </button>
+
+                                {isPortrait && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleManualRotate(); }}
+                                        className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
+                                    >
+                                        <RotateCw size={15} className="text-accent" />
+                                        <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">Rotate</span>
+                                    </button>
+                                )}
+
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowServerMenu(true); }}
+                                    className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
+                                    title="Change Streaming Server"
+                                >
+                                    <Server size={15} className="text-accent" />
+                                    <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">Server</span>
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* Guest Synced Pause Blur Overlay */}
                     {activeParty && !activeParty.isPlaying && !isPartyHost && (
