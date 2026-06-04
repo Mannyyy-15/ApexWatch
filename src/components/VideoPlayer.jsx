@@ -188,7 +188,9 @@ export function VideoPlayer() {
                             title: movie.title,
                             poster: movie.poster,
                             backdrop: movie.backdrop,
-                            year: movie.year
+                            year: movie.year,
+                            season: activeSeason,
+                            episode: activeEpisode
                         });
                     }
                 }

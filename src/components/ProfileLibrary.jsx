@@ -74,7 +74,7 @@ export function ProfileLibrary() {
 
                 const histDetails = await Promise.all(
                     histRaw.map(async (item) => {
-                        const details = item.type === 'tv' 
+                        const details = (item.type || item.contentType) === 'tv' 
                             ? await tmdb.fetchTVDetails(item.id)
                             : await tmdb.fetchMovieDetails(item.id);
                         return {

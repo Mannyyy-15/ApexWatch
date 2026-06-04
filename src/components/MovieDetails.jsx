@@ -286,13 +286,23 @@ export function MovieDetails() {
 
                             <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
                                 <button 
-                                    onClick={() => setCurrentView('player')} 
+                                    onClick={() => {
+                                        if (hasProgress && movie.type === 'tv') {
+                                            if (hasProgress.season) setActiveSeason(hasProgress.season);
+                                            if (hasProgress.episode) setActiveEpisode(hasProgress.episode);
+                                        }
+                                        setCurrentView('player');
+                                    }} 
                                     className={`w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3.5 md:px-9 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:scale-105 hover:shadow-[0_0_30px_rgba(229,9,20,0.4)] transition-all shadow-2xl active:scale-95 cursor-pointer tv-focusable ${
                                         hasProgress ? 'bg-accent text-white shadow-[0_0_40px_rgba(229,9,20,0.4)]' : 'bg-white text-black hover:bg-white/95'
                                     }`}
                                 >
                                     <Play fill="currentColor" size={16} className="md:w-5 md:h-5"/> 
-                                    {hasProgress ? `Resume (${hasProgress.progress}%)` : 'Play Now'}
+                                    {hasProgress ? (
+                                        movie.type === 'tv' && hasProgress.episode
+                                            ? `Resume S${hasProgress.season || 1}E${hasProgress.episode} (${hasProgress.progress}%)`
+                                            : `Resume (${hasProgress.progress}%)`
+                                    ) : 'Play Now'}
                                 </button>
                                 <div className="flex flex-col gap-2.5 w-full sm:w-auto">
                                     <div className="flex gap-3 w-full sm:w-auto">

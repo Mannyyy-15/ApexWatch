@@ -199,17 +199,6 @@ function MainLayout() {
         )}
       </AnimatePresence>
 
-      {/* Keyboard Shortcut Info Trigger */}
-      {currentView !== 'player' && currentView !== 'auth' && currentView !== 'onboarding' && currentView !== 'profiles' && (
-        <button 
-          onClick={() => setShowShortcutsHelp(true)}
-          className="fixed bottom-6 left-6 z-[60] w-10 h-10 bg-white/5 border border-white/10 hover:border-accent hover:text-white rounded-full flex items-center justify-center text-white/40 transition-all cursor-pointer hover:scale-105 active:scale-95 shadow-xl tv-focusable"
-          title="Keyboard Shortcuts"
-        >
-          <Keyboard size={18} />
-        </button>
-      )}
-
       {/* Shortcuts Help Modal */}
       <AnimatePresence>
         {showShortcutsHelp && (
