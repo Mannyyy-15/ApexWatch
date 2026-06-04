@@ -5,6 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { tmdb } from '../utils/tmdb';
 import { useTVBackHandler } from '../hooks/useTV';
 import { firestoreService } from '../utils/firestore';
+import { ScreenOrientation } from '@capacitor/screen-orientation';
 
 export function VideoPlayer() {
     const { activeMovieId, setCurrentView, user, activeProfile, activeSeason, activeEpisode, setActiveEpisode, activeMediaType, activeParty, isPartyHost, leaveWatchParty, updatePartyState } = useAppContext();
@@ -77,37 +78,36 @@ export function VideoPlayer() {
     const currentCaption = mockCaptions.find(c => localTime >= c.start && localTime <= c.end);
 
     useEffect(() => {
-        const checkOrientation = () => setIsPortrait(window.innerHeight > window.innerWidth);
+        // Lock to landscape when player opens
+        const lockLandscape = async () => {
+            try {
+                await ScreenOrientation.lock({ orientation: 'landscape' });
+                setIsPortrait(false);
+            } catch (e) {
+                // Fallback: try Web API (works on some browsers/WebViews)
+                try {
+                    if (window.screen?.orientation?.lock) {
+                        await window.screen.orientation.lock('landscape');
+                        setIsPortrait(false);
+                    }
+                } catch (_) {}
+                // If both fail, show the rotate button so user can tap manually
+            }
+        };
+
+        lockLandscape();
+
+        const checkOrientation = () => {
+            setIsPortrait(window.innerHeight > window.innerWidth);
+        };
         window.addEventListener('resize', checkOrientation);
         window.addEventListener('orientationchange', checkOrientation);
 
-        const lockOrientation = async () => {
-            try {
-                if (window.screen.orientation && window.screen.orientation.lock) {
-                    await window.screen.orientation.lock('landscape').catch(() => {});
-                }
-                if (document.documentElement.requestFullscreen && window.innerHeight < 600) {
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen().catch(() => {});
-                    }
-                }
-            } catch (error) {}
-        };
-
-        const unlockOrientation = () => {
-            try {
-                if (window.screen.orientation && window.screen.orientation.unlock) {
-                    window.screen.orientation.unlock();
-                }
-                if (document.exitFullscreen && document.fullscreenElement) {
-                    document.exitFullscreen().catch(() => {});
-                }
-            } catch (error) {}
-        };
-
-        lockOrientation();
         return () => {
-            unlockOrientation();
+            // Unlock orientation when player closes
+            ScreenOrientation.unlock().catch(() => {
+                try { window.screen?.orientation?.unlock(); } catch (_) {}
+            });
             window.removeEventListener('resize', checkOrientation);
             window.removeEventListener('orientationchange', checkOrientation);
         };
@@ -278,14 +278,15 @@ export function VideoPlayer() {
 
     const handleManualRotate = async () => {
         try {
-            if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-                await document.documentElement.requestFullscreen();
-            }
-            if (window.screen.orientation && window.screen.orientation.lock) {
-                await window.screen.orientation.lock('landscape');
-            }
-        } catch (err) {
-            console.error('Failed to rotate manually:', err);
+            await ScreenOrientation.lock({ orientation: 'landscape' });
+            setIsPortrait(false);
+        } catch (e) {
+            try {
+                if (window.screen?.orientation?.lock) {
+                    await window.screen.orientation.lock('landscape');
+                    setIsPortrait(false);
+                }
+            } catch (_) {}
         }
     };
 
@@ -349,23 +350,12 @@ export function VideoPlayer() {
 
     const embedUrl = getEmbedUrl();
 
-    const containerStyle = isPortrait && window.innerWidth < 768 ? {
-        width: '100vh',
-        height: '100vw',
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%) rotate(90deg)',
-        transformOrigin: 'center center',
-    } : {};
-
     return (
         <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
             className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden"
-            style={containerStyle}
         >
             <div className="flex w-full h-full relative">
                 {/* Left Side: Video Player Column */}
