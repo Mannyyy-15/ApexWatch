@@ -259,8 +259,12 @@ export function NavigationIsland() {
           </AnimatePresence>
         </div>
 
-        {!loadingAuth && (<div className="relative mr-1.5" ref={profileMenuRef}>
-            {user ? (
+        <div className="relative mr-1.5" ref={profileMenuRef}>
+            {loadingAuth ? (
+                <div className="w-11 h-11 rounded-full bg-white/10 animate-pulse border border-white/5 flex items-center justify-center">
+                    <User size={18} className="text-white/20"/>
+                </div>
+            ) : user ? (
               <>
                 <div className="relative" onClick={() => setShowProfileMenu(!showProfileMenu)}>
                   <div className="w-11 h-11 rounded-full overflow-hidden border border-white/10 hover:border-accent transition-all bg-white/5 cursor-pointer">
@@ -318,7 +322,7 @@ export function NavigationIsland() {
                 <span className="xs:hidden uppercase tracking-wider">Join</span>
               </button>
             )}
-          </div>)}
+        </div>
       </motion.div>
 
       {/* Mobile Top Header */}
@@ -345,7 +349,16 @@ export function NavigationIsland() {
         <MobileNavItem icon={<Search size={18}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
         <MobileNavItem icon={<Tv size={18}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
         
-        {!loadingAuth && user ? (
+        {loadingAuth ? (
+          <div className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl">
+             <div className="p-1 rounded-lg">
+                <div className="w-5.5 h-5.5 rounded-full bg-white/10 animate-pulse border border-white/5 flex items-center justify-center">
+                    <User size={10} className="text-white/20"/>
+                </div>
+             </div>
+             <span className="text-[8px] font-bold text-white/40">Profile</span>
+          </div>
+        ) : user ? (
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all cursor-pointer ${showProfileMenu ? 'bg-white/5' : ''}`}

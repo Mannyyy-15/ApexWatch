@@ -108,7 +108,9 @@ export function MovieGrid() {
                     backdrop: item.backdrop,
                     year: item.year || '',
                     type: item.contentType || 'movie',
-                    progress: item.progress
+                    progress: item.progress,
+                    season: item.season,
+                    episode: item.episode
                 }));
                 finalRows.unshift({
                     title: 'Continue Watching',
