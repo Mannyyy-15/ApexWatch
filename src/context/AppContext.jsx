@@ -1,8 +1,9 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { auth, db, googleProvider } from '../firebase';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, onSnapshot, query } from 'firebase/firestore';
 import { firestoreService } from '../utils/firestore';
+import { App as CapApp } from '@capacitor/app';
 // import { mockAuth } from '../utils/mockAuth';
 
 const AppContext = createContext(undefined);
@@ -49,48 +50,63 @@ export function AppProvider({ children }) {
     const [cachedDetails, setCachedDetails] = useState({}); // Global cache for Movie Details
     const [downloads, setDownloads] = useState([]);
 
+    // ── View History Stack (for hardware back button) ──────────────────
+    // Root views where back should EXIT the app, not go back
+    const ROOT_VIEWS = new Set(['home', 'auth', 'profiles', 'onboarding']);
+    const viewHistoryRef = useRef(['home']); // internal stack, not state to avoid re-renders
+
+    // Wrapped setCurrentView that also pushes to our internal history stack
+    const navigateTo = (view) => {
+        setCurrentView(prev => {
+            if (prev !== view) {
+                viewHistoryRef.current = [...viewHistoryRef.current, view];
+            }
+            return view;
+        });
+    };
+
+    // Go back one step in our view history
+    const goBack = () => {
+        const stack = viewHistoryRef.current;
+        if (stack.length <= 1) {
+            // Already at root — exit app on Android
+            CapApp.exitApp();
+            return;
+        }
+        // Pop the current view off the stack
+        const newStack = stack.slice(0, -1);
+        viewHistoryRef.current = newStack;
+        const previousView = newStack[newStack.length - 1];
+        setCurrentView(previousView);
+    };
+
     useEffect(() => {
         // Handle Google Redirect Result
         getRedirectResult(auth).catch((error) => {
             console.error('Redirect Result Error:', error);
         });
 
-        // Initialize history with current view
-        window.history.replaceState({ view: currentView, movieId: activeMovieId }, '');
-
-        const handlePopState = (event) => {
-            if (event.state) {
-                const { view, movieId } = event.state;
-                
-                // Block going back to auth/profiles if we are already logged in and have a profile
-                if (user && activeProfile && (view === 'auth' || view === 'profiles' || view === 'onboarding')) {
-                    // Stay on current view if they try to go back to restricted areas
-                    window.history.pushState({ view: currentView, movieId: activeMovieId }, '');
-                    return;
-                }
-
-                setCurrentView(view);
-                setActiveMovieId(movieId);
+        // ── Capacitor Android Hardware Back Button ─────────────────────
+        let backListener = null;
+        const setupBackHandler = async () => {
+            try {
+                backListener = await CapApp.addListener('backButton', () => {
+                    goBack();
+                });
+            } catch (e) {
+                // Not running in Capacitor (browser) — use popstate instead
+                const handlePopState = () => goBack();
+                window.addEventListener('popstate', handlePopState);
+                return () => window.removeEventListener('popstate', handlePopState);
             }
         };
+        setupBackHandler();
 
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, [user, activeProfile]); // Re-bind when auth state changes to update guard logic
-
-    // Sync state changes TO history
-    useEffect(() => {
-        const currentState = window.history.state;
-        if (!currentState || currentState.view !== currentView || currentState.movieId !== activeMovieId) {
-            // Don't push state if we are just setting up
-            if (loadingAuth) return;
-
-            // Avoid pushing auth view if we are logged in
-            if (user && currentView === 'auth') return;
-
-            window.history.pushState({ view: currentView, movieId: activeMovieId }, '');
-        }
-    }, [currentView, activeMovieId, loadingAuth, user]);
+        return () => {
+            if (backListener) backListener.remove();
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -456,7 +472,8 @@ export function AppProvider({ children }) {
     };
 
     return (<AppContext.Provider value={{
-            currentView, setCurrentView,
+            currentView, setCurrentView: navigateTo,
+            goBack,
             activeMovieId, setActiveMovieId,
             activeMediaType, setActiveMediaType,
             user, userData, profiles, setProfiles, activeProfile, setActiveProfile,

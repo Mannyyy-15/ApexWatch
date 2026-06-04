@@ -151,10 +151,14 @@ export function useTV() {
 export function useTVBackHandler(onBack) {
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'GoBack') {
-                if (document.body.classList.contains('is-tv') || e.key === 'GoBack') {
-                    onBack();
-                }
+            // Fire on Escape (desktop/TV) or GoBack (TV remote) or Backspace when not in an input
+            const isInput = document.activeElement &&
+                (document.activeElement.tagName === 'INPUT' ||
+                 document.activeElement.tagName === 'TEXTAREA' ||
+                 document.activeElement.isContentEditable);
+
+            if ((e.key === 'Escape' || e.key === 'GoBack') && !isInput) {
+                onBack();
             }
         };
 
