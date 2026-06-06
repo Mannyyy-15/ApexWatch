@@ -230,12 +230,9 @@ export function VideoPlayer() {
     useEffect(() => {
         if (!activeParty || isPartyHost) return;
 
-        // Force reload iframe at host's current seek point if off by > 10s
-        if (activeParty.isPlaying && Math.abs(localTime - activeParty.currentTime) > 10) {
-            setStartTime(activeParty.currentTime);
-            setPlayerReady(false);
-            setTimeout(() => setPlayerReady(true), 200);
-        }
+        // Note: Because we use 3rd-party iframes, forcing a seek requires a full iframe reload, 
+        // which completely interrupts playback and causes aggressive buffering.
+        // We rely on the initial load sync (in loadMovieAndProgress) for room synchronization.
     }, [activeParty?.isPlaying, activeParty?.currentTime, isPartyHost]);
 
     // Auto-Play countdown timer
