@@ -1,10 +1,13 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import { Plus } from 'lucide-react';
 import { firestoreService } from '../utils/firestore';
+import { AvatarBuilderModal } from './AvatarBuilderModal';
+import React, { useState } from 'react';
 
 export function ProfilesSelection() {
     const { profiles, setActiveProfile, setCurrentView, user } = useAppContext();
+    const [isBuilderOpen, setIsBuilderOpen] = useState(false);
 
     const handleSelectProfile = (profile) => {
         setActiveProfile(profile);
@@ -15,16 +18,15 @@ export function ProfilesSelection() {
         }
     };
 
-    const handleAddProfile = async () => {
+    const handleAddProfileClick = () => {
         if (!user) return;
-        
-        const name = window.prompt("Enter profile name:");
-        if (!name || name.trim() === '')
-            return;
-        const isKid = window.confirm("Is this a kids profile? (Click OK for Yes, Cancel for No)");
-        
+        setIsBuilderOpen(true);
+    };
+
+    const handleSaveProfile = async (name, isKid, avatarUrl) => {
         try {
-            await firestoreService.createNewProfile(user.uid, name.trim(), isKid);
+            await firestoreService.createNewProfile(user.uid, name, isKid, avatarUrl);
+            setIsBuilderOpen(false);
         } catch (error) {
             console.error('Error adding profile:', error);
         }
@@ -67,9 +69,9 @@ export function ProfilesSelection() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: profiles.length * 0.08 }}
               whileHover={{ y: -10 }} 
-              onClick={handleAddProfile} 
+              onClick={handleAddProfileClick} 
               onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddProfile();
+                  if (e.key === 'Enter') handleAddProfileClick();
               }}
               tabIndex={0}
               role="button"
@@ -90,5 +92,11 @@ export function ProfilesSelection() {
           Manage Profiles
         </motion.button>
       </motion.div>
+
+      <AvatarBuilderModal 
+          isOpen={isBuilderOpen}
+          onClose={() => setIsBuilderOpen(false)}
+          onSave={handleSaveProfile}
+      />
     </div>);
 }
