@@ -52,6 +52,7 @@ export function NavigationIsland() {
                     setIsUpdating(true);
                     const version = await CapacitorUpdater.download({
                         url: window.__LATEST_APK_URL__,
+                        version: `update-${Date.now()}`
                     });
                     await CapacitorUpdater.set({ id: version.id });
                 } else {
