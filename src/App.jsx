@@ -16,6 +16,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 import { ArrowUp, Keyboard, X } from 'lucide-react';
 import { useTV } from './hooks/useTV';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 const pageVariants = {
     initial: {
@@ -114,6 +116,13 @@ function MainLayout() {
         };
 
         container.addEventListener('scroll', handleScroll);
+        
+        // Fix status bar overlapping the app
+        if (Capacitor.isNativePlatform()) {
+            StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+            StatusBar.setBackgroundColor({ color: '#000000' }).catch(() => {});
+            StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
+        }
         
         const handleToggleDevConsole = () => {
             setShowDevConsole(prev => !prev);
