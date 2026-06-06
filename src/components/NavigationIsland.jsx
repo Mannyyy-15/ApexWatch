@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { tmdb } from '../utils/tmdb';
+import pkg from '../../package.json';
 
 export function NavigationIsland() {
     const { 
@@ -328,6 +329,9 @@ export function NavigationIsland() {
 
                       <div className="mt-1 pt-1 border-t border-white/5">
                         <MenuButton icon={<LogOut size={14}/>} label="Sign Out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
+                        <div className="text-center pt-2 pb-1">
+                          <span className="text-[9px] text-white/20 font-black tracking-widest uppercase">ApexWatch v{pkg.version}</span>
+                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -451,6 +455,9 @@ export function NavigationIsland() {
                 <MenuButton icon={<Users size={14}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                 <div className="col-span-2 mt-1 border-t border-white/5 pt-1.5">
                   <MenuButton icon={<LogOut size={14}/>} label="Log out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
+                  <div className="text-center pt-2 pb-1">
+                    <span className="text-[10px] text-white/20 font-black tracking-widest uppercase">ApexWatch v{pkg.version}</span>
+                  </div>
                 </div>
               </div>
             </motion.div>
