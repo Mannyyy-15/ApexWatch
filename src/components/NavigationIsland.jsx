@@ -4,6 +4,8 @@ import { useAppContext } from '../context/AppContext';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { tmdb } from '../utils/tmdb';
 import pkg from '../../package.json';
+import { CapacitorUpdater } from '@capgo/capacitor-updater';
+import { Capacitor } from '@capacitor/core';
 
 export function NavigationIsland() {
     const { 
@@ -32,6 +34,7 @@ export function NavigationIsland() {
     const searchRef = useRef(null);
     const devHoldTimeoutRef = useRef(null);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
         const handleBeforeInstallPrompt = (e) => {
@@ -43,7 +46,25 @@ export function NavigationIsland() {
     }, []);
 
     const handleDownloadApp = async () => {
-        if (deferredPrompt) {
+        if (Capacitor.isNativePlatform() && window.__LATEST_APK_URL__) {
+            try {
+                if (window.__LATEST_APK_URL__.includes('.zip')) {
+                    setIsUpdating(true);
+                    const version = await CapacitorUpdater.download({
+                        url: window.__LATEST_APK_URL__,
+                    });
+                    await CapacitorUpdater.set({ id: version.id });
+                } else {
+                    // It's an APK, fall back to browser download
+                    window.open(window.__LATEST_APK_URL__, '_blank');
+                }
+            } catch (err) {
+                console.error("Live Update Failed:", err);
+                alert("Live Update Failed. Falling back to browser download.");
+                window.open(window.__LATEST_APK_URL__, '_blank');
+                setIsUpdating(false);
+            }
+        } else if (deferredPrompt) {
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
@@ -172,7 +193,7 @@ export function NavigationIsland() {
               onClick={() => setCurrentView('profiles')}
             />
           )}
-          {updateAvailable && <NavItem icon={<Download size={32} className="text-accent" />} label={<span className="nav-label ml-4 text-lg text-red-500 font-bold italic">Update App</span>} onClick={handleDownloadApp}/>}
+          {updateAvailable && <NavItem icon={<Download size={32} className={`text-accent ${isUpdating ? 'animate-bounce' : ''}`} />} label={<span className="nav-label ml-4 text-lg text-red-500 font-bold italic">{isUpdating ? "Downloading Update..." : "Update App"}</span>} onClick={handleDownloadApp}/>}
           <NavItem icon={<LogOut size={32} className="ml-1"/>} label={<span className="nav-label ml-4 text-lg">Sign Out</span>} onClick={() => setShowSignOutConfirm(true)}/>
         </div>
       </div>

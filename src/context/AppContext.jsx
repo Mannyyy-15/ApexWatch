@@ -137,9 +137,10 @@ export function AppProvider({ children }) {
                 console.log(`[UpdateCheck] Is newer version available? ${isNewer}`);
                 if (isNewer) {
                     setUpdateAvailable(true);
-                    if (data.apkUrl) {
-                        const separator = data.apkUrl.includes('?') ? '&' : '?';
-                        window.__LATEST_APK_URL__ = `${data.apkUrl}${separator}t=${Date.now()}`;
+                    const finalUrl = data.zipUrl || data.apkUrl;
+                    if (finalUrl) {
+                        const separator = finalUrl.includes('?') ? '&' : '?';
+                        window.__LATEST_APK_URL__ = `${finalUrl}${separator}t=${Date.now()}`;
                     }
                 }
                 return isNewer;
