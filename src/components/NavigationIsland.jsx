@@ -49,8 +49,9 @@ export function NavigationIsland() {
                 setDeferredPrompt(null);
             }
         } else {
-            // Fallback/Direct APK link - change this URL to your generated APK link
-            window.open('https://github.com/Mannyyy-15/ApexWatch/raw/main/ApexWatch.apk', '_blank');
+            // Fallback/Direct APK link
+            const url = window.__LATEST_APK_URL__ || 'https://github.com/Mannyyy-15/ApexWatch/raw/main/ApexWatch.apk';
+            window.open(url, '_blank');
         }
     };
 

@@ -112,32 +112,35 @@ export function AppProvider({ children }) {
         const checkForUpdates = async (manual = false) => {
             if (!Capacitor.isNativePlatform() && !manual) return false;
             try {
-                console.log('[UpdateCheck] Checking GitHub API for new version...');
-                const response = await fetch(`https://api.github.com/repos/Mannyyy-15/ApexWatch/contents/package.json?t=${Date.now()}`);
-                const meta = await response.json();
+                console.log('[UpdateCheck] Checking Firebase for new version...');
+                const updateDocRef = doc(db, 'app', 'metadata');
+                const updateSnap = await getDoc(updateDocRef);
                 
-                if (!meta.content) {
-                    console.log('[UpdateCheck] No content found in GitHub API response. Possible rate limit:', meta);
+                if (!updateSnap.exists()) {
+                    console.log('[UpdateCheck] Metadata document not found in Firebase.');
                     return false;
                 }
 
-                // Decode base64 package.json
-                const jsonString = atob(meta.content);
-                const data = JSON.parse(jsonString);
+                const data = updateSnap.data();
+                console.log(`[UpdateCheck] Local version: ${pkg.version} | Firebase version: ${data.latestVersion}`);
                 
-                console.log(`[UpdateCheck] Local version: ${pkg.version} | GitHub version: ${data.version}`);
-                
-                if (!data.version) return false;
+                if (!data.latestVersion) return false;
 
                 const oldParts = pkg.version.split('.').map(Number);
-                const newParts = data.version.split('.').map(Number);
+                const newParts = data.latestVersion.split('.').map(Number);
                 let isNewer = false;
                 for (let i = 0; i < 3; i++) {
                     if (newParts[i] > oldParts[i]) { isNewer = true; break; }
                     if (newParts[i] < oldParts[i]) break;
                 }
+                
                 console.log(`[UpdateCheck] Is newer version available? ${isNewer}`);
-                if (isNewer) setUpdateAvailable(true);
+                if (isNewer) {
+                    setUpdateAvailable(true);
+                    if (data.apkUrl) {
+                        window.__LATEST_APK_URL__ = data.apkUrl;
+                    }
+                }
                 return isNewer;
             } catch (error) {
                 console.error('[UpdateCheck] Failed to check for updates:', error.message);
