@@ -103,6 +103,9 @@ export function VideoPlayer() {
 
         const checkOrientation = () => {
             setIsPortrait(window.innerHeight > window.innerWidth);
+            if (Capacitor.isNativePlatform()) {
+                StatusBar.hide().catch(() => {});
+            }
         };
         window.addEventListener('resize', checkOrientation);
         window.addEventListener('orientationchange', checkOrientation);
@@ -615,7 +618,7 @@ export function VideoPlayer() {
                             transition={{ type: 'spring', damping: 26, stiffness: 220 }}
                             className="absolute top-0 right-0 bottom-0 w-80 md:w-96 bg-[#080808]/95 backdrop-blur-2xl border-l border-white/10 z-[80] p-6 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col pointer-events-auto justify-between"
                         >
-                            <div className="space-y-6">
+                            <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
                                 <div className="flex items-center justify-between pb-4 border-b border-white/5">
                                     <div className="flex items-center gap-2.5">
                                         <Server size={20} className="text-accent" />
@@ -639,7 +642,7 @@ export function VideoPlayer() {
                                     </p>
                                 </div>
 
-                                <div className="space-y-2.5">
+                                <div className="space-y-2.5 overflow-y-auto flex-1 pr-2 pb-4 hide-scrollbar">
                                     {SERVERS.map((srv) => {
                                         const isSelected = selectedServer === srv.id;
                                         return (
