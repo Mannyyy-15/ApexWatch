@@ -26,7 +26,7 @@ export function VideoPlayer() {
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
     const [savedProgress, setSavedProgress] = useState(null);
     const [showResumeToast, setShowResumeToast] = useState(false);
-    const [selectedServer, setSelectedServer] = useState('vidsrc_to');
+    const [selectedServer, setSelectedServer] = useState('vidlink');
     const [showServerMenu, setShowServerMenu] = useState(false);
 
     // Watch Party & Custom Caption States
@@ -66,10 +66,10 @@ export function VideoPlayer() {
     }, [resetControlsTimeout]);
 
     const SERVERS = [
-        { id: 'vidking', name: 'Server 1 (Vidking - Fast)' },
-        { id: 'vidsrc_xyz', name: 'Server 2 (Vidsrc.xyz - Multi-Subtitles)' },
-        { id: 'vidsrc_to', name: 'Server 3 (Vidsrc.to - Premium Multi-Audio)' },
-        { id: 'superembed', name: 'Server 4 (Superembed - Ad-Free)' }
+        { id: 'vidlink', name: 'Server 1 (VidLink Pro - Fast/Auto)' },
+        { id: 'vidsrc_net', name: 'Server 2 (VidSrc Net - Subtitles)' },
+        { id: 'vidsrc_cc', name: 'Server 3 (VidSrc CC - Stable)' },
+        { id: 'embed_su', name: 'Server 4 (Embed.su - High Quality)' }
     ];
 
 
@@ -310,38 +310,34 @@ export function VideoPlayer() {
         const s = activeSeason || 1;
         const e = activeEpisode || 1;
 
-        if (selectedServer === 'vidking') {
+        if (selectedServer === 'vidlink') {
             const baseUrl = movie.type === 'tv' 
-                ? `https://www.vidking.net/embed/tv/${id}/${s}/${e}`
-                : `https://www.vidking.net/embed/movie/${id}`;
+                ? `https://vidlink.pro/tv/${id}/${s}/${e}`
+                : `https://vidlink.pro/movie/${id}`;
             const params = new URLSearchParams({
-                color: 'e50914',
-                autoPlay: 'true',
-                episodeSelector: 'false',
-                nextEpisode: 'false',
+                primaryColor: 'e50914',
+                autoplay: 'true'
             });
-            if (startTime > 5) {
-                params.set('t', Math.floor(startTime).toString());
-            }
+            if (startTime > 5) params.set('t', Math.floor(startTime).toString());
             return `${baseUrl}?${params.toString()}`;
         }
 
-        if (selectedServer === 'vidsrc_xyz') {
+        if (selectedServer === 'vidsrc_net') {
             return movie.type === 'tv'
-                ? `https://vidsrc.xyz/embed/tv/${id}/${s}/${e}`
-                : `https://vidsrc.xyz/embed/movie/${id}`;
+                ? `https://vidsrc.net/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
+                : `https://vidsrc.net/embed/movie?tmdb=${id}`;
         }
 
-        if (selectedServer === 'vidsrc_to') {
+        if (selectedServer === 'vidsrc_cc') {
             return movie.type === 'tv'
-                ? `https://vidsrc.to/embed/tv/${id}/${s}/${e}`
-                : `https://vidsrc.to/embed/movie/${id}`;
+                ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
+                : `https://vidsrc.cc/v2/embed/movie/${id}`;
         }
 
-        if (selectedServer === 'superembed') {
+        if (selectedServer === 'embed_su') {
             return movie.type === 'tv'
-                ? `https://multiembed.eu.org/?video_id=${id}&tmdb=1&s=${s}&e=${e}`
-                : `https://multiembed.eu.org/?video_id=${id}&tmdb=1`;
+                ? `https://embed.su/embed/tv/${id}/${s}/${e}`
+                : `https://embed.su/embed/movie/${id}`;
         }
 
         return '';
