@@ -7,6 +7,7 @@ import { useTVBackHandler } from '../hooks/useTV';
 import { firestoreService } from '../utils/firestore';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { Capacitor } from '@capacitor/core';
+import { StatusBar } from '@capacitor/status-bar';
 
 export function VideoPlayer() {
     const { activeMovieId, setCurrentView, user, activeProfile, activeSeason, activeEpisode, setActiveEpisode, activeMediaType, activeParty, isPartyHost, leaveWatchParty, updatePartyState, goBack } = useAppContext();
@@ -96,6 +97,7 @@ export function VideoPlayer() {
         lockLandscape();
 
         if (Capacitor.isNativePlatform()) {
+            StatusBar.hide().catch(() => {});
             Capacitor.Plugins.AppPIP?.setPipEnabled({ enabled: true }).catch(() => {});
         }
 
@@ -111,6 +113,7 @@ export function VideoPlayer() {
                 try { window.screen?.orientation?.unlock(); } catch (_) {}
             });
             if (Capacitor.isNativePlatform()) {
+                StatusBar.show().catch(() => {});
                 Capacitor.Plugins.AppPIP?.setPipEnabled({ enabled: false }).catch(() => {});
             }
             window.removeEventListener('resize', checkOrientation);
