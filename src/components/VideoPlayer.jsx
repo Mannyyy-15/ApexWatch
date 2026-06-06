@@ -69,7 +69,9 @@ export function VideoPlayer() {
         { id: 'vidlink', name: 'Server 1 (VidLink Pro - Fast/Auto)' },
         { id: 'vidsrc_net', name: 'Server 2 (VidSrc Net - Subtitles)' },
         { id: 'vidsrc_cc', name: 'Server 3 (VidSrc CC - Stable)' },
-        { id: 'embed_su', name: 'Server 4 (Embed.su - High Quality)' }
+        { id: 'embed_su', name: 'Server 4 (Embed.su - High Quality)' },
+        { id: 'autoembed', name: 'Server 5 (Autoembed - Backup)' },
+        { id: '2embed', name: 'Server 6 (2Embed - Backup)' }
     ];
 
 
@@ -338,6 +340,18 @@ export function VideoPlayer() {
             return movie.type === 'tv'
                 ? `https://embed.su/embed/tv/${id}/${s}/${e}`
                 : `https://embed.su/embed/movie/${id}`;
+        }
+
+        if (selectedServer === 'autoembed') {
+            return movie.type === 'tv'
+                ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`
+                : `https://player.autoembed.cc/embed/movie/${id}`;
+        }
+
+        if (selectedServer === '2embed') {
+            return movie.type === 'tv'
+                ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
+                : `https://www.2embed.cc/embed/${id}`;
         }
 
         return '';
