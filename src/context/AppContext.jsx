@@ -113,13 +113,22 @@ export function AppProvider({ children }) {
             if (!Capacitor.isNativePlatform() && !manual) return false;
             try {
                 console.log('[UpdateCheck] Checking GitHub API for new version...');
-                const response = await fetch(`https://api.github.com/repos/Mannyyy-15/ApexWatch/contents/package.json?t=${Date.now()}`, {
-                    headers: { 'Accept': 'application/vnd.github.v3.raw' }
-                });
-                const data = await response.json();
+                const response = await fetch(`https://api.github.com/repos/Mannyyy-15/ApexWatch/contents/package.json?t=${Date.now()}`);
+                const meta = await response.json();
+                
+                if (!meta.content) {
+                    console.log('[UpdateCheck] No content found in GitHub API response. Possible rate limit:', meta);
+                    return false;
+                }
+
+                // Decode base64 package.json
+                const jsonString = atob(meta.content);
+                const data = JSON.parse(jsonString);
                 
                 console.log(`[UpdateCheck] Local version: ${pkg.version} | GitHub version: ${data.version}`);
                 
+                if (!data.version) return false;
+
                 const oldParts = pkg.version.split('.').map(Number);
                 const newParts = data.version.split('.').map(Number);
                 let isNewer = false;

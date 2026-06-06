@@ -26,7 +26,7 @@ export function VideoPlayer() {
     const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
     const [savedProgress, setSavedProgress] = useState(null);
     const [showResumeToast, setShowResumeToast] = useState(false);
-    const [selectedServer, setSelectedServer] = useState('vidking');
+    const [selectedServer, setSelectedServer] = useState('vidsrc_to');
     const [showServerMenu, setShowServerMenu] = useState(false);
 
     // Watch Party & Custom Caption States
@@ -423,6 +423,13 @@ export function VideoPlayer() {
                                 transition={{ duration: 0.2 }}
                                 className="absolute top-6 right-6 pointer-events-auto z-50 flex items-center gap-2.5"
                             >
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowServerMenu(true); }}
+                                    className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer"
+                                    title="Select Server"
+                                >
+                                    <Server size={18} />
+                                </button>
                                 {isPortrait && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleManualRotate(); }}
