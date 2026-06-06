@@ -138,7 +138,8 @@ export function AppProvider({ children }) {
                 if (isNewer) {
                     setUpdateAvailable(true);
                     if (data.apkUrl) {
-                        window.__LATEST_APK_URL__ = data.apkUrl;
+                        const separator = data.apkUrl.includes('?') ? '&' : '?';
+                        window.__LATEST_APK_URL__ = `${data.apkUrl}${separator}t=${Date.now()}`;
                     }
                 }
                 return isNewer;
