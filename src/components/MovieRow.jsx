@@ -33,10 +33,11 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
             {/* Top 10 Massive Number */}
             {isTop10 && (
                 <div 
-                    className="absolute -left-4 md:-left-8 bottom-0 md:-bottom-2 z-20 pointer-events-none select-none text-[100px] md:text-[140px] leading-none tracking-tighter drop-shadow-2xl"
+                    className="absolute left-0 md:left-1 bottom-[20px] md:bottom-[28px] z-20 pointer-events-none select-none text-[100px] md:text-[140px] leading-[0.75] tracking-tighter"
                     style={{ 
-                        color: 'black',
-                        WebkitTextStroke: '2px #E50914', 
+                        color: '#0a0a0a',
+                        WebkitTextStroke: '3px white', 
+                        textShadow: '4px 4px 0px #E50914, 0px 10px 20px rgba(0,0,0,0.8)',
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 900,
                     }}
