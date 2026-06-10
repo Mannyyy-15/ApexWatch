@@ -189,181 +189,87 @@ export function NavigationIsland() {
         </div>
       </div>
 
-      {/* Desktop Island */}
+      {/* Desktop Sidebar (Hotstar Style) */}
       <motion.div 
-        initial={{ y: -100, opacity: 0 }} 
-        animate={{ y: 0, opacity: 1 }} 
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }} 
-        className="hidden md:flex fixed top-6 left-1/2 -translate-x-1/2 z-50 items-center bg-glass-bg backdrop-blur-2xl border border-glass-border py-3.5 px-7 rounded-full shadow-[0_25px_50px_rgba(0,0,0,0.6)] navigation-island-desktop hover:border-white/10 transition-all duration-300 gap-2.5"
+        initial={{ x: -100, opacity: 0 }} 
+        animate={{ x: 0, opacity: 1 }} 
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
+        className="hidden md:flex flex-col fixed top-0 bottom-0 left-0 z-50 w-[80px] hover:w-[260px] bg-gradient-to-r from-black/95 via-black/80 to-transparent hover:bg-black/95 border-r border-white/5 transition-all duration-300 overflow-visible group/sidebar"
       >
-        <div 
-          onClick={() => setCurrentView('home')} 
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') setCurrentView('home');
-          }}
-          tabIndex={0}
-          role="button"
-          className="flex items-center gap-3 pl-4 pr-5 cursor-pointer group flex-shrink-0 outline-none tv-focusable"
-        >
-          <div className="w-11 h-11 rounded-full overflow-hidden shadow-[0_0_15px_rgba(229,9,20,0.4)] group-hover:scale-105 transition-all duration-500">
-            <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
-          </div>
-          <span className="font-black text-2xl tracking-tighter uppercase italic text-white/90 group-hover:text-white transition-colors">
-            Apex<span className="text-accent">Watch</span>
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-2 px-1 flex-shrink-0">
-          <NavItem icon={<Home size={20}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
-          <NavItem icon={<Film size={20}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
-          <NavItem icon={<Tv size={20}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
-          <NavItem icon={<Sparkles size={20}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')}/>
-          {!isNative && (
-            <NavItem icon={<Smartphone size={20}/>} label="Get App" onClick={handleDownloadApp}/>
-          )}
-        </div>
-
-        <div className="w-[1px] h-6 bg-white/10 mx-3 flex-shrink-0"></div>
-
-        <div 
-          ref={searchRef}
-          className="flex items-center bg-white/5 hover:bg-white/10 transition-all rounded-full px-6 py-3.5 mr-2 group border border-white/5 focus-within:border-accent/40 focus-within:bg-black/40 flex-shrink-0 relative"
-        >
-          <Search size={18} className="text-white/40 group-focus-within:text-accent transition-colors"/>
-          <input 
-            type="text" 
-            placeholder="Search content..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => searchQuery.length >= 2 && setShowSearchDropdown(true)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && searchQuery.trim()) {
-                setCurrentView('discover');
-                setShowSearchDropdown(false);
-              }
-            }}
-            className="bg-transparent border-none text-base text-white placeholder-white/30 focus:outline-none w-32 focus:w-52 transition-all duration-500 ml-2.5 font-medium"
-          />
-
-          {/* Search Dropdown */}
-          <AnimatePresence>
-            {showSearchDropdown && (searchQuery.length >= 2) && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute top-full left-0 right-0 mt-3 bg-[#0A0A0F]/80 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-1.5 z-50 overflow-hidden min-w-[280px]"
-              >
-                {isSearching ? (
-                  <div className="p-4 text-center text-white/40 text-[10px] font-black uppercase tracking-widest">Searching...</div>
-                ) : instantResults.length > 0 ? (
-                  <div className="space-y-0.5">
-                    {instantResults.map(movie => (
-                      <button
-                        key={movie.id}
-                        onClick={() => handleResultClick(movie)}
-                        className="w-full flex items-center gap-3 p-1.5 rounded-xl hover:bg-glass-hover transition-all text-left group/item cursor-pointer"
-                      >
-                        <div className="w-9 h-12 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 border border-white/5">
-                          <img src={movie.poster} alt="" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-bold text-white group-hover/item:text-accent transition-colors truncate">{movie.title}</span>
-                          <div className="flex items-center gap-1.5 text-[9px] text-white/30 font-black uppercase tracking-wider">
-                            <span>{movie.year}</span>
-                            <span>•</span>
-                            <span className="text-accent/80">{movie.type === 'tv' ? 'TV' : 'Movie'}</span>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                    <button 
-                      onClick={() => { setCurrentView('discover'); setShowSearchDropdown(false); }}
-                      className="w-full p-2.5 text-center text-[9px] font-black uppercase tracking-widest text-accent hover:text-red-400 transition-colors border-t border-white/5 mt-1 cursor-pointer"
-                    >
-                      See all results
-                    </button>
-                  </div>
-                ) : (
-                  <div className="p-4 text-center text-white/40 text-[10px] font-black uppercase tracking-widest">No results found</div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <div className="relative mr-1.5" ref={profileMenuRef}>
-            {loadingAuth ? (
-                <div className="w-11 h-11 rounded-full bg-white/10 animate-pulse border border-white/5 flex items-center justify-center">
-                    <User size={18} className="text-white/20"/>
-                </div>
-            ) : user ? (
-              <>
-                <div className="relative" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                  <div className="w-11 h-11 rounded-full overflow-hidden border border-white/10 hover:border-accent transition-all bg-white/5 cursor-pointer">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer"/>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <User size={18} className="text-white"/>
-                      </div>
-                    )}
-                  </div>
-                  {updateAvailable && <div className="absolute top-0 right-0 w-3 h-3 bg-red-600 rounded-full border-2 border-black z-10" />}
-                </div>
-
-                <AnimatePresence>
-                  {showProfileMenu && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-3 w-48 bg-[#0A0A0F]/80 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-1.5 z-50 overflow-hidden"
-                    >
-                      <div className="flex items-center gap-2.5 p-2.5 border-b border-white/5 mb-1">
-                        <div className="w-7 h-7 rounded-full overflow-hidden border border-white/15">
-                          <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-bold text-white truncate">{activeProfile?.name || user.displayName}</span>
-                          <span className="text-[8px] text-accent font-black uppercase tracking-widest">Premium</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-0.5">
-                        <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                        <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                        <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                        {isNative ? (
-                            updateAvailable && (
-                                <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
-                            )
-                        ) : (
-                            <MenuButton icon={<Smartphone size={14}/>} label="Download App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+        <div className="flex flex-col h-full py-8 items-start w-full relative">
+            {/* Logo */}
+            <div 
+              onClick={() => setCurrentView('home')} 
+              className="flex items-center gap-6 px-6 cursor-pointer flex-shrink-0 outline-none tv-focusable mb-12 w-full"
+            >
+              <div className="w-9 h-9 rounded-xl overflow-hidden shadow-[0_0_15px_rgba(229,9,20,0.4)] transition-all duration-500 flex-shrink-0">
+                <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
+              </div>
+              <span className="font-black text-2xl tracking-tighter uppercase italic text-white/90 transition-colors opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap">
+                Apex<span className="text-accent">Watch</span>
+              </span>
+            </div>
+            
+            {/* Nav Items */}
+            <div className="flex flex-col gap-2 w-full flex-1">
+                <div className="relative" ref={profileMenuRef}>
+                    <SidebarNavItem 
+                        icon={
+                            user ? (
+                                <div className="w-7 h-7 rounded-full overflow-hidden border border-white/20">
+                                    <img src={avatarUrl || ''} alt="" className="w-full h-full object-cover"/>
+                                </div>
+                            ) : <User size={26} strokeWidth={2.5}/>
+                        } 
+                        label={user ? (activeProfile?.name || "Profile") : "Sign In"} 
+                        active={currentView === 'profiles' || currentView === 'auth'} 
+                        onClick={() => user ? setShowProfileMenu(!showProfileMenu) : setCurrentView('auth')} 
+                    />
+                    
+                    {/* Desktop Profile Menu Popup */}
+                    <AnimatePresence>
+                        {showProfileMenu && user && (
+                            <motion.div 
+                                initial={{ opacity: 0, x: -10, scale: 0.95 }}
+                                animate={{ opacity: 1, x: 0, scale: 1 }}
+                                exit={{ opacity: 0, x: -10, scale: 0.95 }}
+                                className="absolute left-[80px] top-0 ml-4 w-56 bg-[#0A0A0F]/95 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-2 z-[60] overflow-hidden"
+                            >
+                                <div className="flex items-center gap-3 p-3 border-b border-white/5 mb-1">
+                                    <div className="w-9 h-9 rounded-full overflow-hidden border border-white/15">
+                                        <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-sm font-bold text-white truncate">{activeProfile?.name || user.displayName}</span>
+                                        <span className="text-[9px] text-accent font-black uppercase tracking-widest">Premium</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-0.5">
+                                    <MenuButton icon={<BookMarked size={16}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                                    <MenuButton icon={<History size={16}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                                    <MenuButton icon={<Download size={16}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
+                                    <MenuButton icon={<Users size={16}/>} label="Switch Profile" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
+                                </div>
+                                <div className="mt-1 pt-1 border-t border-white/5">
+                                    <MenuButton icon={<LogOut size={16}/>} label="Sign Out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
+                                </div>
+                            </motion.div>
                         )}
-                        <MenuButton icon={<Users size={14}/>} label="Switch Profile" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
-                      </div>
+                    </AnimatePresence>
+                </div>
+                <SidebarNavItem icon={<Search size={26} strokeWidth={2.5}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')} />
+                <SidebarNavItem icon={<Home size={26} strokeWidth={2.5}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')} />
+                <SidebarNavItem icon={<Tv size={26} strokeWidth={2.5}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')} />
+                <SidebarNavItem icon={<Film size={26} strokeWidth={2.5}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')} />
+                <SidebarNavItem icon={<Sparkles size={26} strokeWidth={2.5}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')} />
+            </div>
 
-                      <div className="mt-1 pt-1 border-t border-white/5">
-                        <MenuButton icon={<LogOut size={14}/>} label="Sign Out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
-                        <div className="text-center pt-2 pb-1">
-                          <span className="text-[9px] text-white/20 font-black tracking-widest uppercase">ApexWatch v{pkg.version}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </>
-            ) : (
-              <button 
-                onClick={() => setCurrentView('auth')} 
-                className="flex items-center gap-2.5 bg-white text-black px-6 py-3 rounded-full font-black text-[13px] hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.15)] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] cursor-pointer"
-              >
-                <LogIn size={16}/>
-                <span className="hidden xs:inline uppercase tracking-wider">Sign In</span>
-                <span className="xs:hidden uppercase tracking-wider">Join</span>
-              </button>
-            )}
+            {/* Bottom Actions */}
+            <div className="flex flex-col gap-2 w-full mb-4">
+                {!isNative && (
+                    <SidebarNavItem icon={<Smartphone size={26} strokeWidth={2.5}/>} label="Get App" onClick={handleDownloadApp}/>
+                )}
+            </div>
         </div>
       </motion.div>
 
@@ -545,6 +451,29 @@ function MenuButton({ icon, label, onClick, variant = 'default' }) {
       <span className="text-xs font-bold">{label}</span>
     </button>
   );
+}
+
+function SidebarNavItem({ icon, label, active = false, onClick }) {
+    return (
+        <button 
+            onClick={onClick} 
+            className={`flex items-center gap-6 px-7 py-3.5 w-full transition-all duration-300 flex-shrink-0 cursor-pointer outline-none tv-focusable group/item relative
+            ${active ? 'text-white' : 'text-white/50 hover:text-white hover:bg-white/5'}`}
+        >
+            {active && (
+                <motion.div 
+                    layoutId="activeIndicator"
+                    className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                />
+            )}
+            <div className={`transition-transform duration-300 ${active ? 'scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'group-hover/item:scale-110'}`}>
+                {icon}
+            </div>
+            <span className={`text-base font-bold tracking-wide whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 ${active ? 'text-white font-black drop-shadow-md' : ''}`}>
+                {label}
+            </span>
+        </button>
+    );
 }
 
 function NavItem({ icon, label, active = false, onClick }) {

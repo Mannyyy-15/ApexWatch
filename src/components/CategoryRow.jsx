@@ -98,34 +98,42 @@ export function CategoryRow({ title, type }) {
                 <div
                     ref={rowRef}
                     onScroll={handleScroll}
-                    className="flex gap-3 md:gap-4 overflow-x-auto hide-scrollbar pr-10 snap-x snap-mandatory scroll-smooth"
+                    className="flex gap-3 md:gap-5 overflow-x-auto hide-scrollbar pr-10 snap-x snap-mandatory scroll-smooth py-4"
                 >
                     {items.map((item, index) => (
                         <div
                             key={item.id}
                             onClick={() => handleCategoryClick(item)}
-                            className={`flex-none w-[200px] md:w-[260px] h-[100px] md:h-[130px] rounded-lg md:rounded-xl overflow-hidden relative cursor-pointer tv-focusable group shadow-xl bg-gradient-to-r ${item.color} to-[#111]`}
+                            className="flex-none w-[200px] md:w-[280px] h-[110px] md:h-[150px] rounded-xl md:rounded-2xl relative cursor-pointer tv-focusable group snap-start transition-all duration-300 md:hover:scale-105 hover:shadow-[0_0_25px_rgba(255,255,255,0.15)] hover:border-white/40 border border-white/5 overflow-hidden"
                         >
-                            {/* Image on the right, blended via mask/opacity */}
-                            <div className="absolute right-0 top-0 w-2/3 h-full mix-blend-luminosity opacity-40 group-hover:opacity-70 group-hover:mix-blend-normal transition-all duration-500">
+                            {/* Background Image */}
+                            <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-110">
                                 <img
                                     src={item.image}
                                     alt={item.name}
-                                    className="w-full h-full object-cover object-center"
+                                    className="w-full h-full object-cover"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#111] via-transparent to-transparent"></div>
+                                <div className={`absolute inset-0 bg-gradient-to-t ${item.color} mix-blend-multiply opacity-80 group-hover:opacity-50 transition-opacity duration-500`}></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90"></div>
                             </div>
 
-                            {/* Text Content on the left */}
-                            <div className="absolute inset-y-0 left-0 p-4 md:p-5 flex flex-col justify-center pointer-events-none z-10 w-2/3 bg-gradient-to-r from-black/60 to-transparent">
-                                {type === 'language' ? (
-                                    <>
-                                        <h3 className="text-xl md:text-2xl font-bold text-white drop-shadow-md">{item.native}</h3>
-                                        <p className="text-xs md:text-sm text-white/70 font-medium">{item.name}</p>
-                                    </>
-                                ) : (
-                                    <h3 className="text-lg md:text-xl font-bold text-white drop-shadow-md">{item.name}</h3>
-                                )}
+                            {/* Content */}
+                            <div className="absolute inset-0 p-4 md:p-5 flex flex-col justify-end pointer-events-none z-10">
+                                <div className="transform transition-all duration-500 group-hover:-translate-y-2">
+                                    {type === 'language' ? (
+                                        <>
+                                            <h3 className="text-2xl md:text-3xl font-black text-white drop-shadow-lg tracking-tight uppercase italic">{item.native}</h3>
+                                            <p className="text-xs md:text-sm text-white/80 font-bold uppercase tracking-widest">{item.name}</p>
+                                        </>
+                                    ) : (
+                                        <h3 className="text-xl md:text-2xl font-black text-white drop-shadow-lg uppercase tracking-tight italic">{item.name}</h3>
+                                    )}
+                                </div>
+                                
+                                {/* Reveal on hover */}
+                                <div className="absolute bottom-4 left-4 md:left-5 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 text-[10px] font-black uppercase tracking-widest text-accent flex items-center gap-1.5">
+                                    Explore <ChevronRight size={12} strokeWidth={4} />
+                                </div>
                             </div>
                         </div>
                     ))}
