@@ -194,15 +194,15 @@ export function NavigationIsland() {
   initial={{ x: -100, opacity: 0 }} 
   animate={{ x: 0, opacity: 1 }} 
   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
-  className="hidden md:flex flex-col fixed top-6 bottom-6 left-6 z-[60] w-[80px] hover:w-[280px] bg-black/60 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 overflow-visible group/sidebar"
+  className="hidden md:flex flex-col fixed top-6 bottom-6 left-6 z-[60] w-[80px] bg-black/60 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 overflow-visible"
   >
   <div className="flex flex-col h-full py-8 items-start justify-center w-full relative">
  {/* Logo */}
  <div 
  onClick={() => setCurrentView('home')} 
- className="flex items-center justify-center cursor-pointer flex-shrink-0 outline-none tv-focusable mb-14 w-[80px]"
+ className="flex items-center justify-center cursor-pointer flex-shrink-0 outline-none tv-focusable mb-14 w-[80px] group/logo"
  >
- <div className="w-10 h-10 rounded-xl overflow-hidden group-hover/sidebar:scale-105 transition-all duration-500 flex-shrink-0">
+ <div className="w-10 h-10 rounded-xl overflow-hidden group-hover/logo:scale-105 transition-all duration-500 flex-shrink-0">
  <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
  </div>
  </div>
@@ -468,18 +468,21 @@ function SidebarNavItem({ icon, label, active = false, onClick }) {
       {active && (
         <motion.div 
           layoutId="activeIndicator"
-          className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full "
+          className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full"
         />
       )}
-      <div className="w-[80px] flex items-center justify-center flex-shrink-0">
-        <div className={`transition-transform duration-300 ${active ? 'scale-110 ' : 'group-hover/item:scale-110'}`}>
+      <div className="w-[80px] flex items-center justify-center flex-shrink-0 relative">
+        <div className={`transition-transform duration-300 ${active ? 'scale-110' : 'group-hover/item:scale-110'}`}>
           {icon}
         </div>
       </div>
-      <div className="flex-1 overflow-hidden flex items-center justify-start ml-1">
-        <span className={`text-base font-bold tracking-wide whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-all duration-500 -translate-x-4 group-hover/sidebar:translate-x-0 ${active ? 'text-white font-black drop-shadow-md' : ''}`}>
-          {label}
-        </span>
+      {/* Floating Tooltip */}
+      <div className="absolute left-[80px] opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-2 -translate-x-2 transition-all duration-300 pointer-events-none z-[100] flex items-center">
+        <div className="bg-[#161618] border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl">
+          <span className="text-[13px] font-bold tracking-wider whitespace-nowrap text-white drop-shadow-md">
+            {label}
+          </span>
+        </div>
       </div>
     </button>
   );
