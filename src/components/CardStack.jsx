@@ -59,10 +59,8 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
     // If dragged far enough or thrown with velocity
     if (swipeDistance < -80 || swipeVelocity < -500) {
       onSwipe('left');
-      x.set(0); 
     } else if (swipeDistance > 80 || swipeVelocity > 500) {
       onSwipe('right');
-      x.set(0);
     }
   };
 
