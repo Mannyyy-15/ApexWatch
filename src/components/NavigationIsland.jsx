@@ -252,7 +252,7 @@ export function NavigationIsland() {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute top-full left-0 right-0 mt-3 bg-[#0a0a0a]/95 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-1.5 z-50 overflow-hidden min-w-[280px]"
+                className="absolute top-full left-0 right-0 mt-3 bg-[#0A0A0F]/80 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-1.5 z-50 overflow-hidden min-w-[280px]"
               >
                 {isSearching ? (
                   <div className="p-4 text-center text-white/40 text-[10px] font-black uppercase tracking-widest">Searching...</div>
@@ -318,7 +318,7 @@ export function NavigationIsland() {
                       initial={{ opacity: 0, y: 15, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-3 w-48 bg-[#0a0a0a]/95 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-1.5 z-50 overflow-hidden"
+                      className="absolute right-0 mt-3 w-48 bg-[#0A0A0F]/80 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-1.5 z-50 overflow-hidden"
                     >
                       <div className="flex items-center gap-2.5 p-2.5 border-b border-white/5 mb-1">
                         <div className="w-7 h-7 rounded-full overflow-hidden border border-white/15">

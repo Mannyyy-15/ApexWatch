@@ -19,7 +19,14 @@ export function MovieDetails() {
     const [inWatchlist, setInWatchlist] = useState(false);
     const [hasProgress, setHasProgress] = useState(null);
     const [loading, setLoading] = useState(!cachedDetails[activeMovieId]);
-    const [activeTab, setActiveTab] = useState('Overview');
+    const [activeTab, setActiveTab] = useState(() => {
+        const saved = sessionStorage.getItem(`apexwatch_tab_${activeMovieId}`);
+        return saved || 'Overview';
+    });
+
+    useEffect(() => {
+        sessionStorage.setItem(`apexwatch_tab_${activeMovieId}`, activeTab);
+    }, [activeTab, activeMovieId]);
     const [episodes, setEpisodes] = useState([]);
     const [fetchingEpisodes, setFetchingEpisodes] = useState(false);
 
@@ -177,6 +184,11 @@ export function MovieDetails() {
 
     const tabs = ['Overview', 'Details'];
     if (movie.type === 'tv') tabs.splice(1, 0, 'Episodes');
+
+    // Ensure we don't land on Episodes if it's not a TV show
+    if (activeTab === 'Episodes' && movie.type !== 'tv') {
+        setActiveTab('Overview');
+    }
 
     return (
         <motion.div 
@@ -336,8 +348,8 @@ export function MovieDetails() {
                 </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="px-6 md:px-20 border-b border-glass-border sticky top-0 z-30 bg-[#020202]/85 backdrop-blur-xl overflow-x-auto hide-scrollbar">
+            {/* Sticky Tabs Navbar with Glassmorphism */}
+            <div className="px-6 md:px-20 border-b border-glass-border sticky top-0 z-30 bg-[#0A0A0F]/80 backdrop-blur-2xl overflow-x-auto hide-scrollbar">
                 <div className="flex gap-6 md:gap-9 min-w-max">
                     {tabs.map(tab => (
                         <button 

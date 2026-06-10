@@ -10,9 +10,9 @@
   --color-accent-hover: #f43f5e;
   --color-accent-glow: rgba(229, 9, 20, 0.4);
   
-  --color-bg-base: #020202;
-  --color-bg-surface: #0a0a0a;
-  --color-bg-card: #121212;
+  --color-bg-base: #0A0A0F;
+  --color-bg-surface: #121218;
+  --color-bg-card: #1A1A24;
   
   --color-glass-bg: rgba(255, 255, 255, 0.03);
   --color-glass-border: rgba(255, 255, 255, 0.06);
@@ -22,7 +22,7 @@
 }
 
 :root {
-  --color-primary: #020202;
+  --color-primary: #0A0A0F;
   --color-accent: #e50914;
   --color-accent-glow: rgba(229, 9, 20, 0.4);
   --glass-bg: rgba(255, 255, 255, 0.03);
@@ -32,6 +32,7 @@
 html, body {
   background-color: var(--color-primary);
   color: white;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;

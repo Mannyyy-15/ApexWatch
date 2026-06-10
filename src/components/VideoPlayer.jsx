@@ -49,6 +49,10 @@ export function VideoPlayer() {
     const [showControls, setShowControls] = useState(true);
     const controlsTimeoutRef = useRef(null);
 
+    // Auto-fallback state
+    const [autoSwitched, setAutoSwitched] = useState(false);
+    const [showFallbackToast, setShowFallbackToast] = useState(false);
+
     const resetControlsTimeout = useCallback(() => {
         setShowControls(true);
         if (controlsTimeoutRef.current) {
@@ -66,13 +70,34 @@ export function VideoPlayer() {
         };
     }, [resetControlsTimeout]);
 
+    // Auto-Server Fallback Timer
+    useEffect(() => {
+        if (!playerReady || selectedServer !== 'vidlink' || autoSwitched) return;
+
+        const fallbackTimer = setTimeout(() => {
+            if (localTime === 0 && duration === 0) {
+                console.log('[VideoPlayer] Vidlink unresponsive after 15s, auto-switching to fallback server');
+                setSelectedServer('vidsrc_net');
+                setAutoSwitched(true);
+                setShowFallbackToast(true);
+                setTimeout(() => setShowFallbackToast(false), 5000);
+            }
+        }, 15000);
+
+        return () => clearTimeout(fallbackTimer);
+    }, [playerReady, selectedServer, localTime, duration, autoSwitched]);
+
     const SERVERS = [
         { id: 'vidlink', name: 'Server 1 (VidLink Pro - Fast/Auto)' },
         { id: 'vidsrc_net', name: 'Server 2 (VidSrc Net - Subtitles)' },
         { id: 'vidsrc_cc', name: 'Server 3 (VidSrc CC - Stable)' },
-        { id: 'embed_su', name: 'Server 4 (Embed.su - High Quality)' },
-        { id: 'autoembed', name: 'Server 5 (Autoembed - Backup)' },
-        { id: '2embed', name: 'Server 6 (2Embed - Backup)' }
+        { id: 'vidsrc_pro', name: 'Server 4 (VidSrc Pro - Cineby)' },
+        { id: 'embed_su', name: 'Server 5 (Embed.su - High Quality)' },
+        { id: 'superembed', name: 'Server 6 (SuperEmbed - Cineby)' },
+        { id: 'vidplay', name: 'Server 7 (VidPlay - Cineby)' },
+        { id: 'autoembed', name: 'Server 8 (Autoembed - Backup)' },
+        { id: '2embed', name: 'Server 9 (2Embed - Backup)' },
+        { id: 'cineby_direct', name: 'Server 10 (Cineby Direct Embed)' }
     ];
 
 
@@ -133,15 +158,20 @@ export function VideoPlayer() {
                 let data;
                 if (activeMediaType === 'movie') {
                     data = await tmdb.fetchMovieDetails(activeMovieId);
-                    if (!data.title && !data.id) {
+                    if (!data || (!data.title && !data.id)) {
                         data = await tmdb.fetchTVDetails(activeMovieId);
                     }
                 } else {
                     data = await tmdb.fetchTVDetails(activeMovieId);
-                    if (!data.name && !data.id) {
+                    if (!data || (!data.name && !data.id)) {
                         data = await tmdb.fetchMovieDetails(activeMovieId);
                     }
                 }
+
+                if (!data || (!data.id && !data.title && !data.name)) {
+                    throw new Error("Movie not found or failed to load from TMDB");
+                }
+
                 const formatted = tmdb.formatMovie(data);
                 setMovie(formatted);
 
@@ -155,6 +185,21 @@ export function VideoPlayer() {
                         setShowResumeToast(true);
                         setTimeout(() => setShowResumeToast(false), 10000);
                     }
+                    
+                    // Save to history immediately so the timestamp updates and it shows in "Recent Watch"
+                    await firestoreService.saveWatchProgress(user.uid, activeProfile.id, movie.id, {
+                        progressSeconds: progress?.progressSeconds || 0,
+                        durationSeconds: progress?.durationSeconds || 0,
+                        completed: progress?.completed || false,
+                        contentType: movie.type,
+                        title: movie.title,
+                        poster: movie.poster,
+                        backdrop: movie.backdrop,
+                        year: movie.year,
+                        season: activeSeason,
+                        episode: activeEpisode,
+                        genres: movie.tags || []
+                    });
                 }
                 setPlayerReady(true);
             } catch (error) {
@@ -339,10 +384,28 @@ export function VideoPlayer() {
                 : `https://vidsrc.cc/v2/embed/movie/${id}`;
         }
 
+        if (selectedServer === 'vidsrc_pro') {
+            return movie.type === 'tv'
+                ? `https://vidsrc.pro/embed/tv/${id}/${s}/${e}`
+                : `https://vidsrc.pro/embed/movie/${id}`;
+        }
+
         if (selectedServer === 'embed_su') {
             return movie.type === 'tv'
                 ? `https://embed.su/embed/tv/${id}/${s}/${e}`
                 : `https://embed.su/embed/movie/${id}`;
+        }
+
+        if (selectedServer === 'superembed') {
+            return movie.type === 'tv'
+                ? `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${s}&e=${e}`
+                : `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`;
+        }
+
+        if (selectedServer === 'vidplay') {
+            return movie.type === 'tv'
+                ? `https://vidplay.online/embed/tv/${id}/${s}/${e}`
+                : `https://vidplay.online/embed/movie/${id}`;
         }
 
         if (selectedServer === 'autoembed') {
@@ -355,6 +418,12 @@ export function VideoPlayer() {
             return movie.type === 'tv'
                 ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
                 : `https://www.2embed.cc/embed/${id}`;
+        }
+
+        if (selectedServer === 'cineby_direct') {
+            return movie.type === 'tv'
+                ? `https://www.cineby.cc/embed/tv/${id}/${s}/${e}`
+                : `https://www.cineby.cc/embed/movie/${id}`;
         }
 
         return '';
@@ -531,6 +600,23 @@ export function VideoPlayer() {
                                         <X size={16} />
                                     </div>
                                 </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Auto-Fallback Toast */}
+                    <AnimatePresence>
+                        {showFallbackToast && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -20, x: '-50%' }}
+                                animate={{ opacity: 1, y: 0, x: '-50%' }}
+                                exit={{ opacity: 0, y: -20, x: '-50%' }}
+                                className="absolute top-6 left-1/2 z-[70] pointer-events-none"
+                            >
+                                <div className="bg-black/90 backdrop-blur-2xl border border-white/20 px-6 py-3 rounded-full flex items-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)]">
+                                    <Server size={18} className="text-yellow-500 animate-pulse" />
+                                    <span className="text-white text-xs font-bold uppercase tracking-wider">Server unresponsive. Switched to Fallback.</span>
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
