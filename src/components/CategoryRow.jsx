@@ -121,18 +121,17 @@ export function CategoryRow({ title, type }) {
  onClick={() => handleCategoryClick(item)}
  className="flex-none w-[240px] md:w-[380px] h-[135px] md:h-[215px] rounded-xl md:rounded-2xl relative cursor-pointer tv-focusable group snap-start transition-all duration-300 md:hover:scale-105 hover:border-white/40 border border-white/5 overflow-hidden"
  >
- {/* Background Image */}
- <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-110">
+ {/* Background Color & Image */}
+ <div className={`absolute inset-0 ${item.color.replace('from-', 'bg-')} transition-transform duration-700 group-hover:scale-110`}>
  <img
  src={item.image}
  alt={item.name}
- className="w-full h-full object-cover"
+ className="w-full h-full object-cover opacity-40 mix-blend-luminosity group-hover:opacity-70 transition-opacity duration-500"
  onError={(e) => {
  e.target.onerror = null;
  e.target.src = 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80';
  }}
  />
- <div className={`absolute inset-0 ${item.color.replace('from-', 'bg-')} opacity-60 group-hover:opacity-30 transition-opacity duration-500`}></div>
  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90"></div>
  </div>
 
