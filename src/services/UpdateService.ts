@@ -111,6 +111,17 @@ class UpdateServiceClass {
         }
     }
 
+    async notifyAppReady(): Promise<void> {
+        try {
+            if (Capacitor.isNativePlatform()) {
+                await CapacitorUpdater.notifyAppReady();
+                console.log('[UpdateService] Notified Capgo that app is ready (health check passed)');
+            }
+        } catch (error) {
+            console.error('[UpdateService] Error notifying app ready:', error);
+        }
+    }
+
     private isNewerVersion(oldVer: string, newVer: string): boolean {
         const oldParts = oldVer.split('.').map(Number);
         const newParts = newVer.split('.').map(Number);

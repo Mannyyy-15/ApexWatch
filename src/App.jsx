@@ -13,6 +13,7 @@ import { ProfileLibrary } from './components/ProfileLibrary';
 import { DevConsole } from './components/DevConsole';
 import { UpdaterModal } from './components/UpdaterModal';
 import { AppProvider, useAppContext } from './context/AppContext';
+import { UpdateService } from './services/UpdateService';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 import { ArrowUp, Keyboard, X } from 'lucide-react';
@@ -317,6 +318,9 @@ function MainLayout() {
 
 export default function App() {
     useEffect(() => {
+        // Notify Capgo native updater that the app successfully started without crashing
+        UpdateService.notifyAppReady();
+
         // Setup Dev Console Interceptor
         const originalLog = console.log;
         const originalWarn = console.warn;
