@@ -1,4 +1,4 @@
-import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked, Smartphone, Download, BarChart3 } from 'lucide-react';
+import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked, Smartphone, Download, BarChart3, LayoutGrid } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -200,7 +200,7 @@ export function NavigationIsland() {
             {/* Logo */}
             <div 
               onClick={() => setCurrentView('home')} 
-              className="flex items-center px-6 cursor-pointer flex-shrink-0 outline-none tv-focusable mb-14 w-full"
+              className="flex items-center pl-8 pr-6 cursor-pointer flex-shrink-0 outline-none tv-focusable mb-14 w-full"
             >
               <div className="w-10 h-10 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(229,9,20,0.5)] group-hover/sidebar:shadow-[0_0_30px_rgba(229,9,20,0.6)] group-hover/sidebar:scale-105 transition-all duration-500 flex-shrink-0">
                 <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
@@ -214,6 +214,7 @@ export function NavigationIsland() {
                 <SidebarNavItem icon={<Tv size={24} strokeWidth={2.5}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')} />
                 <SidebarNavItem icon={<Film size={24} strokeWidth={2.5}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')} />
                 <SidebarNavItem icon={<Sparkles size={24} strokeWidth={2.5}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')} />
+                <SidebarNavItem icon={<LayoutGrid size={24} strokeWidth={2.5}/>} label="Browse" active={currentView === 'browse'} onClick={() => setCurrentView('browse')} />
                 <div className="relative mt-2" ref={profileMenuRef}>
                     <SidebarNavItem 
                         icon={
@@ -454,7 +455,7 @@ function SidebarNavItem({ icon, label, active = false, onClick }) {
     return (
         <button 
             onClick={onClick} 
-            className={`flex items-center gap-6 px-7 py-4 w-full transition-all duration-300 flex-shrink-0 cursor-pointer outline-none tv-focusable group/item relative
+            className={`flex items-center gap-6 pl-8 pr-6 py-4 w-full transition-all duration-300 flex-shrink-0 cursor-pointer outline-none tv-focusable group/item relative
             ${active ? 'text-white' : 'text-white/50 hover:text-white hover:bg-white/5'}`}
         >
             {active && (
