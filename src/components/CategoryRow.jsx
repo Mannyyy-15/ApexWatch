@@ -4,12 +4,12 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const LANGUAGES = [
- { id: 'hi', name: 'Hindi', native: 'हिन्दी', color: 'from-[#3A4374]', image: 'https://image.tmdb.org/t/p/w500/1XDDXPXGiI8id7MrUxK36ke7wow.jpg' },
- { id: 'en', name: 'English', native: 'English', color: 'from-[#8B453E]', image: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg' },
- { id: 'ta', name: 'Tamil', native: 'தமிழ்', color: 'from-[#5C3D32]', image: 'https://image.tmdb.org/t/p/w500/e5IdZ1OEWMYxTeu51tI67gXvfpn.jpg' },
- { id: 'te', name: 'Telugu', native: 'తెలుగు', color: 'from-[#4A5D23]', image: 'https://image.tmdb.org/t/p/w500/yF1eOkaYvwiORauRCPWznV9xVvi.jpg' },
- { id: 'ml', name: 'Malayalam', native: 'മലയാളം', color: 'from-[#2C3E50]', image: 'https://image.tmdb.org/t/p/w500/5RkZOvu9FC0A8NypE2BL7oKNOTU.jpg' },
- { id: 'ko', name: 'Korean', native: '한국어', color: 'from-[#6E4E73]', image: 'https://image.tmdb.org/t/p/w500/2meX1nMdScFOoV4370rqHWKmXhY.jpg' },
+ { id: 'hi', name: 'Hindi', native: 'हिन्दी', color: 'from-[#3A4374]', image: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=500&q=80' },
+ { id: 'en', name: 'English', native: 'English', color: 'from-[#8B453E]', image: 'https://images.unsplash.com/photo-1557683311-eac922347aa1?w=500&q=80' },
+ { id: 'ta', name: 'Tamil', native: 'தமிழ்', color: 'from-[#5C3D32]', image: 'https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?w=500&q=80' },
+ { id: 'te', name: 'Telugu', native: 'తెలుగు', color: 'from-[#4A5D23]', image: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=500&q=80' },
+ { id: 'ml', name: 'Malayalam', native: 'മലയാളം', color: 'from-[#2C3E50]', image: 'https://images.unsplash.com/photo-1557682260-96773eb01377?w=500&q=80' },
+ { id: 'ko', name: 'Korean', native: '한국어', color: 'from-[#6E4E73]', image: 'https://images.unsplash.com/photo-1557683304-673a23048d34?w=500&q=80' },
 ];
 
 const GENRES = [
@@ -23,18 +23,18 @@ const GENRES = [
 ];
 
 const CHANNELS = [
- { id: 'sparks', name: 'Sparks', color: 'from-[#E50914]', image: 'https://image.tmdb.org/t/p/w500/1XDDXPXGiI8id7MrUxK36ke7wow.jpg' },
- { id: 'news', name: 'News', color: 'from-[#2563EB]', image: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg' },
- { id: 'tv', name: 'TV Shows', color: 'from-[#10B981]', image: 'https://image.tmdb.org/t/p/w500/e5IdZ1OEWMYxTeu51tI67gXvfpn.jpg' },
- { id: 'movies', name: 'Movies', color: 'from-[#F59E0B]', image: 'https://image.tmdb.org/t/p/w500/yF1eOkaYvwiORauRCPWznV9xVvi.jpg' },
- { id: 'sports', name: 'Sports', color: 'from-[#8B5CF6]', image: 'https://image.tmdb.org/t/p/w500/5RkZOvu9FC0A8NypE2BL7oKNOTU.jpg' },
+ { id: 'sparks', name: 'Sparks', color: 'from-[#E50914]', image: 'https://images.unsplash.com/photo-1514826786317-59744fe2a548?w=500&q=80' },
+ { id: 'news', name: 'News', color: 'from-[#2563EB]', image: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=500&q=80' },
+ { id: 'tv', name: 'TV Shows', color: 'from-[#10B981]', image: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?w=500&q=80' },
+ { id: 'movies', name: 'Movies', color: 'from-[#F59E0B]', image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&q=80' },
+ { id: 'sports', name: 'Sports', color: 'from-[#8B5CF6]', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=500&q=80' },
 ];
 
 const SPORTS = [
- { id: 'cricket', name: 'Cricket', color: 'from-[#059669]', image: 'https://image.tmdb.org/t/p/w500/vVpEOvdxVBP2aV166j5Xlvb5Cdc.jpg' },
- { id: 'football', name: 'Football', color: 'from-[#DC2626]', image: 'https://image.tmdb.org/t/p/w500/kWSi5N0uVv6E4WkP5X12m8fE8gJ.jpg' },
- { id: 'tennis', name: 'Tennis', color: 'from-[#D97706]', image: 'https://image.tmdb.org/t/p/w500/l5QgEvlfK6eHPM4YPEk7AArXmh8.jpg' },
- { id: 'kabaddi', name: 'Kabaddi', color: 'from-[#4F46E5]', image: 'https://image.tmdb.org/t/p/w500/4k99kV4R1bbbrsnjR205v91Xbin.jpg' },
+ { id: 'cricket', name: 'Cricket', color: 'from-[#059669]', image: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=500&q=80' },
+ { id: 'football', name: 'Football', color: 'from-[#DC2626]', image: 'https://images.unsplash.com/photo-1518605368461-1ee7a5342894?w=500&q=80' },
+ { id: 'tennis', name: 'Tennis', color: 'from-[#D97706]', image: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=500&q=80' },
+ { id: 'kabaddi', name: 'Kabaddi', color: 'from-[#4F46E5]', image: 'https://images.unsplash.com/photo-1565992441121-4367c2967103?w=500&q=80' },
 ];
 
 export function CategoryRow({ title, type }) {
