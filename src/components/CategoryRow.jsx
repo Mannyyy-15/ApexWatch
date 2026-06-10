@@ -132,7 +132,7 @@ export function CategoryRow({ title, type }) {
  e.target.src = 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80';
  }}
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90"></div>
+ <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent"></div>
  </div>
 
  {/* Content */}

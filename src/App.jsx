@@ -191,7 +191,7 @@ function MainLayout() {
  <div className="vignette"></div>
  {currentView !== 'auth' && currentView !== 'onboarding' && currentView !== 'profiles' && currentView !== 'details' && currentView !== 'player' && <NavigationIsland />}
  
- <main ref={scrollContainerRef} className="w-full h-screen overflow-y-auto overflow-x-hidden hide-scrollbar pb-24 md:pb-0 md:pl-[80px] scroll-smooth relative">
+ <main ref={scrollContainerRef} className="w-full h-screen overflow-y-auto overflow-x-hidden hide-scrollbar pb-24 md:pb-0 md:pl-[120px] scroll-smooth relative">
  <AnimatePresence mode="wait">
  {currentView === 'home' && (
  <motion.div 

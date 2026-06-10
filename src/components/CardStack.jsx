@@ -85,11 +85,12 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
  };
  } else if (!isTop) {
  animateProps = {
- x: offset * 40, // Increased X offset to expose the right side
- y: 0, // No Y offset, keep them vertically aligned
+ x: offset * 15,
+ y: offset * 25, // Move down so the bottom edge is visible
  scale: 1 - offset * 0.05,
- opacity: 1, // Keep them visible so the artwork shows
+ opacity: 1,
  zIndex: 10 - offset,
+ rotate: offset * 3, // Add rotation for a deck effect
  };
  }
 
@@ -97,7 +98,7 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
  <motion.div
  style={{ 
  x: isTop ? x : 0, 
- rotate: isTop ? rotate : 0, 
+ rotate: isTop ? rotate : animateProps.rotate, 
  opacity: isTop ? dragOpacity : animateProps.opacity,
  zIndex: animateProps.zIndex 
  }}
