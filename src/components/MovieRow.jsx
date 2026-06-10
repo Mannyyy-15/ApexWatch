@@ -149,18 +149,10 @@ export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", mov
             onMouseLeave={() => setShowArrows(false)}
         >
             {title && (
-                <div className="flex items-center justify-between mb-5 md:mb-6 px-1">
-                    <div className="flex items-center gap-3.5 md:gap-4">
-                        <div className="w-1 h-6 md:h-8 bg-accent rounded-full shadow-[0_0_15px_rgba(229,9,20,0.6)]"></div>
-                        <div>
-                            <h2 className="text-lg md:text-2xl font-black text-white tracking-tighter uppercase leading-none italic">
-                                {title}
-                            </h2>
-                            <p className="text-[8px] md:text-[9px] text-white/30 font-black uppercase tracking-[0.25em] mt-1.5">
-                                {subtitle}
-                            </p>
-                        </div>
-                    </div>
+                <div className="flex items-center justify-between mb-4 md:mb-5 px-1 md:px-2">
+                    <h2 className="text-lg md:text-xl font-bold text-white/90 tracking-wide">
+                        {title}
+                    </h2>
                 </div>
             )}
 
