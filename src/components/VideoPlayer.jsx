@@ -53,6 +53,9 @@ export function VideoPlayer() {
     const [autoSwitched, setAutoSwitched] = useState(false);
     const [showFallbackToast, setShowFallbackToast] = useState(false);
 
+    // Watch Party Iframe Ref
+    const iframeRef = useRef(null);
+
     const resetControlsTimeout = useCallback(() => {
         setShowControls(true);
         if (controlsTimeoutRef.current) {
@@ -278,9 +281,21 @@ export function VideoPlayer() {
     useEffect(() => {
         if (!activeParty || isPartyHost) return;
 
-        // Note: Because we use 3rd-party iframes, forcing a seek requires a full iframe reload, 
-        // which completely interrupts playback and causes aggressive buffering.
-        // We rely on the initial load sync (in loadMovieAndProgress) for room synchronization.
+        const iframe = iframeRef.current;
+        if (!iframe || !iframe.contentWindow) return;
+
+        // Sync Play/Pause
+        if (activeParty.isPlaying) {
+            iframe.contentWindow.postMessage({ type: 'player', action: 'play' }, '*');
+        } else {
+            iframe.contentWindow.postMessage({ type: 'player', action: 'pause' }, '*');
+        }
+
+        // Sync Seek (only if the time difference is greater than 3 seconds)
+        if (activeParty.currentTime !== undefined && Math.abs(localTime - activeParty.currentTime) > 3) {
+            iframe.contentWindow.postMessage({ type: 'player', action: 'seek', time: activeParty.currentTime }, '*');
+            setLocalTime(activeParty.currentTime);
+        }
     }, [activeParty?.isPlaying, activeParty?.currentTime, isPartyHost]);
 
     // Auto-Play countdown timer
@@ -456,6 +471,7 @@ export function VideoPlayer() {
                             className="absolute inset-0 w-full h-full"
                         >
                             <iframe 
+                                ref={iframeRef}
                                 src={embedUrl} 
                                 className="w-full h-full border-none" 
                                 allowFullScreen 
