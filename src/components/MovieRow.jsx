@@ -50,7 +50,7 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
             )}
 
             {/* Thumbnail Container */}
-            <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded-xl md:rounded-[20px] overflow-hidden mb-2 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-500 group-hover:border-accent/40 group-hover:shadow-[0_0_30px_rgba(229,9,20,0.25)]`}>
+            <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded md:rounded-md overflow-hidden mb-2 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-500 group-hover:border-accent/40 group-hover:shadow-[0_0_30px_rgba(229,9,20,0.25)]`}>
                 <img
                     src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster}
                     alt={movie.title}
@@ -194,7 +194,7 @@ export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", mov
                 <div
                     ref={rowRef}
                     onScroll={handleScroll}
-                    className="flex gap-4 md:gap-5 overflow-x-auto hide-scrollbar pr-10 snap-x snap-mandatory scroll-smooth"
+                    className="flex gap-2 md:gap-3 overflow-x-auto hide-scrollbar pr-10 snap-x snap-mandatory scroll-smooth"
                 >
                     {movies.map((movie, index) => {
                         let progress = 0;

@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Play, X, Share2, Info, ChevronDown, Download, Check, Trash2, Users } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTVBackHandler } from '../hooks/useTV';
 import { tmdb } from '../utils/tmdb';
 import { firestoreService } from '../utils/firestore';
@@ -150,16 +150,31 @@ export function MovieDetails() {
 
     const isDownloaded = movie ? downloads.some(d => d.id === movie.id) : false;
 
+    const downloadIntervalRef = useRef(null);
+
+    useEffect(() => {
+        return () => {
+            if (downloadIntervalRef.current) clearInterval(downloadIntervalRef.current);
+        };
+    }, []);
+
     const startDownloadSimulation = () => {
         if (!movie) return;
         setDownloadProgress(0);
         let current = 0;
-        const interval = setInterval(() => {
+        
+        if (downloadIntervalRef.current) clearInterval(downloadIntervalRef.current);
+        
+        downloadIntervalRef.current = setInterval(() => {
             current += 10;
             if (current >= 100) {
-                clearInterval(interval);
-                setDownloadProgress(null);
-                addDownload(movie);
+                current = 100;
+                setDownloadProgress(100);
+                clearInterval(downloadIntervalRef.current);
+                setTimeout(() => {
+                    setDownloadProgress(null);
+                    try { addDownload(movie); } catch(e){}
+                }, 500);
             } else {
                 setDownloadProgress(current);
             }
