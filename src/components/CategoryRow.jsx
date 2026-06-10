@@ -119,7 +119,7 @@ export function CategoryRow({ title, type }) {
  <div
  key={item.id}
  onClick={() => handleCategoryClick(item)}
- className="flex-none w-[200px] md:w-[280px] h-[110px] md:h-[150px] rounded-xl md:rounded-2xl relative cursor-pointer tv-focusable group snap-start transition-all duration-300 md:hover:scale-105 hover:border-white/40 border border-white/5 overflow-hidden"
+ className="flex-none w-[240px] md:w-[380px] h-[135px] md:h-[215px] rounded-xl md:rounded-2xl relative cursor-pointer tv-focusable group snap-start transition-all duration-300 md:hover:scale-105 hover:border-white/40 border border-white/5 overflow-hidden"
  >
  {/* Background Image */}
  <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-110">
