@@ -212,7 +212,12 @@ export function NavigationIsland() {
             
             {/* Nav Items */}
             <div className="flex flex-col gap-2 w-full flex-1">
-                <div className="relative" ref={profileMenuRef}>
+                <SidebarNavItem icon={<Home size={24} strokeWidth={2.5}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')} />
+                <SidebarNavItem icon={<Search size={24} strokeWidth={2.5}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')} />
+                <SidebarNavItem icon={<Tv size={24} strokeWidth={2.5}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')} />
+                <SidebarNavItem icon={<Film size={24} strokeWidth={2.5}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')} />
+                <SidebarNavItem icon={<Sparkles size={24} strokeWidth={2.5}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')} />
+                <div className="relative mt-2" ref={profileMenuRef}>
                     <SidebarNavItem 
                         icon={
                             user ? (
@@ -233,7 +238,7 @@ export function NavigationIsland() {
                                 initial={{ opacity: 0, x: -10, scale: 0.95 }}
                                 animate={{ opacity: 1, x: 0, scale: 1 }}
                                 exit={{ opacity: 0, x: -10, scale: 0.95 }}
-                                className="absolute left-[80px] top-0 ml-4 w-56 bg-[#0A0A0F]/95 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-2 z-[60] overflow-hidden"
+                                className="absolute left-[80px] bottom-0 ml-4 w-56 bg-[#0A0A0F]/95 backdrop-blur-3xl rounded-[20px] border border-glass-border shadow-2xl p-2 z-[60] overflow-hidden"
                             >
                                 <div className="flex items-center gap-3 p-3 border-b border-white/5 mb-1">
                                     <div className="w-9 h-9 rounded-full overflow-hidden border border-white/15">
@@ -257,11 +262,6 @@ export function NavigationIsland() {
                         )}
                     </AnimatePresence>
                 </div>
-                <SidebarNavItem icon={<Search size={24} strokeWidth={2.5}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')} />
-                <SidebarNavItem icon={<Home size={24} strokeWidth={2.5}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')} />
-                <SidebarNavItem icon={<Tv size={24} strokeWidth={2.5}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')} />
-                <SidebarNavItem icon={<Film size={24} strokeWidth={2.5}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')} />
-                <SidebarNavItem icon={<Sparkles size={24} strokeWidth={2.5}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')} />
             </div>
 
             {/* Bottom Actions */}
