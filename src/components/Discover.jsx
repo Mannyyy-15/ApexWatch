@@ -141,24 +141,24 @@ export function Discover() {
         <div className="discover-container min-h-screen pt-28 md:pt-36 px-4 md:px-16 lg:px-20 pb-32 w-full max-w-[1600px] mx-auto relative z-10">
             
             {/* Search Bar */}
-            <div className="mb-6 md:mb-8 max-w-2xl mx-auto px-2">
+            <div className="mb-6 md:mb-12 w-full max-w-5xl mx-auto px-2">
                 <div className="relative group">
-                    <div className="absolute inset-y-0 left-4 md:left-5 flex items-center pointer-events-none text-white/40 group-focus-within:text-red-500 transition-colors">
-                        <Search size={18} className="md:w-[22px] md:h-[22px]" />
+                    <div className="absolute inset-y-0 left-4 md:left-6 flex items-center pointer-events-none text-white/40 group-focus-within:text-white transition-colors">
+                        <Search size={18} className="md:w-[28px] md:h-[28px]" />
                     </div>
                     <input 
                         type="text" 
-                        placeholder="Movies, TV, Anime..." 
+                        placeholder="Movies, shows and more" 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-[#111] border border-white/10 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-12 md:pl-16 pr-12 text-base md:text-xl text-white placeholder-white/20 focus:outline-none focus:border-red-600 focus:bg-black transition-all font-medium shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+                        className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-xl md:rounded-2xl py-3.5 md:py-6 pl-12 md:pl-20 pr-12 md:pr-16 text-base md:text-2xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 focus:bg-[#1A1A24] transition-all font-semibold shadow-2xl"
                     />
                     {searchQuery && (
                         <button 
                             onClick={() => setSearchQuery('')}
-                            className="absolute inset-y-0 right-4 flex items-center text-white/40 hover:text-white transition-colors"
+                            className="absolute inset-y-0 right-4 md:right-6 flex items-center text-white/40 hover:text-white transition-colors"
                         >
-                            <X size={20} />
+                            <X size={20} className="md:w-7 md:h-7" />
                         </button>
                     )}
                 </div>
@@ -166,16 +166,16 @@ export function Discover() {
 
             {/* Recent Searches (Only visible when search bar is empty) */}
             {!searchQuery.trim() && recentSearches.length > 0 && (
-                <div className="mb-8 max-w-2xl mx-auto px-4">
-                    <div className="flex items-center gap-2 mb-3">
-                        <span className="text-[10px] text-white/40 font-black uppercase tracking-widest">Recent Searches</span>
+                <div className="mb-8 md:mb-10 w-full max-w-5xl mx-auto px-4 md:px-2">
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                        <span className="text-[10px] md:text-xs text-white/40 font-black uppercase tracking-widest">Recent Searches</span>
                     </div>
-                    <div className="flex flex-wrap gap-2.5">
+                    <div className="flex flex-wrap gap-2.5 md:gap-3">
                         {recentSearches.map((term, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => setSearchQuery(term)}
-                                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-all font-bold text-xs uppercase tracking-wider cursor-pointer"
+                                className="flex items-center gap-1.5 px-3.5 md:px-5 py-1.5 md:py-2.5 bg-white/5 border border-white/10 rounded-lg md:rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all font-bold text-xs md:text-sm uppercase tracking-wider cursor-pointer"
                             >
                                 <span>{term}</span>
                             </button>
@@ -185,16 +185,16 @@ export function Discover() {
             )}
 
             {/* Horizontal Genre Filters Strip */}
-            <div className="flex items-center gap-2.5 overflow-x-auto hide-scrollbar py-3.5 mb-8 -mx-4 px-4 md:-mx-0 md:px-0 scroll-smooth border-b border-white/5">
+            <div className="flex md:flex-wrap items-center md:justify-center gap-2.5 md:gap-3.5 overflow-x-auto hide-scrollbar py-3.5 md:py-0 mb-8 md:mb-12 -mx-4 px-4 md:-mx-0 md:px-0 scroll-smooth border-b border-white/5 md:border-none">
                 {GENRES.map((genre) => {
                     const isActive = activeGenre === genre.id;
                     return (
                         <button
                             key={genre.id}
                             onClick={() => handleGenreClick(genre)}
-                            className={`genre-filter-button flex-shrink-0 px-5 py-2.5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300 border cursor-pointer select-none active:scale-95 tv-focusable ${
+                            className={`genre-filter-button flex-shrink-0 px-5 md:px-6 py-2.5 md:py-3 rounded-full font-black text-[10px] md:text-sm uppercase tracking-widest transition-all duration-300 border cursor-pointer select-none active:scale-95 tv-focusable ${
                                 isActive
-                                    ? 'bg-accent border-accent text-white shadow-[0_0_20px_rgba(229,9,20,0.3)] scale-105'
+                                    ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105'
                                     : 'bg-white/5 border-white/5 text-white/50 hover:text-white hover:bg-white/10 hover:border-white/10'
                             }`}
                         >
