@@ -194,15 +194,15 @@ export function NavigationIsland() {
  initial={{ x: -100, opacity: 0 }} 
  animate={{ x: 0, opacity: 1 }} 
  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
- className="hidden md:flex flex-col fixed top-6 bottom-6 left-6 z-[60] w-[80px] hover:w-[280px] bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 overflow-visible group/sidebar"
+ className="hidden md:flex flex-col fixed top-0 bottom-0 left-0 z-[60] w-[80px] hover:w-[280px] bg-gradient-to-r from-[#020202] via-[#020202]/90 to-transparent border-none transition-all duration-500 overflow-visible group/sidebar"
  >
- <div className="flex flex-col h-full py-8 items-start w-full relative">
+ <div className="flex flex-col h-full py-10 items-start justify-center w-full relative">
  {/* Logo */}
  <div 
  onClick={() => setCurrentView('home')} 
- className="flex items-center pl-8 pr-6 cursor-pointer flex-shrink-0 outline-none tv-focusable mb-14 w-full"
+ className="flex items-center justify-center cursor-pointer flex-shrink-0 outline-none tv-focusable mb-14 w-[80px]"
  >
- <div className="w-10 h-10 rounded-xl overflow-hidden group-hover/ group-hover/sidebar:scale-105 transition-all duration-500 flex-shrink-0">
+ <div className="w-10 h-10 rounded-xl overflow-hidden group-hover/sidebar:scale-105 transition-all duration-500 flex-shrink-0">
  <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
  </div>
  </div>
@@ -314,34 +314,41 @@ export function NavigationIsland() {
  <MobileNavItem icon={<Search size={18}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
  <MobileNavItem icon={<Tv size={18}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
  
- {loadingAuth ? (
- <div className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl">
- <div className="p-1 rounded-lg">
- <div className="w-5.5 h-5.5 rounded-full bg-white/10 animate-pulse border border-white/5 flex items-center justify-center">
- <User size={10} className="text-white/20"/>
- </div>
- </div>
- <span className="text-[8px] font-bold text-white/40">Profile</span>
- </div>
- ) : user ? (
- <button 
- onClick={() => setShowProfileMenu(!showProfileMenu)}
- className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all cursor-pointer ${showProfileMenu ? 'bg-white/5' : ''}`}
- >
- <div className="p-1 rounded-lg relative">
- <div className={`w-5.5 h-5.5 rounded-full overflow-hidden border ${showProfileMenu ? 'border-accent' : 'border-white/20'} bg-white/5`}>
- {avatarUrl ? (
- <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
- ) : (
- <div className="w-full h-full flex items-center justify-center">
- <User size={10} className="text-white"/>
- </div>
- )}
- </div>
- {updateAvailable && <div className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full border border-black z-10 translate-x-1/4 -translate-y-1/4" />}
- </div>
- <span className={`text-[8px] font-bold ${showProfileMenu ? 'text-white' : 'text-white/40'}`}>Profile</span>
- </button>
+        {loadingAuth ? (
+          <div className="flex items-center p-2.5 rounded-full bg-transparent">
+            <div className="w-[18px] h-[18px] rounded-full bg-white/10 animate-pulse border border-white/5 flex items-center justify-center">
+              <User size={10} className="text-white/20"/>
+            </div>
+          </div>
+        ) : user ? (
+          <button 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className={`flex items-center p-2.5 rounded-full transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer ${
+              showProfileMenu ? 'bg-white/15 shadow-inner backdrop-blur-md' : 'bg-transparent'
+            }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <div className={`w-[18px] h-[18px] rounded-full overflow-hidden border transition-colors duration-300 ${showProfileMenu ? 'border-white' : 'border-white/20 hover:border-white/50'} bg-white/5`}>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <User size={10} className="text-white"/>
+                  </div>
+                )}
+              </div>
+              {updateAvailable && <div className="absolute top-0 right-0 w-2 h-2 bg-red-600 rounded-full border border-black z-10 translate-x-1/2 -translate-y-1/2" />}
+            </div>
+            <div 
+              className={`transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden flex items-center ${
+                showProfileMenu ? 'max-w-[80px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0'
+              }`}
+            >
+              <span className="text-[11px] font-black tracking-wider text-white uppercase whitespace-nowrap">
+                Profile
+              </span>
+            </div>
+          </button>
  ) : (
  <MobileNavItem icon={<LogIn size={18}/>} label="Join" onClick={() => setCurrentView('auth')}/>
  )}
@@ -452,26 +459,30 @@ function MenuButton({ icon, label, onClick, variant = 'default' }) {
 }
 
 function SidebarNavItem({ icon, label, active = false, onClick }) {
- return (
- <button 
- onClick={onClick} 
- className={`flex items-center gap-6 pl-8 pr-6 py-4 w-full transition-all duration-300 flex-shrink-0 cursor-pointer outline-none tv-focusable group/item relative
- ${active ? 'text-white' : 'text-white/50 hover:text-white hover:bg-white/5'}`}
- >
- {active && (
- <motion.div 
- layoutId="activeIndicator"
- className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full "
- />
- )}
- <div className={`transition-transform duration-300 ${active ? 'scale-110 ' : 'group-hover/item:scale-110'}`}>
- {icon}
- </div>
- <span className={`text-base font-bold tracking-wide whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-all duration-500 -translate-x-2 group-hover/sidebar:translate-x-0 ${active ? 'text-white font-black drop-shadow-md' : ''}`}>
- {label}
- </span>
- </button>
- );
+  return (
+    <button 
+      onClick={onClick} 
+      className={`flex items-center py-4 w-full transition-all duration-300 flex-shrink-0 cursor-pointer outline-none tv-focusable group/item relative
+      ${active ? 'text-white' : 'text-white/50 hover:text-white hover:bg-white/5'}`}
+    >
+      {active && (
+        <motion.div 
+          layoutId="activeIndicator"
+          className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-white rounded-r-full "
+        />
+      )}
+      <div className="w-[80px] flex items-center justify-center flex-shrink-0">
+        <div className={`transition-transform duration-300 ${active ? 'scale-110 ' : 'group-hover/item:scale-110'}`}>
+          {icon}
+        </div>
+      </div>
+      <div className="flex-1 overflow-hidden flex items-center justify-start ml-1">
+        <span className={`text-base font-bold tracking-wide whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-all duration-500 -translate-x-4 group-hover/sidebar:translate-x-0 ${active ? 'text-white font-black drop-shadow-md' : ''}`}>
+          {label}
+        </span>
+      </div>
+    </button>
+  );
 }
 
 function NavItem({ icon, label, active = false, onClick }) {
@@ -482,25 +493,31 @@ function NavItem({ icon, label, active = false, onClick }) {
 }
 
 function MobileNavItem({ icon, label, active = false, onClick, onPointerDown, onPointerUp, onPointerLeave, onTouchStart, onTouchEnd, onTouchCancel }) {
- return (
- <button 
- onClick={onClick} 
- onPointerDown={onPointerDown}
- onPointerUp={onPointerUp}
- onPointerLeave={onPointerLeave}
- onTouchStart={onTouchStart}
- onTouchEnd={onTouchEnd}
- onTouchCancel={onTouchCancel}
- className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all cursor-pointer ${
- active ? 'text-accent scale-105' : 'text-white/65'
- }`}
- >
- <div className={`p-1 rounded-lg transition-all ${active ? 'bg-accent/10' : ''}`}>
- {icon}
- </div>
- <span className={`text-[8px] font-bold tracking-tight ${active ? 'text-white' : 'text-white/40'}`}>
- {label}
- </span>
- </button>
- );
+  return (
+    <button 
+      onClick={onClick} 
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onPointerLeave={onPointerLeave}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchCancel}
+      className={`flex items-center p-2.5 rounded-full transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer ${
+        active ? 'bg-white/15 shadow-inner backdrop-blur-md' : 'bg-transparent'
+      }`}
+    >
+      <div className={`transition-colors duration-300 flex items-center justify-center ${active ? 'text-white' : 'text-white/50 hover:text-white/80'}`}>
+        {icon}
+      </div>
+      <div 
+        className={`transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden flex items-center ${
+          active ? 'max-w-[80px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0'
+        }`}
+      >
+        <span className="text-[11px] font-black tracking-wider text-white uppercase whitespace-nowrap">
+          {label}
+        </span>
+      </div>
+    </button>
+  );
 }
