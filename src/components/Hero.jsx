@@ -1,7 +1,7 @@
-import { Play, Plus, Film, Check, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Plus, Film, Check, Info, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { tmdb } from '../utils/tmdb';
 import { firestoreService } from '../utils/firestore';
 
@@ -12,6 +12,10 @@ export function Hero() {
  const heroMovie = heroesList[currentIndex];
  const [inWatchlist, setInWatchlist] = useState(false);
  const [loading, setLoading] = useState(!heroCache);
+ const [trailerKey, setTrailerKey] = useState(null);
+ const [trailerReady, setTrailerReady] = useState(false);
+ const [isMuted, setIsMuted] = useState(true);
+ const trailerTimerRef = useRef(null);
 
  useEffect(() => {
  const loadHeroes = async () => {
@@ -38,6 +42,31 @@ export function Hero() {
  }, 8000);
  return () => clearInterval(timer);
  }, [heroesList]);
+
+  // Fetch trailer for current hero movie
+  useEffect(() => {
+  setTrailerKey(null);
+  setTrailerReady(false);
+  clearTimeout(trailerTimerRef.current);
+  if (!heroMovie) return;
+
+  const fetchTrailer = async () => {
+  try {
+  const details = heroMovie.type === 'tv'
+  ? await tmdb.fetchTVDetails(heroMovie.id)
+  : await tmdb.fetchMovieDetails(heroMovie.id);
+  const videos = details?.videos?.results || [];
+  const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube')
+  || videos.find(v => v.site === 'YouTube');
+  if (trailer?.key) {
+  // Delay showing trailer so image shows first for ~4s
+  trailerTimerRef.current = setTimeout(() => setTrailerKey(trailer.key), 4000);
+  }
+  } catch (e) {}
+  };
+  fetchTrailer();
+  return () => clearTimeout(trailerTimerRef.current);
+  }, [heroMovie?.id]);
 
  useEffect(() => {
  if (!activeProfile || !heroMovie || !user) return;
@@ -99,25 +128,37 @@ export function Hero() {
  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
  className="absolute inset-0"
  >
- <motion.div 
- className="absolute inset-x-0 w-full"
- style={{ 
- height: '130%', 
- top: '-15%', 
- y: scrollY * 0.5 
- }}
- >
-  <picture>
+  <motion.div 
+  className="absolute inset-x-0 w-full"
+  style={{ 
+  height: '130%', 
+  top: '-15%', 
+  y: trailerKey && trailerReady ? 0 : scrollY * 0.5
+  }}
+  >
+  {/* Static backdrop - always rendered */}
+  <picture className={`absolute inset-0 transition-opacity duration-1000 ${trailerKey && trailerReady ? 'opacity-0' : 'opacity-100'}`}>
   <source media="(max-width: 768px)" srcSet={heroMovie.poster || heroMovie.backdrop.replace('/w1280/', '/w780/')} />
   <img 
   src={heroMovie.backdrop} 
   alt={heroMovie.title} 
-  className="w-full h-full object-cover object-center md:object-center" 
+  className="w-full h-full object-cover object-center" 
   loading={currentIndex === 0 ? "eager" : "lazy"}
   fetchPriority={currentIndex === 0 ? "high" : "auto"}
   />
   </picture>
- </motion.div>
+  {/* Trailer iframe */}
+  {trailerKey && (
+  <iframe
+  key={trailerKey}
+  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&showinfo=0&rel=0&loop=1&playlist=${trailerKey}&modestbranding=1&iv_load_policy=3&cc_load_policy=0`}
+  className="absolute inset-0 w-full h-full pointer-events-none"
+  style={{ transform: 'scale(1.15)', transformOrigin: 'center', border: 'none' }}
+  allow="autoplay; encrypted-media"
+  onLoad={() => setTrailerReady(true)}
+  />
+  )}
+  </motion.div>
   {/* Moody Cinematic Overlays */}
   <div className="absolute inset-0 bg-black/30"></div>
   {/* Mobile: strong bottom gradient for text legibility */}
@@ -128,20 +169,33 @@ export function Hero() {
  </AnimatePresence>
  </div>
 
- {/* Navigation Arrows - Repositioned to Bottom Right */}
- <div className="absolute right-12 bottom-12 z-40 hidden md:flex items-center gap-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
- <button onClick={prevSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
- <ChevronLeft size={20} />
- </button>
- <div className="flex items-center gap-2 font-black text-[9px] text-white/20 uppercase tracking-[0.25em]">
- <span className="text-white/60">{currentIndex + 1}</span>
- <span>/</span>
- <span>{heroesList.length}</span>
- </div>
- <button onClick={nextSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
- <ChevronRight size={20} />
- </button>
- </div>
+  {/* Navigation Arrows + Mute Toggle */}
+  <div className="absolute right-5 md:right-12 bottom-5 md:bottom-12 z-40 flex items-center gap-3">
+  {/* Mute toggle - shown when trailer is playing */}
+  {trailerKey && trailerReady && (
+  <motion.button
+  initial={{ opacity: 0, scale: 0.8 }}
+  animate={{ opacity: 1, scale: 1 }}
+  onClick={() => setIsMuted(m => !m)}
+  className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-90 cursor-pointer shadow-xl"
+  >
+  {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+  </motion.button>
+  )}
+  <div className="hidden md:flex items-center gap-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+  <button onClick={prevSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
+  <ChevronLeft size={20} />
+  </button>
+  <div className="flex items-center gap-2 font-black text-[9px] text-white/20 uppercase tracking-[0.25em]">
+  <span className="text-white/60">{currentIndex + 1}</span>
+  <span>/</span>
+  <span>{heroesList.length}</span>
+  </div>
+  <button onClick={nextSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
+  <ChevronRight size={20} />
+  </button>
+  </div>
+  </div>
 
   {/* Content */}
   <div className="relative z-10 w-full">

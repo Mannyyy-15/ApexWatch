@@ -107,19 +107,19 @@ export function VideoPlayer() {
  useEffect(() => {
  // Lock to landscape when player opens
  const lockLandscape = async () => {
- try {
- await ScreenOrientation.unlock();
- setIsPortrait(false);
- } catch (e) {
- // Fallback: try Web API (works on some browsers/WebViews)
- try {
- if (window.screen?.orientation?.lock) {
- await window.screen.orientation.lock('landscape');
- setIsPortrait(false);
- }
- } catch (_) {}
- // If both fail, show the rotate button so user can tap manually
- }
+  try {
+  await ScreenOrientation.unlock();
+  setIsPortrait(false);
+  } catch (e) {
+  // Only try Web API on native mobile platforms — desktop doesn't support it
+  try {
+  if (Capacitor.isNativePlatform() && window.screen?.orientation?.lock) {
+  await window.screen.orientation.lock('landscape');
+  setIsPortrait(false);
+  }
+  } catch (_) {}
+  // If both fail, show the rotate button so user can tap manually
+  }
  };
 
  lockLandscape();
@@ -358,7 +358,7 @@ export function VideoPlayer() {
  }
  } catch (e) {
  try {
- if (window.screen?.orientation?.lock) {
+ if (Capacitor.isNativePlatform() && window.screen?.orientation?.lock) {
  if (isPortrait) {
  await window.screen.orientation.lock('landscape');
  setIsPortrait(false);
@@ -372,12 +372,43 @@ export function VideoPlayer() {
  };
 
  if (loading || !movie) {
- return (
- <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
- <div className="w-12 h-12 border-4 border-white/10 border-t-white rounded-full animate-spin"></div>
- </div>
- );
- }
+  return (
+  <div className="fixed inset-0 bg-[#030303] z-50 flex flex-col items-center justify-center gap-6">
+  {/* Animated Logo */}
+  <div className="relative flex items-center justify-center">
+  {/* Pulsing ring */}
+  <div className="absolute w-28 h-28 rounded-full border border-accent/20 animate-ping" style={{ animationDuration: '2s' }} />
+  <div className="absolute w-20 h-20 rounded-full border border-white/5" />
+  {/* Logo */}
+  <motion.div
+  animate={{ scale: [1, 1.06, 1], opacity: [0.85, 1, 0.85] }}
+  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+  className="w-16 h-16 rounded-2xl overflow-hidden shadow-2xl"
+  >
+  <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover" />
+  </motion.div>
+  </div>
+  {/* Loading text */}
+  <div className="flex flex-col items-center gap-1.5">
+  <motion.p
+  initial={{ opacity: 0, y: 6 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.3 }}
+  className="text-white/80 text-sm font-black uppercase tracking-[0.3em]"
+  >
+  ApexWatch
+  </motion.p>
+  <motion.div
+  initial={{ width: 0 }}
+  animate={{ width: '100%' }}
+  transition={{ duration: 2.5, ease: 'easeInOut', repeat: Infinity }}
+  className="h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent rounded-full"
+  style={{ maxWidth: '120px' }}
+  />
+  </div>
+  </div>
+  );
+  }
 
  const getEmbedUrl = () => {
  if (!movie) return '';

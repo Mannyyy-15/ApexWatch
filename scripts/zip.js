@@ -58,6 +58,11 @@ async function createZip() {
 
     fs.writeFileSync(outPath, content);
     console.log(`Successfully created ${outPath}`);
+
+    // Automatically update version.json
+    const versionJsonPath = path.resolve(__dirname, '../public/version.json');
+    fs.writeFileSync(versionJsonPath, JSON.stringify({ latestVersion: pkg.version }, null, 2));
+    console.log(`Updated version.json to ${pkg.version}`);
 }
 
 createZip().catch(console.error);

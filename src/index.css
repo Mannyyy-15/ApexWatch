@@ -2,224 +2,224 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  
-  /* Redesigned Premium Color System */
-  --color-accent: #e50914;
-  --color-accent-hover: #f43f5e;
-  --color-accent-glow: rgba(229, 9, 20, 0.4);
-  
-  --color-bg-base: #0A0A0F;
-  --color-bg-surface: #121218;
-  --color-bg-card: #1A1A24;
-  
-  --color-glass-bg: rgba(255, 255, 255, 0.03);
-  --color-glass-border: rgba(255, 255, 255, 0.06);
-  --color-glass-hover: rgba(255, 255, 255, 0.08);
-  
-  --breakpoint-tv: 1800px;
+ --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+ --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+ 
+ /* Redesigned Premium Color System */
+ --color-accent: #e50914;
+ --color-accent-hover: #f43f5e;
+ --color-accent-glow: rgba(229, 9, 20, 0.4);
+ 
+ --color-bg-base: #0A0A0F;
+ --color-bg-surface: #121218;
+ --color-bg-card: #1A1A24;
+ 
+ --color-glass-bg: rgba(255, 255, 255, 0.03);
+ --color-glass-border: rgba(255, 255, 255, 0.06);
+ --color-glass-hover: rgba(255, 255, 255, 0.08);
+ 
+ --breakpoint-tv: 1800px;
 }
 
 :root {
-  --color-primary: #0A0A0F;
-  --color-accent: #e50914;
-  --color-accent-glow: rgba(229, 9, 20, 0.4);
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.06);
+ --color-primary: #0A0A0F;
+ --color-accent: #e50914;
+ --color-accent-glow: rgba(229, 9, 20, 0.4);
+ --glass-bg: rgba(255, 255, 255, 0.03);
+ --glass-border: rgba(255, 255, 255, 0.06);
 }
 
 html, body {
-  background-color: var(--color-primary);
-  color: white;
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-  overscroll-behavior: none;
-  touch-action: manipulation;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
+ background-color: var(--color-primary);
+ color: white;
+ font-family: var(--font-sans);
+ -webkit-font-smoothing: antialiased;
+ -moz-osx-font-smoothing: grayscale;
+ overflow-x: hidden;
+ overscroll-behavior: none;
+ touch-action: manipulation;
+ user-select: none;
+ -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  selection-background-color: var(--color-accent);
-  selection-color: white;
+ selection-background-color: var(--color-accent);
+ selection-color: white;
 }
 
 /* Premium Ambient Backdrops */
 .atmosphere {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-color: #020202;
-  overflow: hidden;
+ position: fixed;
+ inset: 0;
+ pointer-events: none;
+ z-index: 0;
+ background-color: #020202;
+ overflow: hidden;
 }
 
 .atmosphere::before {
-  content: "";
-  position: absolute;
-  inset: -50%;
-  background: 
-    radial-gradient(circle at 15% 20%, rgba(229, 9, 20, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(229, 9, 20, 0.03) 0%, transparent 65%);
-  filter: blur(100px);
-  animation: mesh-float 25s ease-in-out infinite alternate;
+ content: "";
+ position: absolute;
+ inset: -50%;
+ background: 
+ radial-gradient(circle at 15% 20%, rgba(229, 9, 20, 0.08) 0%, transparent 45%),
+ radial-gradient(circle at 85% 80%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
+ radial-gradient(circle at 50% 50%, rgba(229, 9, 20, 0.03) 0%, transparent 65%);
+ filter: blur(100px);
+ animation: mesh-float 25s ease-in-out infinite alternate;
 }
 
 .atmosphere::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.015;
-  mix-blend-mode: overlay;
+ content: "";
+ position: absolute;
+ inset: 0;
+ background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+ opacity: 0.015;
+ mix-blend-mode: overlay;
 }
 
 .vignette {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(0,0,0,0.6) 100%);
+ position: fixed;
+ inset: 0;
+ pointer-events: none;
+ z-index: 1;
+ background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(0,0,0,0.6) 100%);
 }
 
 @keyframes mesh-float {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(3%, 4%) rotate(3deg); }
-  100% { transform: translate(-1%, 6%) rotate(-2deg); }
+ 0% { transform: translate(0, 0) rotate(0deg); }
+ 50% { transform: translate(3%, 4%) rotate(3deg); }
+ 100% { transform: translate(-1%, 6%) rotate(-2deg); }
 }
 
 /* Premium Typography */
 h1, h2, h3, h4, .display-text {
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.03em;
+ font-family: 'Outfit', sans-serif;
+ letter-spacing: -0.03em;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+ width: 6px;
+ height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+ background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.02);
+ background: rgba(255, 255, 255, 0.08);
+ border-radius: 10px;
+ border: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+ background: rgba(255, 255, 255, 0.15);
 }
 
 /* Glassmorphism & Liquid Glass Styles */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(24px) saturate(120%);
-  -webkit-backdrop-filter: blur(24px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+ background: rgba(255, 255, 255, 0.03);
+ backdrop-filter: blur(24px) saturate(120%);
+ -webkit-backdrop-filter: blur(24px) saturate(120%);
+ border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .glass-premium {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-  backdrop-filter: blur(32px) saturate(130%);
-  -webkit-backdrop-filter: blur(32px) saturate(130%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.05),
-    0 20px 40px rgba(0, 0, 0, 0.5);
+ background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+ backdrop-filter: blur(32px) saturate(130%);
+ -webkit-backdrop-filter: blur(32px) saturate(130%);
+ border: 1px solid rgba(255, 255, 255, 0.06);
+ box-shadow: 
+ inset 0 1px 1px rgba(255, 255, 255, 0.05),
+ 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .glass-premium-hover {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+ transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .glass-premium-hover:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.08),
-    0 25px 50px rgba(0, 0, 0, 0.6);
+ background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+ border-color: rgba(255, 255, 255, 0.12);
+ box-shadow: 
+ inset 0 1px 1px rgba(255, 255, 255, 0.08),
+ 0 25px 50px rgba(0, 0, 0, 0.6);
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+ 0%, 100% { transform: translateY(0); }
+ 50% { transform: translateY(-8px); }
 }
 
 .animate-float {
-  animation: float 6s ease-in-out infinite;
+ animation: float 6s ease-in-out infinite;
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+ 0% { transform: translateX(-100%); }
+ 100% { transform: translateX(100%); }
 }
 
 .shimmer {
-  position: relative;
-  overflow: hidden;
+ position: relative;
+ overflow: hidden;
 }
 
 .shimmer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.02) 20%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.02) 80%,
-    transparent 100%
-  );
-  animation: shimmer 2.2s infinite;
+ content: "";
+ position: absolute;
+ inset: 0;
+ transform: translateX(-100%);
+ background: linear-gradient(
+ 90deg,
+ transparent 0%,
+ rgba(255, 255, 255, 0.02) 20%,
+ rgba(255, 255, 255, 0.06) 50%,
+ rgba(255, 255, 255, 0.02) 80%,
+ transparent 100%
+ );
+ animation: shimmer 2.2s infinite;
 }
 
 @layer utilities {
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
+ .hide-scrollbar {
+ -ms-overflow-style: none;
+ scrollbar-width: none;
+ }
+ .hide-scrollbar::-webkit-scrollbar {
+ display: none;
+ }
 }
 
 /* Android TV Specific Styles (Spatial Navigation & Focus rings) */
 body.is-tv {
-  cursor: none;
-  user-select: none;
+ cursor: none;
+ user-select: none;
 }
 
 /* TV Performance Tweaks - Disable heavy animations and filters */
 body.is-tv .atmosphere::before {
-  animation: none !important;
-  filter: none !important;
-  background: #020202 !important;
+ animation: none !important;
+ filter: none !important;
+ background: #020202 !important;
 }
 
 body.is-tv .glass, 
 body.is-tv .glass-premium,
 body.is-tv .tv-sidebar,
 body.is-tv .details-container {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  background-color: #0b0b0b !important; /* Fast solid fallback color */
+ backdrop-filter: none !important;
+ -webkit-backdrop-filter: none !important;
+ background-color: #0b0b0b !important; /* Fast solid fallback color */
 }
 
 body.is-tv .shimmer::after {
-  animation: none !important; /* Disable active shimmer animations on TV */
+ animation: none !important; /* Disable active shimmer animations on TV */
 }
 
 body.is-tv [tabindex="0"] {
-  position: relative;
+ position: relative;
 }
 
 /* 10-foot UI text configurations */
@@ -228,107 +228,107 @@ body.is-tv h2 { font-size: 3.2rem; }
 body.is-tv p { font-size: 1.3rem; }
 
 .tv-sidebar {
-  display: none !important;
+ display: none !important;
 }
 
 body.is-tv .tv-sidebar {
-  display: flex !important;
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 90px;
-  background: #080808 !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-  z-index: 100;
-  flex-direction: column;
-  padding: 30px 10px;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
+ display: flex !important;
+ position: fixed;
+ left: 0;
+ top: 0;
+ bottom: 0;
+ width: 90px;
+ background: #080808 !important;
+ border-right: 1px solid rgba(255, 255, 255, 0.06);
+ z-index: 100;
+ flex-direction: column;
+ padding: 30px 10px;
+ transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+ overflow: hidden;
 }
 
 body.is-tv .tv-sidebar:hover,
 body.is-tv .tv-sidebar:focus-within {
-  width: 300px;
+ width: 300px;
 }
 
 body.is-tv .tv-sidebar .nav-label {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  white-space: nowrap;
+ opacity: 0;
+ transition: opacity 0.2s ease;
+ white-space: nowrap;
 }
 
 body.is-tv .tv-sidebar:hover .nav-label,
 body.is-tv .tv-sidebar:focus-within .nav-label {
-  opacity: 1;
+ opacity: 1;
 }
 
 body.is-tv main {
-  margin-left: 90px;
-  width: calc(100% - 90px);
-  padding-bottom: 40px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+ margin-left: 90px;
+ width: calc(100% - 90px);
+ padding-bottom: 40px;
+ transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Premium OTT Focus Rules optimized for TV performance */
 .tv-focusable {
-  outline: none !important;
-  will-change: transform;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s !important;
+ outline: none !important;
+ will-change: transform;
+ transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s !important;
 }
 
 .tv-focusable:focus-visible, body.is-tv .tv-focusable:focus {
-  outline: none !important;
-  transform: scale(1.06) !important;
-  z-index: 50 !important;
-  border: 2px solid #e50914 !important; /* Premium Netflix Red */
-  box-shadow: 0 0 15px rgba(229, 9, 20, 0.4) !important;
+ outline: none !important;
+ transform: scale(1.06) !important;
+ z-index: 50 !important;
+ border: 2px solid #e50914 !important; /* Premium Netflix Red */
+ box-shadow: 0 0 15px rgba(229, 9, 20, 0.4) !important;
 }
 
 button.tv-focusable:focus-visible, body.is-tv button.tv-focusable:focus {
-  background-color: #e50914 !important;
-  color: #ffffff !important;
-  border-color: #e50914 !important;
+ background-color: #e50914 !important;
+ color: #ffffff !important;
+ border-color: #e50914 !important;
 }
 
 /* Specific overrides to prevent blocky red backgrounds on tab/filter buttons when focused on TV */
 button.tab-button.tv-focusable:focus-visible, body.is-tv button.tab-button.tv-focusable:focus {
-  background-color: transparent !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  transform: scale(1.08) !important;
+ background-color: transparent !important;
+ color: #ffffff !important;
+ border-color: transparent !important;
+ box-shadow: none !important;
+ transform: scale(1.08) !important;
 }
 
 button.tv-focusable:not(.bg-accent).library-tab-button:focus-visible, body.is-tv button.tv-focusable:not(.bg-accent).library-tab-button:focus,
 button.tv-focusable:not(.bg-accent).genre-filter-button:focus-visible, body.is-tv button.tv-focusable:not(.bg-accent).genre-filter-button:focus {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.08) !important;
-  transform: scale(1.04) !important;
+ background-color: rgba(255, 255, 255, 0.12) !important;
+ color: #ffffff !important;
+ border-color: rgba(255, 255, 255, 0.25) !important;
+ box-shadow: 0 0 15px rgba(255, 255, 255, 0.08) !important;
+ transform: scale(1.04) !important;
 }
 
 /* Hide standard desktop and mobile nav islands on TV */
 body.is-tv .navigation-island-desktop,
 body.is-tv .navigation-island-mobile {
-  display: none !important;
+ display: none !important;
 }
 
 /* Adjust top padding on TV since top navbar is hidden */
 body.is-tv .discover-container,
 body.is-tv .library-container {
-  padding-top: 40px !important;
+ padding-top: 40px !important;
 }
 
 /* Image scaling inside focused cards for premium organic look */
 .tv-focusable:focus img {
-  transform: scale(1.04) !important;
+ transform: scale(1.04) !important;
 }
 
 /* Show actions on focus */
 .tv-focusable:focus .watchlist-btn {
-  opacity: 1 !important;
+ opacity: 1 !important;
 }
 
 
