@@ -4,7 +4,7 @@ import pkg from '../../package.json';
 const UPDATE_SERVER_URL = 'https://apex-watch.vercel.app'; // Production server
 
 export interface UpdateProgress {
-    phase: 'idle' | 'checking' | 'downloading' | 'extracting' | 'ready' | 'error';
+    phase: 'idle' | 'checking' | 'update_available' | 'downloading' | 'extracting' | 'ready' | 'error';
     progress: number; // 0-100
     message?: string;
 }
@@ -24,8 +24,8 @@ class UpdateServiceClass {
         if (this.onProgress) this.onProgress(state);
     }
 
-    async checkForUpdate(): Promise<boolean> {
-        this.emit({ phase: 'checking', progress: 0 });
+    async checkForUpdate(silent = true): Promise<boolean> {
+        if (!silent) this.emit({ phase: 'checking', progress: 0 });
         try {
             const res = await fetch(`${UPDATE_SERVER_URL}/version.json?t=${Date.now()}`);
             if (!res.ok) throw new Error('Failed to fetch version metadata');
@@ -35,13 +35,18 @@ class UpdateServiceClass {
             
             if (this.isNewerVersion(currentVersion, data.latestVersion)) {
                 this.targetVersion = data.latestVersion;
+                this.emit({ phase: 'update_available', progress: 0 });
                 return true;
             }
             this.emit({ phase: 'idle', progress: 0 });
             return false;
         } catch (error) {
             console.error('Update Check Error:', error);
-            this.emit({ phase: 'error', progress: 0, message: (error as Error).message });
+            if (!silent) {
+                this.emit({ phase: 'error', progress: 0, message: (error as Error).message });
+            } else {
+                this.emit({ phase: 'idle', progress: 0 });
+            }
             return false;
         }
     }

@@ -12,16 +12,16 @@ export function UpdaterModal() {
     useEffect(() => {
         UpdateService.setProgressListener((state) => {
             setProgressState(state);
-            if (state.phase !== 'idle') {
+            if (state.phase === 'update_available' || state.phase === 'downloading' || state.phase === 'extracting' || state.phase === 'ready' || state.phase === 'error' || state.phase === 'checking') {
                 setIsVisible(true);
             } else {
                 setIsVisible(false);
             }
         });
 
-        // Optional: Trigger a manual check on mount if native platform
+        // Trigger a background silent check on mount if native platform
         if (Capacitor.isNativePlatform()) {
-            UpdateService.checkForUpdate();
+            UpdateService.checkForUpdate(true); // Silent check
         }
     }, []);
 
@@ -52,6 +52,7 @@ export function UpdaterModal() {
                     >
                         <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
                             {progressState.phase === 'checking' && <RefreshCw className="text-white/50 animate-spin" size={28} />}
+                            {progressState.phase === 'update_available' && <DownloadCloud className="text-accent animate-bounce" size={28} />}
                             {progressState.phase === 'downloading' && <DownloadCloud className="text-accent animate-pulse" size={28} />}
                             {progressState.phase === 'extracting' && <RefreshCw className="text-blue-500 animate-spin" size={28} />}
                             {progressState.phase === 'ready' && <CheckCircle2 className="text-green-500" size={28} />}
@@ -60,6 +61,7 @@ export function UpdaterModal() {
 
                         <h3 className="text-xl font-black text-white uppercase tracking-wider italic mb-2">
                             {progressState.phase === 'checking' && 'Checking Update'}
+                            {progressState.phase === 'update_available' && 'Update Available'}
                             {progressState.phase === 'downloading' && 'Downloading'}
                             {progressState.phase === 'extracting' && 'Extracting Assets'}
                             {progressState.phase === 'ready' && 'Update Ready'}
@@ -68,6 +70,7 @@ export function UpdaterModal() {
                         
                         <p className="text-white/40 text-xs mb-8">
                             {progressState.phase === 'checking' && 'Looking for the latest version...'}
+                            {progressState.phase === 'update_available' && 'A new version is ready to be downloaded.'}
                             {progressState.phase === 'downloading' && 'Fetching the latest improvements over the air.'}
                             {progressState.phase === 'extracting' && 'Installing the new bundle directly to your device.'}
                             {progressState.phase === 'ready' && 'A new version has been successfully installed.'}
@@ -91,7 +94,7 @@ export function UpdaterModal() {
                         )}
 
                         <div className="w-full space-y-3">
-                            {progressState.phase === 'checking' && (
+                            {(progressState.phase === 'checking' || progressState.phase === 'update_available') && (
                                 <button 
                                     onClick={handleInstall}
                                     className="w-full py-3.5 bg-accent text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(229,9,20,0.3)]"
