@@ -35,6 +35,7 @@ export function NavigationIsland() {
     const devHoldTimeoutRef = useRef(null);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [isUpdating, setIsUpdating] = useState(false);
+    const isNative = Capacitor.isNativePlatform();
 
     useEffect(() => {
         const handleBeforeInstallPrompt = (e) => {
@@ -228,6 +229,9 @@ export function NavigationIsland() {
           <NavItem icon={<Film size={20}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
           <NavItem icon={<Tv size={20}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
           <NavItem icon={<Sparkles size={20}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')}/>
+          {!isNative && (
+            <NavItem icon={<Smartphone size={20}/>} label="Get App" onClick={handleDownloadApp}/>
+          )}
         </div>
 
         <div className="w-[1px] h-6 bg-white/10 mx-3 flex-shrink-0"></div>
@@ -341,10 +345,14 @@ export function NavigationIsland() {
                         <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
                         <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
                         <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                        {updateAvailable ? (
-                            <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                        {isNative ? (
+                            updateAvailable ? (
+                                <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                            ) : (
+                                <MenuButton icon={<Download size={14} className={isCheckingUpdate ? "animate-spin" : ""}/>} label={isCheckingUpdate ? "Checking..." : "Check Update"} onClick={handleCheckUpdate} />
+                            )
                         ) : (
-                            <MenuButton icon={<Download size={14} className={isCheckingUpdate ? "animate-spin" : ""}/>} label={isCheckingUpdate ? "Checking..." : "Check Update"} onClick={handleCheckUpdate} />
+                            <MenuButton icon={<Smartphone size={14}/>} label="Download App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
                         )}
                         <MenuButton icon={<Users size={14}/>} label="Switch Profile" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                       </div>
@@ -469,10 +477,14 @@ export function NavigationIsland() {
                 <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
-                {updateAvailable ? (
-                    <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                {isNative ? (
+                    updateAvailable ? (
+                        <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+                    ) : (
+                        <MenuButton icon={<Download size={14} className={isCheckingUpdate ? "animate-spin" : ""}/>} label={isCheckingUpdate ? "Checking..." : "Check Update"} onClick={handleCheckUpdate} />
+                    )
                 ) : (
-                    <MenuButton icon={<Download size={14} className={isCheckingUpdate ? "animate-spin" : ""}/>} label={isCheckingUpdate ? "Checking..." : "Check Update"} onClick={handleCheckUpdate} />
+                    <MenuButton icon={<Smartphone size={14}/>} label="Download App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
                 )}
                 <MenuButton icon={<Users size={14}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
                 <div className="col-span-2 mt-1 border-t border-white/5 pt-1.5">
