@@ -79,7 +79,7 @@ export function Hero() {
 
   if (loading || !heroMovie)
     return (
-      <div className="w-[95%] md:w-[calc(100%-48px)] mx-auto mt-4 md:mt-6 h-[80dvh] md:h-[calc(100vh-48px)] rounded-3xl border border-white/10 overflow-hidden bg-[#050505] flex items-end px-6 pb-20">
+      <div className="w-[calc(100%-16px)] md:w-[calc(100%-48px)] mx-auto mt-2 md:mt-6 h-[75dvh] md:h-[calc(100vh-48px)] rounded-3xl border border-white/10 overflow-hidden bg-[#050505] flex items-end px-6 pb-20">
         <div className="w-2/3 h-12 bg-white/5 animate-pulse rounded-xl mb-4"></div>
       </div>
     );
@@ -88,7 +88,7 @@ export function Hero() {
   const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + heroesList.length) % heroesList.length);
 
   return (
-    <div className="relative w-[95%] md:w-[calc(100%-48px)] mx-auto mt-4 md:mt-6 h-[80dvh] md:h-[calc(100vh-48px)] rounded-3xl border border-white/10 overflow-hidden flex items-end group">
+    <div className="relative w-[calc(100%-16px)] md:w-[calc(100%-48px)] mx-auto mt-2 md:mt-6 h-[75dvh] md:h-[calc(100vh-48px)] rounded-3xl border border-white/10 overflow-hidden flex items-end group">
  <div className="absolute inset-0 overflow-hidden bg-[#020202]">
  <AnimatePresence initial={true} mode="wait">
  <motion.div
