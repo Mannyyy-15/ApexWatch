@@ -34,7 +34,7 @@ export function HeroSkeleton() {
 
 export function RowSkeleton() {
  return (
- <div className="space-y-5 px-4 md:px-16 lg:px-20 py-4">
+ <div className="space-y-5 px-2 md:px-8 lg:px-10 py-4">
  <div className="h-6 bg-white/10 rounded-full w-40 shimmer"></div>
  <div className="flex gap-4 md:gap-5 overflow-hidden">
  {[1, 2, 3, 4, 5, 6].map(i => (

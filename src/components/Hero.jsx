@@ -142,7 +142,7 @@ export function Hero() {
  </div>
 
  {/* Content */}
- <div className="relative z-10 w-full px-6 md:px-20 pb-20 md:pb-24 grid md:grid-cols-2 gap-4 md:gap-8 items-end">
+ <div className="relative z-10 w-full px-4 md:px-10 pb-20 md:pb-24 grid md:grid-cols-2 gap-4 md:gap-8 items-end">
 
  <div className="flex flex-col items-start min-h-[200px] md:min-h-[300px] justify-end">
  <AnimatePresence mode="wait">

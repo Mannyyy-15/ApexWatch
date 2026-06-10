@@ -107,7 +107,7 @@ export function CategoryExplore() {
  {[...Array(4)].map((_, i) => <RowSkeleton key={i} />)}
  </div>
  ) : (
- <div className="relative z-20 px-4 md:px-16 lg:px-20 flex flex-col gap-10 md:gap-14">
+ <div className="relative z-20 px-2 md:px-8 lg:px-10 flex flex-col gap-10 md:gap-14">
  {rows.map((row, idx) => (
  <MovieRow
  key={`${row.title}-${idx}`}

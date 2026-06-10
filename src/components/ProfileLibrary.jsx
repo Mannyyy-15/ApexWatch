@@ -110,7 +110,7 @@ export function ProfileLibrary() {
  };
 
  return (
- <div className="library-container min-h-screen pt-28 md:pt-36 px-4 md:px-16 lg:px-20 pb-32 w-full max-w-[1600px] mx-auto">
+ <div className="library-container min-h-screen pt-28 md:pt-36 px-2 md:px-8 lg:px-10 pb-32 w-full max-w-[1600px] mx-auto">
  
  {/* Library Header & Tabs Switcher */}
  {user && (

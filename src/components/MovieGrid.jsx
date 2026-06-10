@@ -178,7 +178,7 @@ export function MovieGrid() {
  }
 
  return (
- <div className="relative z-20 px-4 md:px-16 lg:px-20 mt-8 md:mt-12 flex flex-col gap-4 md:gap-6 pb-20">
+ <div className="relative z-20 px-2 md:px-8 lg:px-10 mt-8 md:mt-12 flex flex-col gap-4 md:gap-6 pb-20">
  {movieRows.map((row, idx) => {
  if (row.isForYou) {
  return (

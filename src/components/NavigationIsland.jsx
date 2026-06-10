@@ -194,7 +194,7 @@ export function NavigationIsland() {
   initial={{ x: -100, opacity: 0 }} 
   animate={{ x: 0, opacity: 1 }} 
   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
-  className="hidden md:flex flex-col fixed top-6 bottom-6 left-6 z-[60] w-[80px] hover:w-[280px] bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 overflow-visible group/sidebar"
+  className="hidden md:flex flex-col fixed top-6 bottom-6 left-6 z-[60] w-[80px] hover:w-[280px] bg-black/60 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 overflow-visible group/sidebar"
   >
   <div className="flex flex-col h-full py-8 items-start justify-center w-full relative">
  {/* Logo */}

@@ -138,7 +138,7 @@ export function Discover() {
  : (activeGenre && activeGenre !== 'trending' ? searchResults : trending);
 
  return (
- <div className="discover-container min-h-screen pt-24 md:pt-16 px-4 md:px-16 lg:px-20 pb-32 w-full max-w-[1600px] mx-auto relative z-10">
+ <div className="discover-container min-h-screen pt-24 md:pt-16 px-2 md:px-8 lg:px-10 pb-32 w-full max-w-[1600px] mx-auto relative z-10">
  
  {/* Search Bar */}
  <div className="mb-6 md:mb-12 w-full max-w-5xl mx-auto px-2">

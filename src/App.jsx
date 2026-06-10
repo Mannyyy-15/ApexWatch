@@ -186,9 +186,7 @@ function MainLayout() {
  }
  };
 
- return (<div className="bg-[#020202] min-h-screen text-white font-sans selection:bg-white selection:text-black overflow-hidden relative">
- <div className="atmosphere"></div>
- <div className="vignette"></div>
+ return (<div className="bg-black min-h-screen text-white font-sans selection:bg-white selection:text-black overflow-hidden relative">
  {currentView !== 'auth' && currentView !== 'onboarding' && currentView !== 'profiles' && currentView !== 'details' && currentView !== 'player' && <NavigationIsland />}
  
  <main ref={scrollContainerRef} className="w-full h-screen overflow-y-auto overflow-x-hidden hide-scrollbar pb-24 md:pb-0 md:pl-[120px] relative">
