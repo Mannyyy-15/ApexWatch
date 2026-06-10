@@ -49,11 +49,13 @@ class UpdateServiceClass {
     async downloadAndInstallUpdate(): Promise<boolean> {
         if (!this.targetVersion) return false;
         
+        let zipUrl = '';
         try {
-            this.emit({ phase: 'downloading', progress: 50 }); // Capgo doesn't do chunk progress well natively in standard API without listeners, spoofing a bit
+            this.emit({ phase: 'downloading', progress: 0 });
             
             // 1. Download via Capgo's native C++/Swift engine
-            const zipUrl = `${UPDATE_SERVER_URL}/update.zip`;
+            zipUrl = `${UPDATE_SERVER_URL}/update-${this.targetVersion}.zip`;
+            const uniqueVersionId = this.targetVersion;
             
             CapacitorUpdater.addListener('download', (info: any) => {
                 this.emit({ phase: 'downloading', progress: info.percent });
@@ -61,7 +63,7 @@ class UpdateServiceClass {
 
             const bundle = await CapacitorUpdater.download({
                 url: zipUrl,
-                version: this.targetVersion,
+                version: uniqueVersionId,
             });
             
             this.downloadedBundle = bundle;
@@ -70,9 +72,14 @@ class UpdateServiceClass {
             this.emit({ phase: 'ready', progress: 100 });
             return true;
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Update Install Error:', error);
-            this.emit({ phase: 'error', progress: 0, message: (error as Error).message });
+            const errMsg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+            this.emit({ 
+                phase: 'error', 
+                progress: 0, 
+                message: `URL: ${zipUrl} | Error: ${errMsg}` 
+            });
             return false;
         }
     }

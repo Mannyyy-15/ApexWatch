@@ -1,7 +1,7 @@
 {
   "name": "apexwatch",
   "private": true,
-  "version": "1.0.14",
+  "version": "1.0.15",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
@@ -14,7 +14,7 @@
     "build:android": "npm run build && npx cap sync",
     "build:ios": "npm run build && npx cap sync",
     "build:apk": "npm run build && npx cap sync && cd android && gradlew.bat assembleDebug",
-    "build:update": "npm run build && powershell -Command \"Remove-Item dist\\update.zip -ErrorAction SilentlyContinue; Compress-Archive -Path dist\\* -DestinationPath public\\update.zip -Force\""
+    "build:update": "npm run build && powershell -Command \"Remove-Item public\\update-*.zip -ErrorAction SilentlyContinue; $ver = (Get-Content package.json | ConvertFrom-Json).version; Compress-Archive -Path dist\\* -DestinationPath public\\update-$ver.zip -Force\""
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^8.3.0",
