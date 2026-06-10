@@ -144,13 +144,13 @@ export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", mov
 
     return (
         <section
-            className="relative group/row mb-12 md:mb-16"
+            className="relative group/row mb-6 md:mb-8"
             onMouseEnter={() => setShowArrows(true)}
             onMouseLeave={() => setShowArrows(false)}
         >
             {title && (
-                <div className="flex items-center justify-between mb-4 md:mb-5 px-1 md:px-2">
-                    <h2 className="text-lg md:text-xl font-bold text-white/90 tracking-wide">
+                <div className="flex items-center justify-between mb-3 md:mb-4 px-1 md:px-2">
+                    <h2 className="text-xl md:text-2xl font-black text-white/90 tracking-wide">
                         {title}
                     </h2>
                 </div>
