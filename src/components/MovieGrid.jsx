@@ -182,7 +182,7 @@ export function MovieGrid() {
             {movieRows.map((row, idx) => {
                 if (row.isForYou) {
                     return (
-                        <div key={`foryou-${idx}`}>
+                        <div key={`foryou-${idx}`} className="md:hidden">
                             <h2 className="text-xl md:text-2xl font-black text-white/90 tracking-wide mb-3 md:mb-4 px-1 md:px-2">
                                 {row.title}
                             </h2>

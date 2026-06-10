@@ -18,7 +18,7 @@ export function CardStack({ movies, onMovieClick }) {
     };
 
     return (
-        <div className="relative w-full h-[550px] md:h-[700px] flex items-center justify-center perspective-1000 overflow-hidden">
+        <div className="relative w-full h-[550px] md:h-[700px] flex items-center justify-center perspective-1000">
             {movies.map((movie, index) => {
                 // Render only 1 previous card and 3 upcoming cards for performance
                 if (index < activeIndex - 1 || index > activeIndex + 3) return null;
@@ -95,7 +95,12 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
 
     return (
         <motion.div
-            style={{ x: isTop ? x : 0, rotate: isTop ? rotate : 0, opacity: isTop ? dragOpacity : animateProps.opacity }}
+            style={{ 
+                x: isTop ? x : 0, 
+                rotate: isTop ? rotate : 0, 
+                opacity: isTop ? dragOpacity : animateProps.opacity,
+                zIndex: animateProps.zIndex 
+            }}
             drag={isTop ? 'x' : false}
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.5}
@@ -106,31 +111,32 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
                 scale: animateProps.scale,
                 y: animateProps.y,
                 x: isTop ? 0 : animateProps.x,
-                zIndex: animateProps.zIndex,
             }}
             transition={{ type: 'spring', stiffness: 350, damping: 25, mass: 1 }}
-            className={`absolute w-[320px] sm:w-[400px] md:w-[460px] lg:w-[500px] h-[480px] md:h-[600px] rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-[#111] cursor-pointer origin-center`}
+            className={`absolute w-[320px] sm:w-[400px] md:w-[460px] lg:w-[500px] h-[480px] md:h-[600px] rounded-2xl md:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-[#111] cursor-pointer origin-center ${isSwiped ? 'pointer-events-none' : ''}`}
             onClick={onClick}
         >
-            <img
-                src={movie.poster || movie.backdrop}
-                alt={movie.title}
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            />
-            
-            {/* Dark Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#000] via-[#000]/60 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 rounded-2xl md:rounded-3xl overflow-hidden pointer-events-none">
+                <img
+                    src={movie.poster || movie.backdrop}
+                    alt={movie.title}
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                />
+                
+                {/* Dark Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#000] via-[#000]/60 to-transparent pointer-events-none"></div>
+            </div>
 
             {/* IMDb Badge */}
             {movie.match && (
-                <div className="absolute top-4 md:top-6 left-4 md:left-6 bg-black/80 backdrop-blur-md px-3 md:px-4 py-1.5 md:py-2 rounded-lg border border-white/10 flex items-center gap-1.5 pointer-events-none">
+                <div className="absolute top-4 md:top-6 left-4 md:left-6 bg-black/80 backdrop-blur-md px-3 md:px-4 py-1.5 md:py-2 rounded-lg border border-white/10 flex items-center gap-1.5 pointer-events-none z-10">
                     <span className="text-yellow-400 font-black text-xs md:text-sm">IMDb</span>
                     <span className="text-white font-bold text-sm md:text-base">{movie.match.replace('%', '') / 10}</span>
                 </div>
             )}
 
             {/* Bottom Content */}
-            <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-row justify-between items-end gap-4">
+            <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-row justify-between items-end gap-4 z-10">
                 <div className="flex-1 pointer-events-none">
                     <h2 className="text-white font-black text-4xl md:text-6xl leading-[1] mb-2 md:mb-3 drop-shadow-2xl italic tracking-tighter uppercase" style={{ fontFamily: "'Bebas Neue', 'Inter', sans-serif", WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>
                         {movie.title}
@@ -149,16 +155,16 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
                 </div>
 
                 {/* Floating Actions */}
-                <div className="flex flex-col gap-3 self-end mb-1 md:mb-2 z-10 pointer-events-auto">
+                <div className="flex flex-col gap-3 self-end mb-1 md:mb-2 z-20 pointer-events-auto">
                     <button 
                         onClick={(e) => { e.stopPropagation(); onAdd(); }}
-                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors shadow-lg"
+                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors shadow-lg cursor-pointer"
                     >
                         <Plus size={24} />
                     </button>
                     <button 
                         onClick={(e) => { e.stopPropagation(); onClick(); }}
-                        className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-black hover:bg-white transition-colors shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+                        className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-black hover:bg-white transition-colors shadow-[0_0_30px_rgba(255,255,255,0.4)] cursor-pointer"
                     >
                         <Play size={28} className="ml-1" fill="currentColor" />
                     </button>

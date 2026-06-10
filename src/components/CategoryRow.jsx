@@ -13,13 +13,13 @@ const LANGUAGES = [
 ];
 
 const GENRES = [
-    { id: 10749, name: 'Romance', color: 'from-[#B25353]', image: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg' }, 
-    { id: 18, name: 'Drama', color: 'from-[#4B7973]', image: 'https://image.tmdb.org/t/p/w500/rSPw7tgCH9c6NqICZef4kZjFOQ5.jpg' }, 
-    { id: 10751, name: 'Family', color: 'from-[#736E4E]', image: 'https://image.tmdb.org/t/p/w500/mXXuTee0yO2k9534JvWj678rRjB.jpg' }, 
-    { id: 28, name: 'Action', color: 'from-[#1A2639]', image: 'https://image.tmdb.org/t/p/w500/n6bUvigpRFqSwmIyHQCG50dOAL2.jpg' }, 
+    { id: 10749, name: 'Romance', color: 'from-[#B25353]', image: 'https://image.tmdb.org/t/p/w500/l5QgEvlfK6eHPM4YPEk7AArXmh8.jpg' }, 
+    { id: 18, name: 'Drama', color: 'from-[#4B7973]', image: 'https://image.tmdb.org/t/p/w500/oPsRr7AfNLw6XaPuMpvkWK0bIUA.jpg' }, 
+    { id: 10751, name: 'Family', color: 'from-[#736E4E]', image: 'https://image.tmdb.org/t/p/w500/9Z2uDYXqJrlmePznQQJhL6d92Rq.jpg' }, 
+    { id: 28, name: 'Action', color: 'from-[#1A2639]', image: 'https://image.tmdb.org/t/p/w500/vVpEOvdxVBP2aV166j5Xlvb5Cdc.jpg' }, 
     { id: 35, name: 'Comedy', color: 'from-[#D4A373]', image: 'https://image.tmdb.org/t/p/w500/kWSi5N0uVv6E4WkP5X12m8fE8gJ.jpg' }, 
-    { id: 27, name: 'Horror', color: 'from-[#2D2D2D]', image: 'https://image.tmdb.org/t/p/w500/5kqHVDJkEUcTiw0mQ9yO3GvGhy7.jpg' }, 
-    { id: 878, name: 'Sci-Fi', color: 'from-[#3A506B]', image: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MvrIdYj4.jpg' }, 
+    { id: 27, name: 'Horror', color: 'from-[#2D2D2D]', image: 'https://image.tmdb.org/t/p/w500/4k99kV4R1bbbrsnjR205v91Xbin.jpg' }, 
+    { id: 878, name: 'Sci-Fi', color: 'from-[#3A506B]', image: 'https://image.tmdb.org/t/p/w500/6zg7A9ICOthNR2TSXlT51KvXrsA.jpg' }, 
 ];
 
 export function CategoryRow({ title, type }) {
