@@ -187,23 +187,23 @@ export function VideoPlayer() {
                     }
                     
                     // Save to history immediately so the timestamp updates and it shows in "Recent Watch"
-                    await firestoreService.saveWatchProgress(user.uid, activeProfile.id, movie.id, {
+                    await firestoreService.saveWatchProgress(user.uid, activeProfile.id, formatted.id, {
                         progressSeconds: progress?.progressSeconds || 0,
                         durationSeconds: progress?.durationSeconds || 0,
                         completed: progress?.completed || false,
-                        contentType: movie.type,
-                        title: movie.title,
-                        poster: movie.poster,
-                        backdrop: movie.backdrop,
-                        year: movie.year,
+                        contentType: formatted.type,
+                        title: formatted.title,
+                        poster: formatted.poster,
+                        backdrop: formatted.backdrop,
+                        year: formatted.year,
                         season: activeSeason,
                         episode: activeEpisode,
-                        genres: movie.tags || []
+                        genres: formatted.tags || []
                     });
                 }
                 setPlayerReady(true);
             } catch (error) {
-                console.error('Error loading movie for player:', error);
+                console.error('Error loading movie for player:', error.message || error);
             } finally {
                 setLoading(false);
             }
