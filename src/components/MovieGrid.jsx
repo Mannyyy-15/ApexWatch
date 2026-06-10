@@ -135,15 +135,33 @@ export function MovieGrid() {
  } catch (e) { console.error('Error fetching recs', e); }
  }
 
- // Insert Category Carousels
- finalRows.splice(history.length > 0 ? 2 : 1, 0, {
- title: 'Popular Languages',
- isLanguages: true
- });
- finalRows.splice(history.length > 0 ? 4 : 3, 0, {
- title: 'Popular Genres',
- isGenres: true
- });
+  // Insert Category Carousels at strategic positions
+  // Calculate base offset depending on whether history/forYou rows are inserted
+  const topOffset = (history.length > 0 ? 2 : 1); // after Continue Watching + For You
+
+  // Spread the 4 category types evenly through the remaining rows
+  const totalRows = finalRows.length;
+  const step = Math.floor((totalRows - topOffset) / 5); // 5 gaps for 4 inserts
+
+  // Insert from back to front so indices don't shift
+  const insertPositions = [
+  topOffset + step,           // ~row 3-5: Languages
+  topOffset + step * 2,       // ~row 6-9: Genres
+  topOffset + step * 3,       // ~row 10-13: Channels
+  topOffset + step * 4,       // ~row 14-18: Sports
+  ];
+
+  const categoryInserts = [
+  { title: 'Popular Languages', isLanguages: true },
+  { title: 'Popular Genres', isGenres: true },
+  { title: 'Channels', isChannels: true },
+  { title: 'Sports', isSports: true },
+  ];
+
+  // Insert in reverse so positions remain valid
+  for (let i = categoryInserts.length - 1; i >= 0; i--) {
+  finalRows.splice(insertPositions[i], 0, categoryInserts[i]);
+  }
 
  setMovieRows(finalRows);
  } catch (error) {
@@ -195,13 +213,21 @@ export function MovieGrid() {
  );
  }
 
- if (row.isLanguages) {
- return <CategoryRow key={`lang-${idx}`} title={row.title} type="language" />;
- }
+  if (row.isLanguages) {
+  return <CategoryRow key={`lang-${idx}`} title={row.title} type="language" />;
+  }
 
- if (row.isGenres) {
- return <CategoryRow key={`genre-${idx}`} title={row.title} type="genre" />;
- }
+  if (row.isGenres) {
+  return <CategoryRow key={`genre-${idx}`} title={row.title} type="genre" />;
+  }
+
+  if (row.isChannels) {
+  return <CategoryRow key={`channel-${idx}`} title={row.title} type="channel" />;
+  }
+
+  if (row.isSports) {
+  return <CategoryRow key={`sport-${idx}`} title={row.title} type="sport" />;
+  }
 
  return (
  <MovieRow
