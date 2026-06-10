@@ -25,7 +25,6 @@ export function NavigationIsland() {
     } = useAppContext();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
-    const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
     const [instantResults, setInstantResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [showSearchDropdown, setShowSearchDropdown] = useState(false);
@@ -79,17 +78,7 @@ export function NavigationIsland() {
         }
     };
 
-    const handleCheckUpdate = async () => {
-        setIsCheckingUpdate(true);
-        const hasUpdate = await manualCheckForUpdates();
-        setIsCheckingUpdate(false);
-        setShowProfileMenu(false);
-        if (hasUpdate) {
-            handleDownloadApp();
-        } else {
-            alert("No updates available. You are on the latest version!");
-        }
-    };
+
 
     // Close menus on click outside
     useEffect(() => {
@@ -346,10 +335,8 @@ export function NavigationIsland() {
                         <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
                         <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
                         {isNative ? (
-                            updateAvailable ? (
+                            updateAvailable && (
                                 <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
-                            ) : (
-                                <MenuButton icon={<Download size={14} className={isCheckingUpdate ? "animate-spin" : ""}/>} label={isCheckingUpdate ? "Checking..." : "Check Update"} onClick={handleCheckUpdate} />
                             )
                         ) : (
                             <MenuButton icon={<Smartphone size={14}/>} label="Download App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
@@ -478,10 +465,8 @@ export function NavigationIsland() {
                 <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
                 {isNative ? (
-                    updateAvailable ? (
+                    updateAvailable && (
                         <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
-                    ) : (
-                        <MenuButton icon={<Download size={14} className={isCheckingUpdate ? "animate-spin" : ""}/>} label={isCheckingUpdate ? "Checking..." : "Check Update"} onClick={handleCheckUpdate} />
                     )
                 ) : (
                     <MenuButton icon={<Smartphone size={14}/>} label="Download App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
