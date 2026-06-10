@@ -14,6 +14,8 @@ export function UpdaterModal() {
             setProgressState(state);
             if (state.phase !== 'idle') {
                 setIsVisible(true);
+            } else {
+                setIsVisible(false);
             }
         });
 
