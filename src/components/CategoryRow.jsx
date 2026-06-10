@@ -127,6 +127,10 @@ export function CategoryRow({ title, type }) {
  src={item.image}
  alt={item.name}
  className="w-full h-full object-cover"
+ onError={(e) => {
+ e.target.onerror = null;
+ e.target.src = 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?w=500&q=80';
+ }}
  />
  <div className={`absolute inset-0 ${item.color.replace('from-', 'bg-')} opacity-60 group-hover:opacity-30 transition-opacity duration-500`}></div>
  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90"></div>
