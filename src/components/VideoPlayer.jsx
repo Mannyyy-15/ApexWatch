@@ -105,7 +105,7 @@ export function VideoPlayer() {
         // Lock to landscape when player opens
         const lockLandscape = async () => {
             try {
-                await ScreenOrientation.lock({ orientation: 'landscape' });
+                await ScreenOrientation.unlock();
                 setIsPortrait(false);
             } catch (e) {
                 // Fallback: try Web API (works on some browsers/WebViews)
@@ -137,8 +137,8 @@ export function VideoPlayer() {
 
         return () => {
             // Unlock orientation when player closes
-            ScreenOrientation.unlock().catch(() => {
-                try { window.screen?.orientation?.unlock(); } catch (_) {}
+            ScreenOrientation.lock({ orientation: 'portrait' }).catch(() => {
+                try { window.screen?.orientation?.lock('portrait'); } catch (_) {}
             });
             if (Capacitor.isNativePlatform()) {
                 StatusBar.show().catch(() => {});
@@ -334,7 +334,7 @@ export function VideoPlayer() {
 
     const handleManualRotate = async () => {
         try {
-            await ScreenOrientation.lock({ orientation: 'landscape' });
+            await ScreenOrientation.unlock();
             setIsPortrait(false);
         } catch (e) {
             try {

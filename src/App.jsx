@@ -19,6 +19,8 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowUp, Keyboard, X } from 'lucide-react';
 import { useTV } from './hooks/useTV';
 import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
+import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { StatusBar, Style } from '@capacitor/status-bar';
 
 const pageVariants = {
@@ -317,8 +319,11 @@ function MainLayout() {
 }
 
 export default function App() {
+    // Global lock to portrait mode on startup
     useEffect(() => {
-        // Notify Capgo native updater that the app successfully started without crashing
+        if (Capacitor.isNativePlatform()) {
+            ScreenOrientation.lock({ orientation: 'portrait' }).catch(() => {});
+        }
         UpdateService.notifyAppReady();
 
         // Setup Dev Console Interceptor
