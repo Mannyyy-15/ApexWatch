@@ -9,12 +9,11 @@ export function CardStack({ movies, onMovieClick }) {
 
  if (!movies || movies.length === 0) return null;
 
- const handleSwipe = (direction, movie) => {
-  if (direction === 'right' && movie) {
-    addDownload(movie);
-  }
-  if (activeIndex < movies.length - 1) {
+ const handleSwipe = (direction) => {
+  if (direction === 'left' && activeIndex < movies.length - 1) {
     setActiveIndex(prev => prev + 1);
+  } else if (direction === 'right' && activeIndex > 0) {
+    setActiveIndex(prev => prev - 1);
   }
  };
 
@@ -35,7 +34,7 @@ export function CardStack({ movies, onMovieClick }) {
  isTop={isTop}
  isSwiped={isSwiped}
  offset={offset}
- onSwipe={(dir) => handleSwipe(dir, movie)}
+ onSwipe={handleSwipe}
  onClick={() => isTop && onMovieClick(movie.id, movie.type)}
  onAdd={() => addDownload(movie)}
  />
