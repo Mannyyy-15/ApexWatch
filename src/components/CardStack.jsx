@@ -9,12 +9,13 @@ export function CardStack({ movies, onMovieClick }) {
 
  if (!movies || movies.length === 0) return null;
 
- const handleSwipe = (direction) => {
- if (direction === 'left' && activeIndex < movies.length - 1) {
- setActiveIndex(prev => prev + 1);
- } else if (direction === 'right' && activeIndex > 0) {
- setActiveIndex(prev => prev - 1);
- }
+ const handleSwipe = (direction, movie) => {
+  if (direction === 'right' && movie) {
+    addDownload(movie);
+  }
+  if (activeIndex < movies.length - 1) {
+    setActiveIndex(prev => prev + 1);
+  }
  };
 
  return (
@@ -34,7 +35,7 @@ export function CardStack({ movies, onMovieClick }) {
  isTop={isTop}
  isSwiped={isSwiped}
  offset={offset}
- onSwipe={handleSwipe}
+ onSwipe={(dir) => handleSwipe(dir, movie)}
  onClick={() => isTop && onMovieClick(movie.id, movie.type)}
  onAdd={() => addDownload(movie)}
  />
@@ -54,53 +55,53 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
  const dragOpacity = useTransform(x, [-200, -50, 0, 50, 200], [0, 1, 1, 1, 0]);
 
  const handleDragEnd = (event, info) => {
- const threshold = 60;
- if (info.offset.x < -threshold) {
- // Swipe left -> go forward
- onSwipe('left');
- x.set(0); 
- } else if (info.offset.x > threshold) {
- // Swipe right -> go backward
- onSwipe('right');
- x.set(0);
- }
+  const threshold = 60;
+  if (info.offset.x < -threshold) {
+    onSwipe('left');
+    x.set(0); 
+  } else if (info.offset.x > threshold) {
+    onSwipe('right');
+    x.set(0);
+  }
  };
 
  // Smooth card positioning logic based on state
  let animateProps = {
- x: 0,
- y: 0,
- scale: 1,
- opacity: 1,
- zIndex: 10 - offset,
+  x: 0,
+  y: 0,
+  scale: 1,
+  opacity: 1,
+  zIndex: 10 - offset,
+  rotate: 0,
  };
 
  if (isSwiped) {
- animateProps = {
- x: -window.innerWidth, // Hide off-screen left
- y: 50,
- scale: 0.8,
- opacity: 0,
- zIndex: 10 - offset,
- };
+  animateProps = {
+    x: -window.innerWidth, // Hide off-screen left
+    y: 50,
+    scale: 0.8,
+    opacity: 0,
+    zIndex: 10 - offset,
+    rotate: -10,
+  };
  } else if (!isTop) {
- animateProps = {
- x: offset * 15,
- y: offset * 25, // Move down so the bottom edge is visible
- scale: 1 - offset * 0.05,
- opacity: 1,
- zIndex: 10 - offset,
- rotate: offset * 3, // Add rotation for a deck effect
- };
+  animateProps = {
+    x: offset * 15,
+    y: offset * 25, // Move down so the bottom edge is visible
+    scale: 1 - offset * 0.05,
+    opacity: 1,
+    zIndex: 10 - offset,
+    rotate: offset * 3, // Add rotation for a deck effect
+  };
  }
 
  return (
  <motion.div
  style={{ 
- x: isTop ? x : 0, 
- rotate: isTop ? rotate : animateProps.rotate, 
- opacity: isTop ? dragOpacity : animateProps.opacity,
- zIndex: animateProps.zIndex 
+  x: isTop ? x : undefined, 
+  rotate: isTop ? rotate : undefined, 
+  opacity: isTop ? dragOpacity : undefined,
+  zIndex: animateProps.zIndex 
  }}
  drag={isTop ? 'x' : false}
  dragConstraints={{ left: 0, right: 0 }}
@@ -109,9 +110,11 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
  whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
  initial={{ scale: 0.8, y: 50, opacity: 0 }}
  animate={{
- scale: animateProps.scale,
- y: animateProps.y,
- x: isTop ? 0 : animateProps.x,
+  scale: animateProps.scale,
+  y: animateProps.y,
+  x: isTop ? 0 : animateProps.x,
+  rotate: isTop ? 0 : animateProps.rotate,
+  opacity: isTop ? 1 : animateProps.opacity,
  }}
  transition={{ type: 'spring', stiffness: 350, damping: 25, mass: 1 }}
  className={`absolute w-[320px] sm:w-[400px] md:w-[460px] lg:w-[500px] h-[480px] md:h-[600px] rounded-2xl md:rounded-3xl border border-white/10 bg-[#111] cursor-pointer origin-center ${isSwiped ? 'pointer-events-none' : ''}`}
