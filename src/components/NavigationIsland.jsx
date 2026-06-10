@@ -190,13 +190,13 @@ export function NavigationIsland() {
  </div>
 
  {/* Desktop Sidebar (Hotstar Style) */}
- <motion.div 
- initial={{ x: -100, opacity: 0 }} 
- animate={{ x: 0, opacity: 1 }} 
- transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
- className="hidden md:flex flex-col fixed top-0 bottom-0 left-0 z-[60] w-[80px] hover:w-[280px] bg-gradient-to-r from-[#020202] via-[#020202]/90 to-transparent border-none transition-all duration-500 overflow-visible group/sidebar"
- >
- <div className="flex flex-col h-full py-10 items-start justify-center w-full relative">
+  <motion.div 
+  initial={{ x: -100, opacity: 0 }} 
+  animate={{ x: 0, opacity: 1 }} 
+  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
+  className="hidden md:flex flex-col fixed top-6 bottom-6 left-6 z-[60] w-[80px] hover:w-[280px] bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 overflow-visible group/sidebar"
+  >
+  <div className="flex flex-col h-full py-8 items-start justify-center w-full relative">
  {/* Logo */}
  <div 
  onClick={() => setCurrentView('home')} 
@@ -288,10 +288,10 @@ export function NavigationIsland() {
  ref={mobileMenuRef}
  initial={{ y: 100 }} 
  animate={{ y: 0 }} 
- className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-between bg-black/80 backdrop-blur-3xl border border-glass-border p-1.5 px-3 rounded-[24px] shadow-2xl navigation-island-mobile max-w-[480px] mx-auto"
+ className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-between bg-black/90 backdrop-blur-3xl border border-white/10 p-2.5 px-4 rounded-full shadow-2xl navigation-island-mobile max-w-[480px] mx-auto"
  >
  <MobileNavItem 
- icon={<Home size={18}/>} 
+ icon={<Home size={22}/>} 
  label="Home" 
  active={currentView === 'home'} 
  onClick={() => setCurrentView('home')}
@@ -310,14 +310,14 @@ export function NavigationIsland() {
  onTouchEnd={() => clearTimeout(devHoldTimeoutRef.current)}
  onTouchCancel={() => clearTimeout(devHoldTimeoutRef.current)}
  />
- <MobileNavItem icon={<Film size={18}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
- <MobileNavItem icon={<Search size={18}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
- <MobileNavItem icon={<Tv size={18}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
+ <MobileNavItem icon={<Film size={22}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
+ <MobileNavItem icon={<Search size={22}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
+ <MobileNavItem icon={<Tv size={22}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
  
         {loadingAuth ? (
           <div className="flex items-center p-2.5 rounded-full bg-transparent">
-            <div className="w-[18px] h-[18px] rounded-full bg-white/10 animate-pulse border border-white/5 flex items-center justify-center">
-              <User size={10} className="text-white/20"/>
+            <div className="w-[22px] h-[22px] rounded-full bg-white/10 animate-pulse border border-white/5 flex items-center justify-center">
+              <User size={12} className="text-white/20"/>
             </div>
           </div>
         ) : user ? (
@@ -328,12 +328,12 @@ export function NavigationIsland() {
             }`}
           >
             <div className="relative flex items-center justify-center">
-              <div className={`w-[18px] h-[18px] rounded-full overflow-hidden border transition-colors duration-300 ${showProfileMenu ? 'border-white' : 'border-white/20 hover:border-white/50'} bg-white/5`}>
+              <div className={`w-[22px] h-[22px] rounded-full overflow-hidden border transition-colors duration-300 ${showProfileMenu ? 'border-white' : 'border-white/20 hover:border-white/50'} bg-white/5`}>
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <User size={10} className="text-white"/>
+                    <User size={12} className="text-white"/>
                   </div>
                 )}
               </div>
@@ -350,7 +350,7 @@ export function NavigationIsland() {
             </div>
           </button>
  ) : (
- <MobileNavItem icon={<LogIn size={18}/>} label="Join" onClick={() => setCurrentView('auth')}/>
+ <MobileNavItem icon={<LogIn size={22}/>} label="Join" onClick={() => setCurrentView('auth')}/>
  )}
 
  {/* Mobile Profile Dropup */}
