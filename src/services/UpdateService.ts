@@ -1,9 +1,7 @@
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import { Preferences } from '@capacitor/preferences';
-import JSZip from 'jszip';
+import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import pkg from '../../package.json';
 
-const UPDATE_SERVER_URL = 'http://192.168.1.2:8080'; // Local dev server
+const UPDATE_SERVER_URL = 'https://apex-watch.vercel.app'; // Production server
 
 export interface UpdateProgress {
     phase: 'idle' | 'checking' | 'downloading' | 'extracting' | 'ready' | 'error';
@@ -15,6 +13,8 @@ type ProgressCallback = (state: UpdateProgress) => void;
 
 class UpdateServiceClass {
     private onProgress?: ProgressCallback;
+    private targetVersion: string | null = null;
+    private downloadedBundle: any = null;
 
     setProgressListener(cb: ProgressCallback) {
         this.onProgress = cb;
@@ -33,8 +33,8 @@ class UpdateServiceClass {
             const data = await res.json();
             const currentVersion = pkg.version;
             
-            // Basic semantic version compare
             if (this.isNewerVersion(currentVersion, data.latestVersion)) {
+                this.targetVersion = data.latestVersion;
                 return true;
             }
             this.emit({ phase: 'idle', progress: 0 });
@@ -47,95 +47,26 @@ class UpdateServiceClass {
     }
 
     async downloadAndInstallUpdate(): Promise<boolean> {
+        if (!this.targetVersion) return false;
+        
         try {
-            const res = await fetch(`${UPDATE_SERVER_URL}/version.json?t=${Date.now()}`);
-            const data = await res.json();
-            const targetVersion = data.latestVersion;
-            const zipUrl = `${UPDATE_SERVER_URL}/update.zip?v=${targetVersion}`;
-
-            // 1. Download
-            this.emit({ phase: 'downloading', progress: 0 });
+            this.emit({ phase: 'downloading', progress: 50 }); // Capgo doesn't do chunk progress well natively in standard API without listeners, spoofing a bit
             
-            // Using standard fetch arrayBuffer as Capacitor Http doesn't support chunk progress well yet 
-            // without custom native code, but fetch arrayBuffer is fine for small/medium bundles
-            const response = await fetch(zipUrl);
-            if (!response.ok) throw new Error('Failed to download update bundle');
+            // 1. Download via Capgo's native C++/Swift engine
+            const zipUrl = `${UPDATE_SERVER_URL}/update.zip?v=${this.targetVersion}`;
             
-            const contentLength = response.headers.get('content-length');
-            const total = parseInt(contentLength || '0', 10);
-            
-            let loaded = 0;
-            const reader = response.body?.getReader();
-            const chunks: Uint8Array[] = [];
-
-            if (reader) {
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    if (value) {
-                        chunks.push(value);
-                        loaded += value.length;
-                        if (total > 0) {
-                            this.emit({ phase: 'downloading', progress: Math.round((loaded / total) * 100) });
-                        }
-                    }
-                }
-            }
-            
-            // Concatenate chunks
-            const zipBuffer = new Uint8Array(loaded);
-            let position = 0;
-            for (const chunk of chunks) {
-                zipBuffer.set(chunk, position);
-                position += chunk.length;
-            }
-
-            // 2. Extract
-            this.emit({ phase: 'extracting', progress: 0 });
-            const jszip = new JSZip();
-            const zip = await jszip.loadAsync(zipBuffer);
-            
-            const targetDir = `updates/v${targetVersion}`;
-            
-            // Ensure dir exists (clear it if it does)
-            try {
-                await Filesystem.rmdir({ path: targetDir, directory: Directory.Data, recursive: true });
-            } catch (e) { /* ignore */ }
-            
-            await Filesystem.mkdir({ path: targetDir, directory: Directory.Data, recursive: true });
-
-            const files = Object.values(zip.files).filter(f => !f.dir);
-            let extractedCount = 0;
-
-            for (const file of files) {
-                // Ensure subdirectories exist
-                const parts = file.name.split('/');
-                if (parts.length > 1) {
-                    const dirPath = parts.slice(0, -1).join('/');
-                    try {
-                        await Filesystem.mkdir({ path: `${targetDir}/${dirPath}`, directory: Directory.Data, recursive: true });
-                    } catch (e) { /* ignore if exists */ }
-                }
-
-                // Read file content as base64
-                const content = await file.async('base64');
-                
-                await Filesystem.writeFile({
-                    path: `${targetDir}/${file.name}`,
-                    data: content,
-                    directory: Directory.Data
-                });
-                
-                extractedCount++;
-                this.emit({ phase: 'extracting', progress: Math.round((extractedCount / files.length) * 100) });
-            }
-
-            // 3. Swap and Save Preferences
-            await Preferences.set({
-                key: 'active_webview_path',
-                value: targetDir
+            CapacitorUpdater.addListener('download', (info: any) => {
+                this.emit({ phase: 'downloading', progress: info.percent });
             });
 
+            const bundle = await CapacitorUpdater.download({
+                url: zipUrl,
+                version: this.targetVersion,
+            });
+            
+            this.downloadedBundle = bundle;
+
+            // 2. Ready for swap
             this.emit({ phase: 'ready', progress: 100 });
             return true;
 
@@ -146,16 +77,23 @@ class UpdateServiceClass {
         }
     }
 
-    async getActivePath(): Promise<string | null> {
-        const { value } = await Preferences.get({ key: 'active_webview_path' });
-        return value;
+    async applyUpdateAndRestart(): Promise<void> {
+        if (this.downloadedBundle) {
+            try {
+                // This swaps the native Capgo pointer and reloads the WebView instantly
+                await CapacitorUpdater.set({ id: this.downloadedBundle.id });
+            } catch (e) {
+                console.error("Failed to swap version", e);
+                window.location.reload();
+            }
+        } else {
+            window.location.reload();
+        }
     }
 
     async clearUpdates(): Promise<void> {
         try {
-            await Preferences.remove({ key: 'active_webview_path' });
-            await Filesystem.rmdir({ path: 'updates', directory: Directory.Data, recursive: true });
-            window.location.href = window.location.origin; // Reload to native bundle
+            await CapacitorUpdater.reset();
         } catch (error) {
             console.error('Error clearing updates', error);
         }

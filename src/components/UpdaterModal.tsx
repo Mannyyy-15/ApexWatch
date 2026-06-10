@@ -28,24 +28,7 @@ export function UpdaterModal() {
     };
 
     const handleRestart = async () => {
-        const activePath = await UpdateService.getActivePath();
-        if (activePath) {
-            try {
-                // Get absolute native URL for the stored path
-                const result = await Filesystem.getUri({
-                    directory: Directory.Data,
-                    path: activePath
-                });
-                
-                const nativeUrl = Capacitor.convertFileSrc(result.uri);
-                window.location.href = `${nativeUrl}/index.html`;
-            } catch (e) {
-                console.error("Failed to load new path", e);
-                window.location.reload();
-            }
-        } else {
-            window.location.reload();
-        }
+        await UpdateService.applyUpdateAndRestart();
     };
 
     return (
