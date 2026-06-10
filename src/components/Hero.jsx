@@ -65,6 +65,18 @@ export function Hero() {
     }
   };
 
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const mainEl = document.querySelector('main');
+    if (!mainEl) return;
+    const handleScroll = () => {
+      setScrollY(mainEl.scrollTop);
+    };
+    mainEl.addEventListener('scroll', handleScroll, { passive: true });
+    return () => mainEl.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (loading || !heroMovie)
     return (
       <div className="w-[95%] md:w-full mx-auto mt-4 md:mt-0 h-[80dvh] md:h-[95vh] rounded-3xl md:rounded-none border border-white/10 md:border-none overflow-hidden bg-[#050505] flex items-end px-6 pb-20">
@@ -77,7 +89,7 @@ export function Hero() {
 
   return (
     <div className="relative w-[95%] md:w-full mx-auto mt-4 md:mt-0 h-[80dvh] md:h-[95vh] rounded-3xl md:rounded-none border border-white/10 md:border-none overflow-hidden flex items-end group">
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden bg-[#020202]">
         <AnimatePresence initial={true} mode="wait">
           <motion.div
             key={currentIndex}
@@ -87,16 +99,25 @@ export function Hero() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
-            <picture>
-              <source media="(max-width: 768px)" srcSet={heroMovie.backdrop.replace('/w1280/', '/w780/')} />
-              <img 
-                src={heroMovie.backdrop} 
-                alt={heroMovie.title} 
-                className="w-full h-full object-cover" 
-                loading={currentIndex === 0 ? "eager" : "lazy"}
-                fetchPriority={currentIndex === 0 ? "high" : "auto"}
-              />
-            </picture>
+            <motion.div 
+                className="absolute inset-x-0 w-full"
+                style={{ 
+                    height: '130%', 
+                    top: '-15%', 
+                    y: scrollY * 0.5 
+                }}
+            >
+                <picture>
+                  <source media="(max-width: 768px)" srcSet={heroMovie.backdrop.replace('/w1280/', '/w780/')} />
+                  <img 
+                    src={heroMovie.backdrop} 
+                    alt={heroMovie.title} 
+                    className="w-full h-full object-cover" 
+                    loading={currentIndex === 0 ? "eager" : "lazy"}
+                    fetchPriority={currentIndex === 0 ? "high" : "auto"}
+                  />
+                </picture>
+            </motion.div>
             {/* Moody Cinematic Overlays */}
             <div className="absolute inset-0 bg-black/40"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-[#020202]/60 to-transparent"></div>

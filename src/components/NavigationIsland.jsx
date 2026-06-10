@@ -208,7 +208,7 @@ export function NavigationIsland() {
             </div>
             
             {/* Nav Items */}
-            <div className="flex flex-col gap-2 w-full flex-1">
+            <div className="flex flex-col gap-2 w-full flex-1 justify-center pb-20">
                 <SidebarNavItem icon={<Home size={24} strokeWidth={2.5}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')} />
                 <SidebarNavItem icon={<Search size={24} strokeWidth={2.5}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')} />
                 <SidebarNavItem icon={<Tv size={24} strokeWidth={2.5}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')} />
