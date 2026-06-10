@@ -194,20 +194,17 @@ export function NavigationIsland() {
         initial={{ x: -100, opacity: 0 }} 
         animate={{ x: 0, opacity: 1 }} 
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
-        className="hidden md:flex flex-col fixed top-0 bottom-0 left-0 z-[60] w-[80px] hover:w-[320px] bg-gradient-to-r from-[#020202] via-[#020202]/80 to-transparent hover:from-[#020202]/95 hover:via-[#020202]/70 hover:to-transparent backdrop-blur-sm hover:backdrop-blur-lg transition-all duration-500 overflow-visible group/sidebar"
+        className="hidden md:flex flex-col fixed top-0 bottom-0 left-0 z-[60] w-[80px] hover:w-[280px] bg-gradient-to-r from-[#020202] via-[#020202]/80 to-transparent transition-all duration-500 overflow-visible group/sidebar"
       >
         <div className="flex flex-col h-full py-10 items-start w-full relative">
             {/* Logo */}
             <div 
               onClick={() => setCurrentView('home')} 
-              className="flex items-center gap-6 px-6 cursor-pointer flex-shrink-0 outline-none tv-focusable mb-14 w-full"
+              className="flex items-center px-6 cursor-pointer flex-shrink-0 outline-none tv-focusable mb-14 w-full"
             >
-              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(229,9,20,0.5)] group-hover/sidebar:shadow-[0_0_30px_rgba(229,9,20,0.6)] transition-all duration-500 flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(229,9,20,0.5)] group-hover/sidebar:shadow-[0_0_30px_rgba(229,9,20,0.6)] group-hover/sidebar:scale-105 transition-all duration-500 flex-shrink-0">
                 <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
               </div>
-              <span className="font-black text-2xl tracking-tighter uppercase italic text-white/90 transition-all duration-500 opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap -translate-x-4 group-hover/sidebar:translate-x-0">
-                Apex<span className="text-accent">Watch</span>
-              </span>
             </div>
             
             {/* Nav Items */}
