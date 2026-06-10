@@ -153,6 +153,16 @@ export function MovieGrid() {
         }
     };
 
+    const handleRemoveHistory = async (contentId) => {
+        if (!user || !activeProfile) return;
+        try {
+            await firestoreService.removeWatchProgress(user.uid, activeProfile.id, contentId);
+            loadContent(); // Refresh grid
+        } catch (error) {
+            console.error('Error removing history:', error);
+        }
+    };
+
     useEffect(() => {
         loadContent();
     }, [activeProfile?.id]); // Refresh if profile changes, but run at least once on mount
@@ -201,6 +211,7 @@ export function MovieGrid() {
                         isContinueWatching={row.isHistory}
                         isTop10={row.title.toLowerCase().includes('top 10')}
                         continueWatchingItems={row.isHistory ? historyItems : null}
+                        onRemoveFromContinueWatching={handleRemoveHistory}
                         onMovieClick={(id, type) => {
                             setActiveMovieId(id);
                             setActiveMediaType(type || 'movie');

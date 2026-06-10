@@ -1,11 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, ChevronRight, Plus, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Check, MoreVertical, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
-const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progress, onMovieClick }) => {
+const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progress, onMovieClick, onRemoveFromContinueWatching }) => {
     const { watchlist, toggleWatchlist } = useAppContext();
     const isInWatchlist = watchlist.some(item => item.contentId === movie.id);
+    const [showMenu, setShowMenu] = useState(false);
     const rank = index + 1;
 
     return (
@@ -69,16 +70,56 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
                     </div>
                 )}
 
-                <button 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWatchlist(movie);
-                    }}
-                    className="watchlist-btn absolute top-2 right-2 md:top-3 md:right-3 w-7 h-7 md:w-8 md:h-8 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-accent hover:border-accent hover:scale-105 active:scale-95 z-30 cursor-pointer"
-                    aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
-                >
-                    {isInWatchlist ? <Check size={14} className="md:w-4 md:h-4" /> : <Plus size={14} className="md:w-4 md:h-4" />}
-                </button>
+                {isContinueWatching ? (
+                    <div className="absolute top-2 right-2 md:top-3 md:right-3 z-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" onMouseLeave={() => setShowMenu(false)}>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowMenu(!showMenu);
+                            }}
+                            className="w-7 h-7 md:w-8 md:h-8 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 cursor-pointer"
+                        >
+                            <MoreVertical size={16} />
+                        </button>
+                        
+                        <AnimatePresence>
+                            {showMenu && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute top-full right-0 mt-2 w-56 bg-[#111] border border-white/10 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden py-1 z-50 origin-top-right"
+                                >
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowMenu(false);
+                                            if (onRemoveFromContinueWatching) {
+                                                onRemoveFromContinueWatching(movie.id);
+                                            }
+                                        }}
+                                        className="w-full px-4 py-3 flex items-center gap-3 text-sm text-red-500 font-semibold hover:bg-red-500/10 transition-colors text-left"
+                                    >
+                                        <Trash2 size={16} />
+                                        <span>Remove from history</span>
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                ) : (
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWatchlist(movie);
+                        }}
+                        className="watchlist-btn absolute top-2 right-2 md:top-3 md:right-3 w-7 h-7 md:w-8 md:h-8 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-accent hover:border-accent hover:scale-105 active:scale-95 z-30 cursor-pointer"
+                        aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+                    >
+                        {isInWatchlist ? <Check size={14} className="md:w-4 md:h-4" /> : <Plus size={14} className="md:w-4 md:h-4" />}
+                    </button>
+                )}
             </div>
 
             {/* Text Content */}

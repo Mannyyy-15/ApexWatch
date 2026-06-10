@@ -102,6 +102,20 @@ export const firestoreService = {
         }
     },
 
+    removeWatchProgress: async (userId, profileId, contentId) => {
+        if (!userId || userId === 'mock-user') {
+            localFallback.remove(userId || 'guest', profileId || 'default', 'progress', contentId);
+            return;
+        }
+        try {
+            const progressRef = doc(db, 'users', userId, 'profiles', profileId, 'watchProgress', contentId);
+            await deleteDoc(progressRef);
+        } catch (error) {
+            console.warn('Firestore Remove Error (Progress):', error.message);
+            localFallback.remove(userId, profileId, 'progress', contentId);
+        }
+    },
+
     // Watchlist
     addToWatchlist: async (userId, profileId, contentId, contentType) => {
         const data = { contentId, contentType, addedAt: Date.now() };
