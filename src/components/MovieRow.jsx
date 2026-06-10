@@ -29,36 +29,15 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
             role="button"
             aria-label={`#${rank} ${movie.title}`}
         >
-            {/* Top 10 Rank Number */}
-            {isTop10 && (
-                <div
-                    className="absolute left-0 bottom-8 md:bottom-10 z-20 select-none pointer-events-none"
-                    style={{
-                        fontFamily: 'Georgia, serif',
-                        fontSize: 'clamp(72px, 14vw, 130px)',
-                        fontWeight: '900',
-                        fontStyle: 'italic',
-                        lineHeight: 1,
-                        color: 'transparent',
-                        WebkitTextStroke: rank <= 3 ? '2px rgba(229,9,20,0.9)' : '2px rgba(255,255,255,0.35)',
-                        textShadow: rank <= 3 ? '0 0 40px rgba(229,9,20,0.3)' : 'none',
-                        userSelect: 'none',
-                    }}
-                >
-                    {rank}
-                </div>
-            )}
-
             {/* Top 10 Massive Number */}
             {isTop10 && (
                 <div 
-                    className="absolute -left-3 md:-left-6 bottom-4 md:bottom-6 z-20 pointer-events-none select-none text-[80px] md:text-[120px] leading-none tracking-tighter"
+                    className="absolute -left-4 md:-left-8 bottom-0 md:-bottom-2 z-20 pointer-events-none select-none text-[100px] md:text-[140px] leading-none tracking-tighter drop-shadow-2xl"
                     style={{ 
-                        WebkitTextStroke: '3px rgba(255,255,255,0.7)', 
-                        color: 'transparent',
+                        color: 'black',
+                        WebkitTextStroke: '2px #E50914', 
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 900,
-                        textShadow: '0px 10px 20px rgba(0,0,0,0.8)'
                     }}
                 >
                     {index + 1}
@@ -66,7 +45,7 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
             )}
 
             {/* Thumbnail Container */}
-            <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} ${isTop10 ? 'ml-6 md:ml-12' : ''} rounded md:rounded-md overflow-hidden mb-2 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-500 group-hover:border-accent/40 group-hover:shadow-[0_0_30px_rgba(229,9,20,0.25)]`}>
+            <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded md:rounded-md overflow-hidden mb-2 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-500 group-hover:border-accent/40 group-hover:shadow-[0_0_30px_rgba(229,9,20,0.25)]`}>
                 <img
                     src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster}
                     alt={movie.title}
@@ -160,7 +139,7 @@ export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", mov
 
     return (
         <section
-            className="relative group/row mb-6 md:mb-8"
+            className="relative group/row mb-2 md:mb-4"
             onMouseEnter={() => setShowArrows(true)}
             onMouseLeave={() => setShowArrows(false)}
         >

@@ -27,25 +27,25 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 const pageVariants = {
     initial: {
         opacity: 0,
-        x: -20,
-        filter: 'blur(10px)',
+        scale: 0.98,
+        y: 10,
     },
     animate: {
         opacity: 1,
-        x: 0,
-        filter: 'blur(0px)',
+        scale: 1,
+        y: 0,
         transition: {
-            duration: 0.4,
-            ease: [0.16, 1, 0.3, 1],
+            duration: 0.25,
+            ease: "easeOut",
         }
     },
     exit: {
         opacity: 0,
-        x: 20,
-        filter: 'blur(10px)',
+        scale: 0.98,
+        y: -10,
         transition: {
-            duration: 0.3,
-            ease: [0.7, 0, 0.84, 0]
+            duration: 0.2,
+            ease: "easeIn"
         }
     }
 };

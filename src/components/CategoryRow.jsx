@@ -4,22 +4,22 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const LANGUAGES = [
-    { id: 'hi', name: 'Hindi', native: 'हिन्दी', color: 'from-[#3A4374]', image: 'https://image.tmdb.org/t/p/w300/ytdiB73iBqZ6jQ9gP5fT6dC51Gk.jpg' }, // Ranbir Kapoor
-    { id: 'en', name: 'English', native: 'English', color: 'from-[#8B453E]', image: 'https://image.tmdb.org/t/p/w300/6NsMbJHRlSy98VbRxpFAebL5nnG.jpg' }, // Scarlett Johansson
-    { id: 'ta', name: 'Tamil', native: 'தமிழ்', color: 'from-[#5C3D32]', image: 'https://image.tmdb.org/t/p/w300/5qHNjhtjMD4YWH3UP0rm4tKwxIQ.jpg' }, // Kamal Haasan
-    { id: 'te', name: 'Telugu', native: 'తెలుగు', color: 'from-[#4A5D23]', image: 'https://image.tmdb.org/t/p/w300/r0mE7P6UlsL0Z0R93N0qJzJ5Y3p.jpg' }, // Allu Arjun
-    { id: 'ml', name: 'Malayalam', native: 'മലയാളം', color: 'from-[#2C3E50]', image: 'https://image.tmdb.org/t/p/w300/aWvA0EStx7h8XjV1lEw2nB1yK8U.jpg' }, // Mohanlal
-    { id: 'ko', name: 'Korean', native: '한국어', color: 'from-[#6E4E73]', image: 'https://image.tmdb.org/t/p/w300/6yX1bHkGf2Q8T0Z1b1MvNfKzB8P.jpg' }, // Lee Jung-jae
+    { id: 'hi', name: 'Hindi', native: 'हिन्दी', color: 'from-[#3A4374]', image: 'https://image.tmdb.org/t/p/w500/1XDDXPXGiI8id7MrUxK36ke7wow.jpg' }, // Jawan/Pathaan vibe
+    { id: 'en', name: 'English', native: 'English', color: 'from-[#8B453E]', image: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg' }, // Avengers
+    { id: 'ta', name: 'Tamil', native: 'தமிழ்', color: 'from-[#5C3D32]', image: 'https://image.tmdb.org/t/p/w500/vVpEOvdxVBP2aV166j5Xlvb5Cdc.jpg' }, // John Wick / Action vibe
+    { id: 'te', name: 'Telugu', native: 'తెలుగు', color: 'from-[#4A5D23]', image: 'https://image.tmdb.org/t/p/w500/yF1eOkaYvwiORauRCPWznV9xVvi.jpg' }, // RRR vibe
+    { id: 'ml', name: 'Malayalam', native: 'മലയാളം', color: 'from-[#2C3E50]', image: 'https://image.tmdb.org/t/p/w500/xXHZeb1ywGte8Ptv1vgMIg81dGq.jpg' }, // Nature/Drama
+    { id: 'ko', name: 'Korean', native: '한국어', color: 'from-[#6E4E73]', image: 'https://image.tmdb.org/t/p/w500/2meX1nMdScFOoV4370rqHWKmXhY.jpg' }, // Squid Game vibe
 ];
 
 const GENRES = [
-    { id: 10749, name: 'Romance', color: 'from-[#B25353]', image: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg' }, // Titanic
-    { id: 18, name: 'Drama', color: 'from-[#4B7973]', image: 'https://image.tmdb.org/t/p/w500/rSPw7tgCH9c6NqICZef4kZjFOQ5.jpg' }, // Godfather
-    { id: 10751, name: 'Family', color: 'from-[#736E4E]', image: 'https://image.tmdb.org/t/p/w500/mXXuTee0yO2k9534JvWj678rRjB.jpg' }, // Finding Nemo
-    { id: 28, name: 'Action', color: 'from-[#1A2639]', image: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg' }, // Avengers
-    { id: 35, name: 'Comedy', color: 'from-[#D4A373]', image: 'https://image.tmdb.org/t/p/w500/kWSi5N0uVv6E4WkP5X12m8fE8gJ.jpg' }, // Superbad
-    { id: 27, name: 'Horror', color: 'from-[#2D2D2D]', image: 'https://image.tmdb.org/t/p/w500/5kqHVDJkEUcTiw0mQ9yO3GvGhy7.jpg' }, // The Shining
-    { id: 878, name: 'Sci-Fi', color: 'from-[#3A506B]', image: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MvrIdYj4.jpg' }, // Interstellar
+    { id: 10749, name: 'Romance', color: 'from-[#B25353]', image: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg' }, 
+    { id: 18, name: 'Drama', color: 'from-[#4B7973]', image: 'https://image.tmdb.org/t/p/w500/rSPw7tgCH9c6NqICZef4kZjFOQ5.jpg' }, 
+    { id: 10751, name: 'Family', color: 'from-[#736E4E]', image: 'https://image.tmdb.org/t/p/w500/mXXuTee0yO2k9534JvWj678rRjB.jpg' }, 
+    { id: 28, name: 'Action', color: 'from-[#1A2639]', image: 'https://image.tmdb.org/t/p/w500/n6bUvigpRFqSwmIyHQCG50dOAL2.jpg' }, 
+    { id: 35, name: 'Comedy', color: 'from-[#D4A373]', image: 'https://image.tmdb.org/t/p/w500/kWSi5N0uVv6E4WkP5X12m8fE8gJ.jpg' }, 
+    { id: 27, name: 'Horror', color: 'from-[#2D2D2D]', image: 'https://image.tmdb.org/t/p/w500/5kqHVDJkEUcTiw0mQ9yO3GvGhy7.jpg' }, 
+    { id: 878, name: 'Sci-Fi', color: 'from-[#3A506B]', image: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MvrIdYj4.jpg' }, 
 ];
 
 export function CategoryRow({ title, type }) {
@@ -54,7 +54,7 @@ export function CategoryRow({ title, type }) {
 
     return (
         <section
-            className="relative group/row mb-8 md:mb-12"
+            className="relative group/row mb-2 md:mb-4"
             onMouseEnter={() => setShowArrows(true)}
             onMouseLeave={() => setShowArrows(false)}
         >
