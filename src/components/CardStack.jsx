@@ -85,10 +85,10 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
         };
     } else if (!isTop) {
         animateProps = {
-            x: offset * 25, 
-            y: offset * 20, 
+            x: offset * 40, // Increased X offset to expose the right side
+            y: 0, // No Y offset, keep them vertically aligned
             scale: 1 - offset * 0.05,
-            opacity: 1 - offset * 0.2,
+            opacity: 1, // Keep them visible so the artwork shows
             zIndex: 10 - offset,
         };
     }
@@ -109,7 +109,7 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
                 zIndex: animateProps.zIndex,
             }}
             transition={{ type: 'spring', stiffness: 350, damping: 25, mass: 1 }}
-            className={`absolute w-[320px] sm:w-[400px] md:w-[480px] lg:w-[540px] h-[480px] md:h-[650px] rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-[#111] cursor-pointer origin-bottom-left`}
+            className={`absolute w-[320px] sm:w-[400px] md:w-[460px] lg:w-[500px] h-[480px] md:h-[600px] rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-[#111] cursor-pointer origin-center`}
             onClick={onClick}
         >
             <img
@@ -119,7 +119,7 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
             />
             
             {/* Dark Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#000] via-[#000]/60 to-transparent pointer-events-none"></div>
 
             {/* IMDb Badge */}
             {movie.match && (
@@ -130,35 +130,35 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
             )}
 
             {/* Bottom Content */}
-            <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-4">
+            <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-row justify-between items-end gap-4">
                 <div className="flex-1 pointer-events-none">
-                    <h2 className="text-white font-black text-3xl md:text-5xl leading-[1.1] mb-3 drop-shadow-2xl" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+                    <h2 className="text-white font-black text-4xl md:text-6xl leading-[1] mb-2 md:mb-3 drop-shadow-2xl italic tracking-tighter uppercase" style={{ fontFamily: "'Bebas Neue', 'Inter', sans-serif", WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>
                         {movie.title}
                     </h2>
-                    <div className="flex flex-wrap items-center gap-2 md:gap-3 text-white/80 text-sm md:text-base font-semibold">
-                        <span className="bg-white/10 px-2 py-0.5 rounded text-white">{movie.year}</span>
+                    <div className="flex flex-wrap items-center gap-1.5 md:gap-2 text-white/70 text-xs md:text-sm font-semibold tracking-wide">
+                        <span>{movie.year}</span>
                         <span>•</span>
                         <span>{movie.type === 'tv' ? 'Series' : 'Movie'}</span>
-                        {movie.tags?.[0] && (
+                        {movie.tags && movie.tags.length > 0 && (
                             <>
                                 <span>•</span>
-                                <span>{movie.tags[0]}</span>
+                                <span>{movie.tags.join(' • ')}</span>
                             </>
                         )}
                     </div>
                 </div>
 
                 {/* Floating Actions */}
-                <div className="flex flex-row md:flex-col gap-3 md:gap-4 self-end">
+                <div className="flex flex-col gap-3 self-end mb-1 md:mb-2 z-10 pointer-events-auto">
                     <button 
                         onClick={(e) => { e.stopPropagation(); onAdd(); }}
-                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-colors pointer-events-auto shadow-lg"
+                        className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors shadow-lg"
                     >
                         <Plus size={24} />
                     </button>
                     <button 
                         onClick={(e) => { e.stopPropagation(); onClick(); }}
-                        className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center text-black hover:bg-white/90 transition-colors pointer-events-auto shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+                        className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-black hover:bg-white transition-colors shadow-[0_0_30px_rgba(255,255,255,0.4)]"
                     >
                         <Play size={28} className="ml-1" fill="currentColor" />
                     </button>

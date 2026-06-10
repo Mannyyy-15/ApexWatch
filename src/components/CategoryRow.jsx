@@ -4,12 +4,12 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const LANGUAGES = [
-    { id: 'hi', name: 'Hindi', native: 'हिन्दी', color: 'from-[#3A4374]', image: 'https://image.tmdb.org/t/p/w500/1XDDXPXGiI8id7MrUxK36ke7wow.jpg' }, // Jawan/Pathaan vibe
-    { id: 'en', name: 'English', native: 'English', color: 'from-[#8B453E]', image: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg' }, // Avengers
-    { id: 'ta', name: 'Tamil', native: 'தமிழ்', color: 'from-[#5C3D32]', image: 'https://image.tmdb.org/t/p/w500/vVpEOvdxVBP2aV166j5Xlvb5Cdc.jpg' }, // John Wick / Action vibe
-    { id: 'te', name: 'Telugu', native: 'తెలుగు', color: 'from-[#4A5D23]', image: 'https://image.tmdb.org/t/p/w500/yF1eOkaYvwiORauRCPWznV9xVvi.jpg' }, // RRR vibe
-    { id: 'ml', name: 'Malayalam', native: 'മലയാളം', color: 'from-[#2C3E50]', image: 'https://image.tmdb.org/t/p/w500/xXHZeb1ywGte8Ptv1vgMIg81dGq.jpg' }, // Nature/Drama
-    { id: 'ko', name: 'Korean', native: '한국어', color: 'from-[#6E4E73]', image: 'https://image.tmdb.org/t/p/w500/2meX1nMdScFOoV4370rqHWKmXhY.jpg' }, // Squid Game vibe
+    { id: 'hi', name: 'Hindi', native: 'हिन्दी', color: 'from-[#3A4374]', image: 'https://image.tmdb.org/t/p/w500/1XDDXPXGiI8id7MrUxK36ke7wow.jpg' },
+    { id: 'en', name: 'English', native: 'English', color: 'from-[#8B453E]', image: 'https://image.tmdb.org/t/p/w500/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg' },
+    { id: 'ta', name: 'Tamil', native: 'தமிழ்', color: 'from-[#5C3D32]', image: 'https://image.tmdb.org/t/p/w500/e5IdZ1OEWMYxTeu51tI67gXvfpn.jpg' },
+    { id: 'te', name: 'Telugu', native: 'తెలుగు', color: 'from-[#4A5D23]', image: 'https://image.tmdb.org/t/p/w500/yF1eOkaYvwiORauRCPWznV9xVvi.jpg' },
+    { id: 'ml', name: 'Malayalam', native: 'മലയാളം', color: 'from-[#2C3E50]', image: 'https://image.tmdb.org/t/p/w500/5RkZOvu9FC0A8NypE2BL7oKNOTU.jpg' },
+    { id: 'ko', name: 'Korean', native: '한국어', color: 'from-[#6E4E73]', image: 'https://image.tmdb.org/t/p/w500/2meX1nMdScFOoV4370rqHWKmXhY.jpg' },
 ];
 
 const GENRES = [

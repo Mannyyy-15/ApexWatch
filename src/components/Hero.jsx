@@ -67,7 +67,7 @@ export function Hero() {
 
   if (loading || !heroMovie)
     return (
-      <div className="w-full h-[90dvh] md:h-[95vh] bg-[#050505] flex items-end px-6 pb-20">
+      <div className="w-[95%] md:w-full mx-auto mt-4 md:mt-0 h-[80dvh] md:h-[95vh] rounded-3xl md:rounded-none border border-white/10 md:border-none overflow-hidden bg-[#050505] flex items-end px-6 pb-20">
         <div className="w-2/3 h-12 bg-white/5 animate-pulse rounded-xl mb-4"></div>
       </div>
     );
@@ -76,7 +76,7 @@ export function Hero() {
   const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + heroesList.length) % heroesList.length);
 
   return (
-    <div className="relative w-full h-[90dvh] md:h-[95vh] flex items-end overflow-hidden group">
+    <div className="relative w-[95%] md:w-full mx-auto mt-4 md:mt-0 h-[80dvh] md:h-[95vh] rounded-3xl md:rounded-none border border-white/10 md:border-none overflow-hidden flex items-end group">
       <div className="absolute inset-0 overflow-hidden">
         <AnimatePresence initial={true} mode="wait">
           <motion.div
