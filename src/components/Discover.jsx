@@ -47,31 +47,26 @@ export function Discover() {
 
             setLoading(true);
             try {
-                const isMobile = window.innerWidth < 768;
-                if (isMobile) {
-                    // Fetch a mix for mobile discovery
-                    const [trending, movies, tv, anime] = await Promise.all([
-                        tmdb.fetchTrending('all'),
-                        tmdb.fetchPopular('movie'),
-                        tmdb.fetchPopular('tv'),
-                        tmdb.fetchDiscover('tv', { with_genres: 16, with_keywords: '210024' })
-                    ]);
-                    
-                    const allContent = [...trending, ...movies, ...tv, ...anime]
-                        .map(tmdb.formatMovie)
-                        .filter(Boolean);
-                    
-                    // Filter unique IDs
-                    const uniqueMixed = Array.from(new Map(allContent.map(item => [item.id, item])).values());
-                    
-                    // Shuffle for variety
-                    const shuffled = uniqueMixed.sort(() => 0.5 - Math.random());
-                    setTrending(shuffled.slice(0, 60));
-                    const results = await tmdb.fetchTrending();
-                    const formatted = results.map(tmdb.formatMovie).filter(Boolean).slice(0, 30);
-                    setTrending(formatted);
-                    setDiscoverCache(formatted);
-                }
+                const [trendingRaw, movies, tv, anime] = await Promise.all([
+                    tmdb.fetchTrending('all'),
+                    tmdb.fetchPopular('movie'),
+                    tmdb.fetchPopular('tv'),
+                    tmdb.fetchDiscover('tv', { with_genres: 16, with_keywords: '210024' })
+                ]);
+                
+                const allContent = [...trendingRaw, ...movies, ...tv, ...anime]
+                    .map(tmdb.formatMovie)
+                    .filter(Boolean);
+                
+                // Filter unique IDs
+                const uniqueMixed = Array.from(new Map(allContent.map(item => [item.id, item])).values());
+                
+                // Shuffle for variety
+                const shuffled = uniqueMixed.sort(() => 0.5 - Math.random());
+                const finalContent = shuffled.slice(0, 60);
+                
+                setTrending(finalContent);
+                setDiscoverCache(finalContent);
             } catch (error) {
                 console.error('Error loading content:', error);
             } finally {
@@ -145,8 +140,8 @@ export function Discover() {
     return (
         <div className="discover-container min-h-screen pt-28 md:pt-36 px-4 md:px-16 lg:px-20 pb-32 w-full max-w-[1600px] mx-auto relative z-10">
             
-            {/* Search Bar - Only Visible on Mobile (Desktop uses Global Search) */}
-            <div className="mb-6 md:mb-8 max-w-2xl mx-auto px-2 md:hidden">
+            {/* Search Bar */}
+            <div className="mb-6 md:mb-8 max-w-2xl mx-auto px-2">
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-4 md:left-5 flex items-center pointer-events-none text-white/40 group-focus-within:text-red-500 transition-colors">
                         <Search size={18} className="md:w-[22px] md:h-[22px]" />
@@ -171,7 +166,7 @@ export function Discover() {
 
             {/* Recent Searches (Only visible when search bar is empty) */}
             {!searchQuery.trim() && recentSearches.length > 0 && (
-                <div className="mb-8 max-w-2xl mx-auto px-4 md:hidden">
+                <div className="mb-8 max-w-2xl mx-auto px-4">
                     <div className="flex items-center gap-2 mb-3">
                         <span className="text-[10px] text-white/40 font-black uppercase tracking-widest">Recent Searches</span>
                     </div>
