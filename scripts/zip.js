@@ -27,6 +27,12 @@ async function createZip() {
     }
 
     addDirToZip(distPath, zip);
+    
+    // Capgo requires the capacitor.config.json in the root of the zip
+    const capConfigPath = path.resolve(__dirname, '../capacitor.config.json');
+    if (fs.existsSync(capConfigPath)) {
+        zip.file('capacitor.config.json', fs.readFileSync(capConfigPath));
+    }
 
     const content = await zip.generateAsync({
         type: 'nodebuffer',

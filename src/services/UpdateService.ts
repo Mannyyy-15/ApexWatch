@@ -24,6 +24,10 @@ class UpdateServiceClass {
         if (this.onProgress) this.onProgress(state);
     }
 
+    getTargetVersion(): string | null {
+        return this.targetVersion;
+    }
+
     async checkForUpdate(silent = true): Promise<boolean> {
         if (!silent) this.emit({ phase: 'checking', progress: 0 });
         try {

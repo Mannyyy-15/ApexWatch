@@ -61,7 +61,7 @@ export function UpdaterModal() {
 
                         <h3 className="text-xl font-black text-white uppercase tracking-wider italic mb-2">
                             {progressState.phase === 'checking' && 'Checking Update'}
-                            {progressState.phase === 'update_available' && 'Update Available'}
+                            {progressState.phase === 'update_available' && `Update ${UpdateService.getTargetVersion()} Available`}
                             {progressState.phase === 'downloading' && 'Downloading'}
                             {progressState.phase === 'extracting' && 'Extracting Assets'}
                             {progressState.phase === 'ready' && 'Update Ready'}
