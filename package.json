@@ -14,7 +14,7 @@
     "build:android": "npm run build && npx cap sync",
     "build:ios": "npm run build && npx cap sync",
     "build:apk": "npm run build && npx cap sync && cd android && gradlew.bat assembleDebug",
-    "build:update": "npm run build && powershell -Command \"Compress-Archive -Path dist\\* -DestinationPath update.zip -Force\""
+    "build:update": "npm run build && powershell -Command \"Compress-Archive -Path dist\\* -DestinationPath public\\update.zip -Force\""
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^8.3.0",

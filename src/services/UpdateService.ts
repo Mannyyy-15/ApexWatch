@@ -53,7 +53,7 @@ class UpdateServiceClass {
             this.emit({ phase: 'downloading', progress: 50 }); // Capgo doesn't do chunk progress well natively in standard API without listeners, spoofing a bit
             
             // 1. Download via Capgo's native C++/Swift engine
-            const zipUrl = `${UPDATE_SERVER_URL}/update.zip?v=${this.targetVersion}`;
+            const zipUrl = `${UPDATE_SERVER_URL}/update.zip`;
             
             CapacitorUpdater.addListener('download', (info: any) => {
                 this.emit({ phase: 'downloading', progress: info.percent });
