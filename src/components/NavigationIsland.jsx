@@ -478,7 +478,7 @@ function SidebarNavItem({ icon, label, active = false, onClick }) {
       </div>
       {/* Floating Tooltip */}
       <div className="absolute left-[80px] opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-2 -translate-x-2 transition-all duration-300 pointer-events-none z-[100] flex items-center">
-        <div className="bg-[#161618] border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl">
+        <div className="bg-black/60 backdrop-blur-2xl border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl">
           <span className="text-[13px] font-bold tracking-wider whitespace-nowrap text-white drop-shadow-md">
             {label}
           </span>
