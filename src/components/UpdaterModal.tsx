@@ -1,0 +1,150 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { DownloadCloud, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { UpdateService, UpdateProgress } from '../services/UpdateService';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+
+export function UpdaterModal() {
+    const [isVisible, setIsVisible] = useState(false);
+    const [progressState, setProgressState] = useState<UpdateProgress>({ phase: 'idle', progress: 0 });
+
+    useEffect(() => {
+        UpdateService.setProgressListener((state) => {
+            setProgressState(state);
+            if (state.phase !== 'idle') {
+                setIsVisible(true);
+            }
+        });
+
+        // Optional: Trigger a manual check on mount if native platform
+        if (Capacitor.isNativePlatform()) {
+            UpdateService.checkForUpdate();
+        }
+    }, []);
+
+    const handleInstall = async () => {
+        await UpdateService.downloadAndInstallUpdate();
+    };
+
+    const handleRestart = async () => {
+        const activePath = await UpdateService.getActivePath();
+        if (activePath) {
+            try {
+                // Get absolute native URL for the stored path
+                const result = await Filesystem.getUri({
+                    directory: Directory.Data,
+                    path: activePath
+                });
+                
+                const nativeUrl = Capacitor.convertFileSrc(result.uri);
+                window.location.href = `${nativeUrl}/index.html`;
+            } catch (e) {
+                console.error("Failed to load new path", e);
+                window.location.reload();
+            }
+        } else {
+            window.location.reload();
+        }
+    };
+
+    return (
+        <AnimatePresence>
+            {isVisible && (
+                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                        onClick={() => progressState.phase === 'ready' || progressState.phase === 'error' ? setIsVisible(false) : null}
+                    />
+                    <motion.div 
+                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                        className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl flex flex-col items-center text-center"
+                    >
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
+                            {progressState.phase === 'checking' && <RefreshCw className="text-white/50 animate-spin" size={28} />}
+                            {progressState.phase === 'downloading' && <DownloadCloud className="text-accent animate-pulse" size={28} />}
+                            {progressState.phase === 'extracting' && <RefreshCw className="text-blue-500 animate-spin" size={28} />}
+                            {progressState.phase === 'ready' && <CheckCircle2 className="text-green-500" size={28} />}
+                            {progressState.phase === 'error' && <AlertCircle className="text-red-500" size={28} />}
+                        </div>
+
+                        <h3 className="text-xl font-black text-white uppercase tracking-wider italic mb-2">
+                            {progressState.phase === 'checking' && 'Checking Update'}
+                            {progressState.phase === 'downloading' && 'Downloading'}
+                            {progressState.phase === 'extracting' && 'Extracting Assets'}
+                            {progressState.phase === 'ready' && 'Update Ready'}
+                            {progressState.phase === 'error' && 'Update Failed'}
+                        </h3>
+                        
+                        <p className="text-white/40 text-xs mb-8">
+                            {progressState.phase === 'checking' && 'Looking for the latest version...'}
+                            {progressState.phase === 'downloading' && 'Fetching the latest improvements over the air.'}
+                            {progressState.phase === 'extracting' && 'Installing the new bundle directly to your device.'}
+                            {progressState.phase === 'ready' && 'A new version has been successfully installed.'}
+                            {progressState.phase === 'error' && (progressState.message || 'Something went wrong during the update process.')}
+                        </p>
+
+                        {(progressState.phase === 'downloading' || progressState.phase === 'extracting') && (
+                            <div className="w-full mb-6">
+                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                    <motion.div 
+                                        className={`h-full ${progressState.phase === 'downloading' ? 'bg-accent' : 'bg-blue-500'}`}
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${progressState.progress}%` }}
+                                        transition={{ duration: 0.3 }}
+                                    />
+                                </div>
+                                <div className="mt-2 text-[10px] font-black tracking-widest text-white/40 uppercase text-right">
+                                    {progressState.progress}%
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="w-full space-y-3">
+                            {progressState.phase === 'checking' && (
+                                <button 
+                                    onClick={handleInstall}
+                                    className="w-full py-3.5 bg-accent text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(229,9,20,0.3)]"
+                                >
+                                    Install Now
+                                </button>
+                            )}
+
+                            {progressState.phase === 'ready' && (
+                                <button 
+                                    onClick={handleRestart}
+                                    className="w-full py-3.5 bg-green-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                                >
+                                    Restart App to Apply
+                                </button>
+                            )}
+
+                            {progressState.phase === 'error' && (
+                                <button 
+                                    onClick={() => setIsVisible(false)}
+                                    className="w-full py-3.5 bg-white/10 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all"
+                                >
+                                    Dismiss
+                                </button>
+                            )}
+
+                            {progressState.phase === 'checking' && (
+                                <button 
+                                    onClick={() => setIsVisible(false)}
+                                    className="w-full py-3.5 bg-transparent text-white/40 rounded-xl font-black text-[10px] uppercase tracking-widest hover:text-white transition-all"
+                                >
+                                    Remind Me Later
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+}

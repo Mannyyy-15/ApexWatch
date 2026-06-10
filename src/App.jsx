@@ -11,6 +11,7 @@ import { StatsDashboard } from './components/StatsDashboard';
 import { CategoryView } from './components/CategoryView';
 import { ProfileLibrary } from './components/ProfileLibrary';
 import { DevConsole } from './components/DevConsole';
+import { UpdaterModal } from './components/UpdaterModal';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
@@ -310,6 +311,7 @@ function MainLayout() {
         {currentView === 'player' && <VideoPlayer key="player"/>}
         {currentView === 'profiles' && <ProfilesSelection key="profiles"/>}
       </AnimatePresence>
+      <UpdaterModal />
     </div>);
 }
 
