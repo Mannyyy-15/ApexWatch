@@ -49,76 +49,77 @@ export function CardStack({ movies, onMovieClick }) {
 }
 
 function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
- const x = useMotionValue(0);
- const rotate = useTransform(x, [-200, 200], [-8, 8]);
- const dragOpacity = useTransform(x, [-200, -50, 0, 50, 200], [0, 1, 1, 1, 0]);
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-8, 8]);
 
- const handleDragEnd = (event, info) => {
-  const threshold = 60;
-  if (info.offset.x < -threshold) {
-    onSwipe('left');
-    x.set(0); 
-  } else if (info.offset.x > threshold) {
-    onSwipe('right');
-    x.set(0);
-  }
- };
-
- // Smooth card positioning logic based on state
- let animateProps = {
-  x: 0,
-  y: 0,
-  scale: 1,
-  opacity: 1,
-  zIndex: 10 - offset,
-  rotate: 0,
- };
-
- if (isSwiped) {
-  animateProps = {
-    x: -window.innerWidth, // Hide off-screen left
-    y: 50,
-    scale: 0.8,
-    opacity: 0,
-    zIndex: 10 - offset,
-    rotate: -10,
+  const handleDragEnd = (event, info) => {
+    const swipeDistance = info.offset.x;
+    const swipeVelocity = info.velocity.x;
+    
+    // If dragged far enough or thrown with velocity
+    if (swipeDistance < -80 || swipeVelocity < -500) {
+      onSwipe('left');
+      x.set(0); 
+    } else if (swipeDistance > 80 || swipeVelocity > 500) {
+      onSwipe('right');
+      x.set(0);
+    }
   };
- } else if (!isTop) {
-  animateProps = {
-    x: offset * 15,
-    y: offset * 25, // Move down so the bottom edge is visible
-    scale: 1 - offset * 0.05,
+
+  // Smooth card positioning logic based on state
+  let animateProps = {
+    x: 0,
+    y: 0,
+    scale: 1,
     opacity: 1,
     zIndex: 10 - offset,
-    rotate: offset * 3, // Add rotation for a deck effect
+    rotate: 0,
   };
- }
 
- return (
- <motion.div
- style={{ 
-  x: isTop ? x : undefined, 
-  rotate: isTop ? rotate : undefined, 
-  opacity: isTop ? dragOpacity : undefined,
-  zIndex: animateProps.zIndex 
- }}
- drag={isTop ? 'x' : false}
- dragConstraints={{ left: 0, right: 0 }}
- dragElastic={0.5}
- onDragEnd={handleDragEnd}
- whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
- initial={{ scale: 0.8, y: 50, opacity: 0 }}
- animate={{
-  scale: animateProps.scale,
-  y: animateProps.y,
-  x: isTop ? 0 : animateProps.x,
-  rotate: isTop ? 0 : animateProps.rotate,
-  opacity: isTop ? 1 : animateProps.opacity,
- }}
- transition={{ type: 'spring', stiffness: 350, damping: 25, mass: 1 }}
- className={`absolute w-[320px] sm:w-[400px] md:w-[460px] lg:w-[500px] h-[480px] md:h-[600px] rounded-2xl md:rounded-3xl border border-white/10 bg-[#111] cursor-pointer origin-center ${isSwiped ? 'pointer-events-none' : ''}`}
- onClick={onClick}
- >
+  if (isSwiped) {
+    animateProps = {
+      x: -window.innerWidth - 200, // Fly completely off-screen left
+      y: 0,
+      scale: 0.9,
+      opacity: 1, // Keep fully opaque even when swiped
+      zIndex: 10 - offset,
+      rotate: -15,
+    };
+  } else if (!isTop) {
+    animateProps = {
+      x: offset * 15,
+      y: offset * 25, // Move down so the bottom edge is visible
+      scale: 1 - offset * 0.05,
+      opacity: 1,
+      zIndex: 10 - offset,
+      rotate: offset * 3, // Add rotation for a deck effect
+    };
+  }
+
+  return (
+    <motion.div
+      style={{ 
+        x: isTop ? x : undefined, 
+        rotate: isTop ? rotate : undefined, 
+        zIndex: animateProps.zIndex 
+      }}
+      drag={isTop ? 'x' : false}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.7}
+      onDragEnd={handleDragEnd}
+      whileDrag={{ scale: 1.03, cursor: 'grabbing' }}
+      initial={{ scale: 0.8, y: 50, opacity: 0 }}
+      animate={{
+        scale: animateProps.scale,
+        y: animateProps.y,
+        x: isTop ? 0 : animateProps.x,
+        rotate: isTop ? 0 : animateProps.rotate,
+        opacity: isTop ? 1 : animateProps.opacity,
+      }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25, mass: 0.8 }}
+      className={`absolute w-[320px] sm:w-[400px] md:w-[460px] lg:w-[500px] h-[480px] md:h-[600px] rounded-2xl md:rounded-3xl border border-white/10 bg-[#111] cursor-pointer origin-center ${isSwiped ? 'pointer-events-none' : ''}`}
+      onClick={onClick}
+    >
  <div className="absolute inset-0 rounded-2xl md:rounded-3xl overflow-hidden pointer-events-none">
  <img
  src={movie.poster || movie.backdrop}
