@@ -12,6 +12,7 @@ import { CategoryView } from './components/CategoryView';
 import { ProfileLibrary } from './components/ProfileLibrary';
 import { DevConsole } from './components/DevConsole';
 import { UpdaterModal } from './components/UpdaterModal';
+import { CategoryExplore } from './components/CategoryExplore';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { UpdateService } from './services/UpdateService';
 import { AnimatePresence, motion } from 'motion/react';
@@ -246,6 +247,17 @@ function MainLayout() {
               exit="exit"
             >
               <Discover />
+            </motion.div>
+          )}
+          {currentView === 'explore' && (
+            <motion.div 
+              key="explore"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <CategoryExplore />
             </motion.div>
           )}
           {currentView === 'library' && (

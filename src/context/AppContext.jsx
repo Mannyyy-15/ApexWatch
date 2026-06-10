@@ -25,6 +25,7 @@ export function AppProvider({ children }) {
     const [currentView, setCurrentView] = useState('home');
     const [activeMovieId, setActiveMovieId] = useState(null);
     const [activeMediaType, setActiveMediaType] = useState('movie');
+    const [exploreCategory, setExploreCategory] = useState(null); // { type: 'language' | 'genre', item: object }
     // Optimistic Initial State from LocalStorage
     const [user, setUser] = useState(() => {
         const saved = localStorage.getItem('apexwatch_cached_user');
@@ -548,6 +549,7 @@ export function AppProvider({ children }) {
             activeEpisode, setActiveEpisode,
             watchlist, setWatchlist,
             movieRows, setMovieRows,
+            exploreCategory, setExploreCategory,
             cachedDetails, setCachedDetails,
             categoryCache, setCategoryCache,
             discoverCache, setDiscoverCache,

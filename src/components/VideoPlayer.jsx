@@ -206,7 +206,7 @@ export function VideoPlayer() {
                 }
                 setPlayerReady(true);
             } catch (error) {
-                console.error('Error loading movie for player:', error.message || error);
+                console.error('Error loading movie for player:', error instanceof Error ? (error.stack || error.message) : JSON.stringify(error));
             } finally {
                 setLoading(false);
             }
@@ -487,6 +487,12 @@ export function VideoPlayer() {
                                 allowFullScreen 
                                 allow="autoplay; encrypted-media; picture-in-picture"
                                 title={movie.title}
+                                onError={() => {
+                                    const currentIndex = servers.findIndex(s => s.id === selectedServer);
+                                    if (currentIndex < servers.length - 1) {
+                                        setSelectedServer(servers[currentIndex + 1].id);
+                                    }
+                                }}
                             />
                         </motion.div>
                     )}

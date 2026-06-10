@@ -49,8 +49,24 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
                 </div>
             )}
 
+            {/* Top 10 Massive Number */}
+            {isTop10 && (
+                <div 
+                    className="absolute -left-3 md:-left-6 bottom-4 md:bottom-6 z-20 pointer-events-none select-none text-[80px] md:text-[120px] leading-none tracking-tighter"
+                    style={{ 
+                        WebkitTextStroke: '3px rgba(255,255,255,0.7)', 
+                        color: 'transparent',
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 900,
+                        textShadow: '0px 10px 20px rgba(0,0,0,0.8)'
+                    }}
+                >
+                    {index + 1}
+                </div>
+            )}
+
             {/* Thumbnail Container */}
-            <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded md:rounded-md overflow-hidden mb-2 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-500 group-hover:border-accent/40 group-hover:shadow-[0_0_30px_rgba(229,9,20,0.25)]`}>
+            <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} ${isTop10 ? 'ml-6 md:ml-12' : ''} rounded md:rounded-md overflow-hidden mb-2 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-500 group-hover:border-accent/40 group-hover:shadow-[0_0_30px_rgba(229,9,20,0.25)]`}>
                 <img
                     src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster}
                     alt={movie.title}

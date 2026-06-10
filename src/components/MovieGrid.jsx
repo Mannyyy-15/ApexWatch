@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { MovieRow } from './MovieRow';
 import { tmdb } from '../utils/tmdb';
 import { RowSkeleton } from './Skeleton';
+import { CardStack } from './CardStack';
+import { CategoryRow } from './CategoryRow';
 import { firestoreService } from '../utils/firestore';
 
 export function MovieGrid() {
-    const { activeProfile, user, setActiveMovieId, setActiveMediaType, setCurrentView, watchlist, movieRows, setMovieRows } = useAppContext();
+    const { activeProfile, user, setActiveMovieId, setActiveMediaType, setCurrentView, watchlist, movieRows, setMovieRows, setActiveSeason, setActiveEpisode } = useAppContext();
     const [loading, setLoading] = useState(movieRows.length === 0);
     const [historyItems, setHistoryItems] = useState(() => {
         const saved = localStorage.getItem('apexwatch_cached_history');
@@ -117,7 +119,31 @@ export function MovieGrid() {
                     movies: historyMovies,
                     isHistory: true
                 });
+
+                // Fetch Recommendations for "For You" CardStack
+                try {
+                    const lastWatched = history[0];
+                    const rawRecs = await tmdb.fetchRecommended(lastWatched.id, lastWatched.contentType || 'movie');
+                    if (rawRecs && rawRecs.length > 0) {
+                        const recs = rawRecs.map(tmdb.formatMovie).filter(Boolean);
+                        finalRows.splice(1, 0, {
+                            title: 'For You',
+                            movies: recs,
+                            isForYou: true
+                        });
+                    }
+                } catch (e) { console.error('Error fetching recs', e); }
             }
+
+            // Insert Category Carousels
+            finalRows.splice(history.length > 0 ? 2 : 1, 0, {
+                title: 'Popular Languages',
+                isLanguages: true
+            });
+            finalRows.splice(history.length > 0 ? 4 : 3, 0, {
+                title: 'Popular Genres',
+                isGenres: true
+            });
 
             setMovieRows(finalRows);
         } catch (error) {
@@ -143,20 +169,56 @@ export function MovieGrid() {
 
     return (
         <div className="relative z-20 px-4 md:px-16 lg:px-20 mt-8 md:mt-12 flex flex-col gap-10 md:gap-14 pb-20">
-            {movieRows.map((row, idx) => (
-                <MovieRow
-                    key={`${row.title}-${idx}`}
-                    title={row.title}
-                    movies={row.movies}
-                    isContinueWatching={row.isHistory}
-                    continueWatchingItems={row.isHistory ? historyItems : null}
-                    onMovieClick={(id, type) => {
-                        setActiveMovieId(id);
-                        setActiveMediaType(type || 'movie');
-                        setCurrentView('details');
-                    }}
-                />
-            ))}
+            {movieRows.map((row, idx) => {
+                if (row.isForYou) {
+                    return (
+                        <div key={`foryou-${idx}`}>
+                            <h2 className="text-xl md:text-2xl font-black text-white/90 tracking-wide mb-3 md:mb-4 px-1 md:px-2">
+                                {row.title}
+                            </h2>
+                            <CardStack movies={row.movies} onMovieClick={(id, type) => {
+                                setActiveMovieId(id);
+                                setActiveMediaType(type);
+                                setCurrentView('details');
+                            }} />
+                        </div>
+                    );
+                }
+
+                if (row.isLanguages) {
+                    return <CategoryRow key={`lang-${idx}`} title={row.title} type="language" />;
+                }
+
+                if (row.isGenres) {
+                    return <CategoryRow key={`genre-${idx}`} title={row.title} type="genre" />;
+                }
+
+                return (
+                    <MovieRow
+                        key={`${row.title}-${idx}`}
+                        title={row.title}
+                        movies={row.movies}
+                        isContinueWatching={row.isHistory}
+                        isTop10={row.title.toLowerCase().includes('top 10')}
+                        continueWatchingItems={row.isHistory ? historyItems : null}
+                        onMovieClick={(id, type) => {
+                            setActiveMovieId(id);
+                            setActiveMediaType(type || 'movie');
+                            
+                            if (row.isHistory) {
+                                const item = historyItems.find(h => h.id === id);
+                                if (item && item.type === 'tv') {
+                                    if (item.season) setActiveSeason(item.season);
+                                    if (item.episode) setActiveEpisode(item.episode);
+                                }
+                                setCurrentView('player');
+                            } else {
+                                setCurrentView('details');
+                            }
+                        }}
+                    />
+                );
+            })}
         </div>
     );
 }
