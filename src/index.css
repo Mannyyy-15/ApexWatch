@@ -277,7 +277,7 @@ body.is-tv main {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s !important;
 }
 
-.tv-focusable:focus {
+.tv-focusable:focus-visible, body.is-tv .tv-focusable:focus {
   outline: none !important;
   transform: scale(1.06) !important;
   z-index: 50 !important;
@@ -285,14 +285,14 @@ body.is-tv main {
   box-shadow: 0 0 15px rgba(229, 9, 20, 0.4) !important;
 }
 
-button.tv-focusable:focus {
+button.tv-focusable:focus-visible, body.is-tv button.tv-focusable:focus {
   background-color: #e50914 !important;
   color: #ffffff !important;
   border-color: #e50914 !important;
 }
 
 /* Specific overrides to prevent blocky red backgrounds on tab/filter buttons when focused on TV */
-button.tab-button.tv-focusable:focus {
+button.tab-button.tv-focusable:focus-visible, body.is-tv button.tab-button.tv-focusable:focus {
   background-color: transparent !important;
   color: #ffffff !important;
   border-color: transparent !important;
@@ -300,8 +300,8 @@ button.tab-button.tv-focusable:focus {
   transform: scale(1.08) !important;
 }
 
-button.tv-focusable:not(.bg-accent).library-tab-button:focus,
-button.tv-focusable:not(.bg-accent).genre-filter-button:focus {
+button.tv-focusable:not(.bg-accent).library-tab-button:focus-visible, body.is-tv button.tv-focusable:not(.bg-accent).library-tab-button:focus,
+button.tv-focusable:not(.bg-accent).genre-filter-button:focus-visible, body.is-tv button.tv-focusable:not(.bg-accent).genre-filter-button:focus {
   background-color: rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
   border-color: rgba(255, 255, 255, 0.25) !important;

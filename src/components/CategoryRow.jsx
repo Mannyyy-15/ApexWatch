@@ -113,7 +113,7 @@ export function CategoryRow({ title, type }) {
                                     alt={item.name}
                                     className="w-full h-full object-cover"
                                 />
-                                <div className={`absolute inset-0 bg-gradient-to-t ${item.color} mix-blend-multiply opacity-80 group-hover:opacity-50 transition-opacity duration-500`}></div>
+                                <div className={`absolute inset-0 ${item.color.replace('from-', 'bg-')} opacity-60 group-hover:opacity-30 transition-opacity duration-500`}></div>
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90"></div>
                             </div>
 
