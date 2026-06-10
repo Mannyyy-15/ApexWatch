@@ -194,18 +194,18 @@ export function NavigationIsland() {
         initial={{ x: -100, opacity: 0 }} 
         animate={{ x: 0, opacity: 1 }} 
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
-        className="hidden md:flex flex-col fixed top-0 bottom-0 left-0 z-50 w-[80px] hover:w-[260px] bg-gradient-to-r from-black/95 via-black/80 to-transparent hover:bg-black/95 border-r border-white/5 transition-all duration-300 overflow-visible group/sidebar"
+        className="hidden md:flex flex-col fixed top-0 bottom-0 left-0 z-[60] w-[80px] hover:w-[320px] bg-gradient-to-r from-[#020202] via-[#020202]/80 to-transparent hover:from-[#020202]/95 hover:via-[#020202]/70 hover:to-transparent backdrop-blur-sm hover:backdrop-blur-lg transition-all duration-500 overflow-visible group/sidebar"
       >
-        <div className="flex flex-col h-full py-8 items-start w-full relative">
+        <div className="flex flex-col h-full py-10 items-start w-full relative">
             {/* Logo */}
             <div 
               onClick={() => setCurrentView('home')} 
-              className="flex items-center gap-6 px-6 cursor-pointer flex-shrink-0 outline-none tv-focusable mb-12 w-full"
+              className="flex items-center gap-6 px-6 cursor-pointer flex-shrink-0 outline-none tv-focusable mb-14 w-full"
             >
-              <div className="w-9 h-9 rounded-xl overflow-hidden shadow-[0_0_15px_rgba(229,9,20,0.4)] transition-all duration-500 flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(229,9,20,0.5)] group-hover/sidebar:shadow-[0_0_30px_rgba(229,9,20,0.6)] transition-all duration-500 flex-shrink-0">
                 <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
               </div>
-              <span className="font-black text-2xl tracking-tighter uppercase italic text-white/90 transition-colors opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap">
+              <span className="font-black text-2xl tracking-tighter uppercase italic text-white/90 transition-all duration-500 opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap -translate-x-4 group-hover/sidebar:translate-x-0">
                 Apex<span className="text-accent">Watch</span>
               </span>
             </div>
@@ -216,10 +216,10 @@ export function NavigationIsland() {
                     <SidebarNavItem 
                         icon={
                             user ? (
-                                <div className="w-7 h-7 rounded-full overflow-hidden border border-white/20">
+                                <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                                     <img src={avatarUrl || ''} alt="" className="w-full h-full object-cover"/>
                                 </div>
-                            ) : <User size={26} strokeWidth={2.5}/>
+                            ) : <User size={24} strokeWidth={2.5}/>
                         } 
                         label={user ? (activeProfile?.name || "Profile") : "Sign In"} 
                         active={currentView === 'profiles' || currentView === 'auth'} 
@@ -257,17 +257,17 @@ export function NavigationIsland() {
                         )}
                     </AnimatePresence>
                 </div>
-                <SidebarNavItem icon={<Search size={26} strokeWidth={2.5}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')} />
-                <SidebarNavItem icon={<Home size={26} strokeWidth={2.5}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')} />
-                <SidebarNavItem icon={<Tv size={26} strokeWidth={2.5}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')} />
-                <SidebarNavItem icon={<Film size={26} strokeWidth={2.5}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')} />
-                <SidebarNavItem icon={<Sparkles size={26} strokeWidth={2.5}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')} />
+                <SidebarNavItem icon={<Search size={24} strokeWidth={2.5}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')} />
+                <SidebarNavItem icon={<Home size={24} strokeWidth={2.5}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')} />
+                <SidebarNavItem icon={<Tv size={24} strokeWidth={2.5}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')} />
+                <SidebarNavItem icon={<Film size={24} strokeWidth={2.5}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')} />
+                <SidebarNavItem icon={<Sparkles size={24} strokeWidth={2.5}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')} />
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex flex-col gap-2 w-full mb-4">
+            <div className="flex flex-col gap-2 w-full mb-6">
                 {!isNative && (
-                    <SidebarNavItem icon={<Smartphone size={26} strokeWidth={2.5}/>} label="Get App" onClick={handleDownloadApp}/>
+                    <SidebarNavItem icon={<Smartphone size={24} strokeWidth={2.5}/>} label="Get App" onClick={handleDownloadApp}/>
                 )}
             </div>
         </div>
@@ -457,7 +457,7 @@ function SidebarNavItem({ icon, label, active = false, onClick }) {
     return (
         <button 
             onClick={onClick} 
-            className={`flex items-center gap-6 px-7 py-3.5 w-full transition-all duration-300 flex-shrink-0 cursor-pointer outline-none tv-focusable group/item relative
+            className={`flex items-center gap-6 px-7 py-4 w-full transition-all duration-300 flex-shrink-0 cursor-pointer outline-none tv-focusable group/item relative
             ${active ? 'text-white' : 'text-white/50 hover:text-white hover:bg-white/5'}`}
         >
             {active && (
@@ -469,7 +469,7 @@ function SidebarNavItem({ icon, label, active = false, onClick }) {
             <div className={`transition-transform duration-300 ${active ? 'scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'group-hover/item:scale-110'}`}>
                 {icon}
             </div>
-            <span className={`text-base font-bold tracking-wide whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 ${active ? 'text-white font-black drop-shadow-md' : ''}`}>
+            <span className={`text-base font-bold tracking-wide whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-all duration-500 -translate-x-2 group-hover/sidebar:translate-x-0 ${active ? 'text-white font-black drop-shadow-md' : ''}`}>
                 {label}
             </span>
         </button>
