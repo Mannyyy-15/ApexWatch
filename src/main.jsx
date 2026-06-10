@@ -19,6 +19,7 @@ async function boot() {
       }
     } catch (e) {
       console.error("Bootloader routing failed", e);
+      document.body.innerHTML += '<div style="position:fixed;inset:0;z-index:999999;background:red;color:white;padding:20px;overflow:auto;word-wrap:break-word;"><h3>Bootloader Error</h3><pre>' + e.stack + '</pre></div>';
     }
   }
 
