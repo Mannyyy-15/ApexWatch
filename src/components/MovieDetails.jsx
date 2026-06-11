@@ -1,6 +1,6 @@
 // Fresh Build - Ensuring all icons are properly imported
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, X, Share2, Info, ChevronDown, Download, Check, Trash2, Users } from 'lucide-react';
+import { Play, X, Share2, Info, ChevronDown, Download, Check, Trash2, Users, Volume2, VolumeX } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useState, useEffect, useRef } from 'react';
 import { useTVBackHandler } from '../hooks/useTV';
@@ -33,12 +33,18 @@ export function MovieDetails() {
  const [isPipActive, setIsPipActive] = useState(false);
  const [isPipDismissed, setIsPipDismissed] = useState(false);
  const [downloadProgress, setDownloadProgress] = useState(null);
+ const [trailerReady, setTrailerReady] = useState(false);
+ const [isMuted, setIsMuted] = useState(true);
+ const trailerTimerRef = useRef(null);
 
  useEffect(() => {
  if (!activeMovieId) return;
  setIsPipActive(false);
  setIsPipDismissed(false);
  setDownloadProgress(null);
+ setTrailerReady(false);
+ setIsMuted(true);
+ clearTimeout(trailerTimerRef.current);
 
  const loadMovieDetails = async () => {
  setLoading(true);
@@ -220,17 +226,49 @@ export function MovieDetails() {
  {/* Backdrop Layer */}
  <div className="absolute inset-0">
  <AnimatePresence initial={false}>
+ {/* Static backdrop - fades out when trailer plays */}
  <motion.img 
  key="backdrop"
  initial={{ opacity: 0 }}
- animate={{ opacity: 1 }}
- exit={{ opacity: 0 }}
- transition={{ duration: 1 }}
+ animate={{ opacity: trailerReady ? 0 : 1 }}
+ transition={{ duration: 1.2 }}
  src={movie.backdrop} 
- className="w-full h-full object-cover transform scale-105" 
+ className="w-full h-full object-cover transform scale-105 absolute inset-0" 
  alt="" 
  />
  </AnimatePresence>
+
+ {/* Trailer iframe - loads after a short delay */}
+ {movie.trailer && (
+ <motion.div
+ initial={{ opacity: 0 }}
+ animate={{ opacity: trailerReady ? 1 : 0 }}
+ transition={{ duration: 1.2 }}
+ className="absolute inset-0 overflow-hidden"
+ >
+ <iframe
+ key={movie.trailer}
+ src={`https://www.youtube.com/embed/${movie.trailer}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&showinfo=0&rel=0&loop=1&playlist=${movie.trailer}&modestbranding=1&iv_load_policy=3&cc_load_policy=0`}
+ className="absolute inset-0 w-full h-full pointer-events-none"
+ style={{ transform: 'scale(1.12)', transformOrigin: 'center', border: 'none' }}
+ allow="autoplay; encrypted-media"
+ onLoad={() => { trailerTimerRef.current = setTimeout(() => setTrailerReady(true), 1500); }}
+ />
+ </motion.div>
+ )}
+
+ {/* Mute toggle */}
+ {movie.trailer && trailerReady && (
+ <motion.button
+ initial={{ opacity: 0, scale: 0.8 }}
+ animate={{ opacity: 1, scale: 1 }}
+ transition={{ delay: 0.5 }}
+ onClick={() => setIsMuted(m => !m)}
+ className="absolute bottom-28 md:bottom-32 right-6 md:right-20 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-90 cursor-pointer shadow-xl"
+ >
+ {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+ </motion.button>
+ )}
 
  {/* Stronger mobile gradients for visibility */}
  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 md:via-[#050505]/40 to-transparent"></div>
