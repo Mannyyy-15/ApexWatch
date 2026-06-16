@@ -58,8 +58,8 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
 
  {isContinueWatching && (
- <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
- <div className="h-full bg-accent " style={{ width: `${progress}%` }}></div>
+ <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20 z-10">
+ <div className="h-full bg-accent transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, progress || 0))}%` }}></div>
  </div>
  )}
 
@@ -237,7 +237,9 @@ export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", mov
  let progress = 0;
  if (isContinueWatching && continueWatchingItems) {
  const item = continueWatchingItems.find(i => i.id === movie.id);
- if (item) progress = item.progress;
+ if (item) {
+ progress = item.progress || (item.durationSeconds > 0 ? (item.progressSeconds / item.durationSeconds) * 100 : 0);
+ }
  }
 
  return (

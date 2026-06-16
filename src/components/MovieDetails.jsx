@@ -20,13 +20,23 @@ export function MovieDetails() {
  const [hasProgress, setHasProgress] = useState(null);
  const [loading, setLoading] = useState(!cachedDetails[activeMovieId]);
  const [activeTab, setActiveTab] = useState(() => {
- const saved = sessionStorage.getItem(`apexwatch_tab_${activeMovieId}`);
- return saved || 'Overview';
+    if (activeSeason) return 'Episodes';
+    const saved = sessionStorage.getItem(`apexwatch_tab_${activeMovieId}`);
+    return saved || 'Overview';
  });
 
- useEffect(() => {
- sessionStorage.setItem(`apexwatch_tab_${activeMovieId}`, activeTab);
- }, [activeTab, activeMovieId]);
+  useEffect(() => {
+    if (activeSeason) {
+      setActiveTab('Episodes');
+    } else {
+      const saved = sessionStorage.getItem(`apexwatch_tab_${activeMovieId}`);
+      setActiveTab(saved || 'Overview');
+    }
+  }, [activeMovieId, activeSeason]);
+
+  useEffect(() => {
+    sessionStorage.setItem(`apexwatch_tab_${activeMovieId}`, activeTab);
+  }, [activeTab, activeMovieId]);
  const [episodes, setEpisodes] = useState([]);
  const [fetchingEpisodes, setFetchingEpisodes] = useState(false);
 
@@ -206,10 +216,12 @@ export function MovieDetails() {
  const tabs = ['Overview', 'Details'];
  if (movie.type === 'tv') tabs.splice(1, 0, 'Episodes');
 
- // Ensure we don't land on Episodes if it's not a TV show
- if (activeTab === 'Episodes' && movie.type !== 'tv') {
- setActiveTab('Overview');
- }
+  // Ensure we don't land on Episodes if it's not a TV show
+  useEffect(() => {
+    if (activeTab === 'Episodes' && movie && movie.type !== 'tv') {
+      setActiveTab('Overview');
+    }
+  }, [activeTab, movie]);
 
  return (
  <motion.div 
@@ -529,7 +541,21 @@ export function MovieDetails() {
  </div>
  ) : (
  <div className="grid gap-3.5 md:gap-5">
- {episodes.map((ep) => (
+ {episodes.map((ep) => {
+ let epProgress = 0;
+ if (hasProgress) {
+ if (activeSeason < hasProgress.season) {
+ epProgress = 100;
+ } else if (activeSeason === hasProgress.season) {
+ if (ep.episode_number < hasProgress.episode) {
+ epProgress = 100;
+ } else if (ep.episode_number === hasProgress.episode) {
+ epProgress = hasProgress.progress || 0;
+ }
+ }
+ }
+
+ return (
  <motion.div 
  key={ep.id}
  onClick={() => {
@@ -551,7 +577,14 @@ export function MovieDetails() {
  <Play fill="currentColor" size={14} />
  </div>
  </div>
- <div className="absolute bottom-2 right-2 bg-[#0a0a0a]/80 backdrop-blur-md px-2 py-0.5 rounded text-[8px] md:text-[9px] font-black uppercase border border-white/5">
+ 
+ {epProgress > 0 && (
+ <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-10">
+ <div className="h-full bg-accent" style={{ width: `${epProgress}%` }}></div>
+ </div>
+ )}
+
+ <div className={`absolute right-2 bg-[#0a0a0a]/80 backdrop-blur-md px-2 py-0.5 rounded text-[8px] md:text-[9px] font-black uppercase border border-white/5 ${epProgress > 0 ? 'bottom-3' : 'bottom-2'}`}>
  {ep.runtime ? `${ep.runtime}m` : '45m'}
  </div>
  </div>
@@ -567,7 +600,7 @@ export function MovieDetails() {
  </p>
  </div>
  </motion.div>
- ))}
+ )})}
  </div>
  )}
  </div>
