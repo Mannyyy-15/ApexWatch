@@ -103,22 +103,29 @@ export function MovieGrid() {
  // Add history as the very first row if it exists
  const finalRows = results.filter(r => r.movies.length > 0);
  if (history.length > 0) {
- const historyMovies = history.map(item => ({
- id: item.id,
- title: item.title || 'Unknown Title',
- poster: item.poster,
- backdrop: item.backdrop,
- year: item.year || '',
- type: item.contentType || 'movie',
- progress: item.progress,
- season: item.season,
- episode: item.episode
- }));
- finalRows.unshift({
- title: 'Continue Watching',
- movies: historyMovies,
- isHistory: true
- });
+    const historyMovies = history.map(item => {
+      let p = item.progress || 0;
+      if (!p && item.durationSeconds > 0) {
+        p = (item.progressSeconds / item.durationSeconds) * 100;
+      }
+      return {
+        id: item.id,
+        title: item.title || 'Unknown Title',
+        poster: item.poster,
+        backdrop: item.backdrop,
+        year: item.year || '',
+        type: item.contentType || 'movie',
+        progress: p,
+        season: item.season,
+        episode: item.episode
+      };
+    });
+    finalRows.unshift({
+    title: 'Continue Watching',
+    movies: historyMovies,
+    isHistory: true
+    });
+ }
 
  // Fetch Recommendations for "For You" CardStack
  try {

@@ -59,7 +59,7 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
 
  {isContinueWatching && (
  <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20 z-10">
- <div className="h-full bg-accent transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, progress || 0))}%` }}></div>
+ <div className="h-full bg-accent transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, movie.progress || progress || 0))}%` }}></div>
  </div>
  )}
 
@@ -234,14 +234,6 @@ export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", mov
  className="flex gap-2 md:gap-3 overflow-x-auto hide-scrollbar pr-10 snap-x snap-mandatory scroll-smooth"
  >
  {movies.map((movie, index) => {
- let progress = 0;
- if (isContinueWatching && continueWatchingItems) {
- const item = continueWatchingItems.find(i => i.id === movie.id);
- if (item) {
- progress = item.progress || (item.durationSeconds > 0 ? (item.progressSeconds / item.durationSeconds) * 100 : 0);
- }
- }
-
  return (
  <MovieCard
  key={`${movie.id}-${index}`}
@@ -249,8 +241,9 @@ export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", mov
  index={index}
  isContinueWatching={isContinueWatching}
  isTop10={isTop10}
- progress={progress}
+ progress={movie.progress || 0}
  onMovieClick={onMovieClick}
+ onRemoveFromContinueWatching={onRemoveFromContinueWatching}
  />
  );
  })}
