@@ -545,6 +545,7 @@ export function MovieDetails() {
  <div className="grid gap-3.5 md:gap-5">
  {episodes.map((ep) => {
  let epProgress = 0;
+ let isCurrentEpisode = false;
  if (hasProgress) {
  if (activeSeason < hasProgress.season) {
  epProgress = 100;
@@ -553,6 +554,7 @@ export function MovieDetails() {
  epProgress = 100;
  } else if (ep.episode_number === hasProgress.episode) {
  epProgress = hasProgress.progress || 0;
+ isCurrentEpisode = true;
  }
  }
  }
@@ -566,7 +568,11 @@ export function MovieDetails() {
  }}
  tabIndex={0}
  role="button"
- className="group flex gap-4 md:gap-6 p-4 md:p-5 bg-glass-bg hover:bg-glass-hover border border-glass-border hover:border-white/10 rounded-2xl cursor-pointer transition-all duration-300 items-start tv-focusable"
+ className={`group flex gap-4 md:gap-6 p-4 md:p-5 hover:bg-glass-hover border rounded-2xl cursor-pointer transition-all duration-300 items-start tv-focusable ${
+ isCurrentEpisode 
+ ? 'bg-accent/10 border-accent/40 shadow-[0_0_25px_rgba(229,9,20,0.15)]' 
+ : 'bg-glass-bg border-glass-border hover:border-white/10'
+ }`}
  >
  <div className="relative w-32 sm:w-40 md:w-64 aspect-video rounded-xl overflow-hidden flex-shrink-0 bg-white/5 border border-white/5">
  <img 
@@ -592,10 +598,13 @@ export function MovieDetails() {
  </div>
  <div className="flex-1 min-w-0 py-0.5">
  <div className="flex items-start justify-between gap-3 mb-1.5">
- <h4 className="text-sm md:text-xl font-black italic tracking-tight leading-tight line-clamp-1 group-hover:text-accent transition-colors">
+ <h4 className={`text-sm md:text-xl font-black italic tracking-tight leading-tight line-clamp-1 group-hover:text-accent transition-colors ${isCurrentEpisode ? 'text-accent' : ''}`}>
  {ep.episode_number}. {ep.name}
  </h4>
- <span className="text-[9px] font-black text-white/20 uppercase tracking-widest mt-0.5">{ep.air_date?.split('-')[0]}</span>
+ <span className="text-[9px] font-black text-white/20 uppercase tracking-widest mt-0.5 flex items-center gap-2">
+ {isCurrentEpisode && <span className="text-accent border border-accent/30 bg-accent/10 px-1.5 py-0.5 rounded animate-pulse shadow-[0_0_10px_rgba(229,9,20,0.2)]">Watching</span>}
+ {ep.air_date?.split('-')[0]}
+ </span>
  </div>
  <p className="text-white/40 text-[10px] md:text-sm line-clamp-2 leading-relaxed">
  {ep.overview || "No overview available for this episode."}
