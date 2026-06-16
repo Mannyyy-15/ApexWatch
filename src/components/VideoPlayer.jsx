@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Play, RotateCw, X, Server, Globe, Users, Subtitles } from 'lucide-react';
+import { ArrowLeft, Play, RotateCw, X, Server, Globe, Users, Subtitles, ListVideo } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { tmdb } from '../utils/tmdb';
 import { useTVBackHandler } from '../hooks/useTV';
@@ -566,6 +566,18 @@ export function VideoPlayer() {
  >
  <Server size={18} />
  </button>
+ {movie?.type === 'tv' && (
+ <button
+ onClick={(e) => { e.stopPropagation(); handleClose(e); }}
+ className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer"
+ title="Episodes"
+ >
+ <ListVideo size={16} />
+ <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">
+ Episodes
+ </span>
+ </button>
+ )}
  <button
  onClick={(e) => { e.stopPropagation(); handleManualRotate(); }}
  className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
