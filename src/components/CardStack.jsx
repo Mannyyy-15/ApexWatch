@@ -97,7 +97,7 @@ function Card({ movie, isTop, isSwiped, offset, onSwipe, onClick, onAdd }) {
   return (
     <motion.div
       style={{ 
-        x: isTop ? x : undefined, 
+        x, 
         rotate: isTop ? rotate : undefined, 
         zIndex: animateProps.zIndex 
       }}

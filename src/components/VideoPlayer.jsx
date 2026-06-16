@@ -73,35 +73,31 @@ export function VideoPlayer() {
  };
  }, [resetControlsTimeout]);
 
- // Auto-Server Fallback Timer
- useEffect(() => {
- if (!playerReady || selectedServer !== 'vidlink' || autoSwitched) return;
-
- const fallbackTimer = setTimeout(() => {
- if (localTime === 0 && duration === 0) {
- console.log('[VideoPlayer] Vidlink unresponsive after 15s, auto-switching to fallback server');
- setSelectedServer('vidsrc_net');
- setAutoSwitched(true);
- setShowFallbackToast(true);
- setTimeout(() => setShowFallbackToast(false), 5000);
- }
- }, 15000);
-
- return () => clearTimeout(fallbackTimer);
- }, [playerReady, selectedServer, localTime, duration, autoSwitched]);
-
  const SERVERS = [
- { id: 'vidlink', name: 'Server 1 (VidLink Pro - Fast/Auto)' },
- { id: 'vidsrc_net', name: 'Server 2 (VidSrc Net - Subtitles)' },
- { id: 'vidsrc_cc', name: 'Server 3 (VidSrc CC - Stable)' },
- { id: 'vidsrc_pro', name: 'Server 4 (VidSrc Pro - Cineby)' },
- { id: 'embed_su', name: 'Server 5 (Embed.su - High Quality)' },
- { id: 'superembed', name: 'Server 6 (SuperEmbed - Cineby)' },
- { id: 'vidplay', name: 'Server 7 (VidPlay - Cineby)' },
- { id: 'autoembed', name: 'Server 8 (Autoembed - Backup)' },
- { id: '2embed', name: 'Server 9 (2Embed - Backup)' },
- { id: 'cineby_direct', name: 'Server 10 (Cineby Direct Embed)' }
+ { id: 'vidlink', name: 'Server 1 (VidLink Pro)' },
+ { id: 'vidsrc_net', name: 'Server 2 (VidSrc Net)' },
+ { id: 'vidsrc_cc', name: 'Server 3 (VidSrc CC)' },
+ { id: 'vidsrc_pro', name: 'Server 4 (VidSrc Pro)' },
+ { id: 'embed_su', name: 'Server 5 (Embed.su)' },
+ { id: 'superembed', name: 'Server 6 (SuperEmbed)' },
+ { id: 'vidplay', name: 'Server 7 (VidPlay)' },
+ { id: 'autoembed', name: 'Server 8 (Autoembed)' },
+ { id: '2embed', name: 'Server 9 (2Embed)' },
+ { id: 'cineby_direct', name: 'Server 10 (Cineby Direct)' }
  ];
+
+ const [fallbackMessage, setFallbackMessage] = useState('');
+
+ const handleIframeError = useCallback(() => {
+   const currentIndex = SERVERS.findIndex(s => s.id === selectedServer);
+   if (currentIndex >= 0 && currentIndex < 2) { // Auto-switch only up to Server 3
+     const nextServer = SERVERS[currentIndex + 1];
+     setSelectedServer(nextServer.id);
+     setFallbackMessage(`Server ${currentIndex + 1} unresponsive. Changing to ${nextServer.name}...`);
+     setShowFallbackToast(true);
+     setTimeout(() => setShowFallbackToast(false), 5000);
+   }
+ }, [selectedServer]);
 
 
  useEffect(() => {
@@ -518,12 +514,7 @@ export function VideoPlayer() {
  allowFullScreen 
  allow="autoplay; encrypted-media; picture-in-picture"
  title={movie.title}
- onError={() => {
- const currentIndex = servers.findIndex(s => s.id === selectedServer);
- if (currentIndex < servers.length - 1) {
- setSelectedServer(servers[currentIndex + 1].id);
- }
- }}
+ onError={handleIframeError}
  />
  </motion.div>
  )}
@@ -678,7 +669,7 @@ export function VideoPlayer() {
  >
  <div className="bg-black/90 backdrop-blur-2xl border border-white/20 px-6 py-3 rounded-full flex items-center gap-3 ">
  <Server size={18} className="text-yellow-500 animate-pulse" />
- <span className="text-white text-xs font-bold uppercase tracking-wider">Server unresponsive. Switched to Fallback.</span>
+ <span className="text-white text-xs font-bold uppercase tracking-wider">{fallbackMessage}</span>
  </div>
  </motion.div>
  )}

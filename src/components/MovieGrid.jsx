@@ -243,15 +243,14 @@ export function MovieGrid() {
  setActiveMediaType(type || 'movie');
  
  if (row.isHistory) {
- const item = historyItems.find(h => h.id === id);
- if (item && item.type === 'tv') {
- if (item.season) setActiveSeason(item.season);
- if (item.episode) setActiveEpisode(item.episode);
+   const item = historyItems.find(h => h.id === id);
+   if (item && item.type === 'tv') {
+     if (item.season) setActiveSeason(item.season);
+     if (item.episode) setActiveEpisode(item.episode);
+     sessionStorage.setItem(`apexwatch_tab_${id}`, 'Episodes');
+   }
  }
- setCurrentView('player');
- } else {
  setCurrentView('details');
- }
  }}
  />
  );
