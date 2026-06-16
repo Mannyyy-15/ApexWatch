@@ -125,8 +125,6 @@ export function MovieGrid() {
     movies: historyMovies,
     isHistory: true
     });
- }
-
  // Fetch Recommendations for "For You" CardStack
  try {
  const lastWatched = history[0];
