@@ -604,15 +604,17 @@ export function VideoPlayer() {
  </span>
  </button>
  )}
- <button
- onClick={(e) => { e.stopPropagation(); handleManualRotate(); }}
- className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
- >
- <RotateCw size={15} className="text-accent" />
- <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">
- {isPortrait ? 'Landscape' : 'Portrait'}
- </span>
- </button>
+  {Capacitor.isNativePlatform() && (
+    <button
+      onClick={(e) => { e.stopPropagation(); handleManualRotate(); }}
+      className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
+    >
+      <RotateCw size={15} className="text-accent" />
+      <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">
+        {isPortrait ? 'Landscape' : 'Portrait'}
+      </span>
+    </button>
+  )}
  </motion.div>
  )}
  </AnimatePresence>
