@@ -137,7 +137,7 @@ export function VideoPlayer() {
  return () => {
  // Unlock orientation when player closes
  ScreenOrientation.lock({ orientation: 'portrait' }).catch(() => {
- try { window.screen?.orientation?.lock('portrait'); } catch (_) {}
+ try { window.screen?.orientation?.lock('portrait')?.catch(() => {}); } catch (_) {}
  });
  if (Capacitor.isNativePlatform()) {
  StatusBar.show().catch(() => {});
