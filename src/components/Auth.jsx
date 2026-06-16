@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, Chrome, X, AlertCircle, Loader2 } from 'lucide-react';
+import { Play, Chrome, X, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { tmdb } from '../utils/tmdb';
 
@@ -11,6 +11,7 @@ export function Auth() {
  const [password, setPassword] = useState('');
  const [name, setName] = useState('');
  const [error, setError] = useState('');
+ const [success, setSuccess] = useState('');
  const [loading, setLoading] = useState(false);
  const [backgroundMovies, setBackgroundMovies] = useState([]);
 
@@ -30,6 +31,7 @@ export function Auth() {
  const handleSubmit = async (e) => {
  e.preventDefault();
  setError('');
+ setSuccess('');
  setLoading(true);
  try {
  if (isLogin) {
@@ -38,13 +40,29 @@ export function Auth() {
  if (!name.trim()) throw new Error('Please enter your name');
  await signUp(email, password, name);
  }
+ setSuccess('Successfully logged in!');
+ setTimeout(() => setCurrentView('home'), 1500);
  } catch (err) {
  console.error('Auth error:', err);
  setError(err.message.includes('auth/user-not-found') ? 'No account found.' : 
  err.message.includes('auth/wrong-password') ? 'Incorrect password.' :
  err.message.includes('auth/email-already-in-use') ? 'Email already in use.' :
  err.message || 'Authentication failed.');
- } finally {
+ setLoading(false);
+ }
+ };
+
+ const handleGoogleLogin = async () => {
+ setError('');
+ setSuccess('');
+ setLoading(true);
+ try {
+ await loginWithGoogle();
+ setSuccess('Successfully logged in!');
+ setTimeout(() => setCurrentView('home'), 1500);
+ } catch (err) {
+ console.error('Google Auth error:', err);
+ setError('Google login failed.');
  setLoading(false);
  }
  };
@@ -108,6 +126,17 @@ export function Auth() {
  {error}
  </motion.div>
  )}
+ {success && (
+ <motion.div 
+ initial={{ opacity: 0, height: 0 }}
+ animate={{ opacity: 1, height: 'auto' }}
+ exit={{ opacity: 0, height: 0 }}
+ className="mb-5 text-green-500 text-[11px] font-bold flex items-center gap-1.5"
+ >
+ <CheckCircle2 size={12} />
+ {success}
+ </motion.div>
+ )}
  </AnimatePresence>
 
  <form onSubmit={handleSubmit} className="space-y-3.5">
@@ -162,7 +191,7 @@ export function Auth() {
  </div>
 
  <button 
- onClick={() => loginWithGoogle()}
+ onClick={handleGoogleLogin}
  disabled={loading}
  className="w-full bg-glass-bg border border-glass-border text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-glass-hover hover:border-white/20 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer tv-focusable"
  >
