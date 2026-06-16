@@ -174,6 +174,13 @@ export function MovieDetails() {
  };
  }, []);
 
+ // Ensure we don't land on Episodes if it's not a TV show
+ useEffect(() => {
+ if (activeTab === 'Episodes' && movie && movie.type !== 'tv') {
+ setActiveTab('Overview');
+ }
+ }, [activeTab, movie]);
+
  const startDownloadSimulation = () => {
  if (!movie) return;
  setDownloadProgress(0);
@@ -216,12 +223,7 @@ export function MovieDetails() {
  const tabs = ['Overview', 'Details'];
  if (movie.type === 'tv') tabs.splice(1, 0, 'Episodes');
 
-  // Ensure we don't land on Episodes if it's not a TV show
-  useEffect(() => {
-    if (activeTab === 'Episodes' && movie && movie.type !== 'tv') {
-      setActiveTab('Overview');
-    }
-  }, [activeTab, movie]);
+
 
  return (
  <motion.div 
