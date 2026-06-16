@@ -10,7 +10,7 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
 
 export function VideoPlayer() {
- const { activeMovieId, setCurrentView, user, activeProfile, activeSeason, activeEpisode, setActiveEpisode, activeMediaType, activeParty, isPartyHost, leaveWatchParty, updatePartyState, goBack } = useAppContext();
+ const { activeMovieId, setCurrentView, user, activeProfile, activeSeason, setActiveSeason, activeEpisode, setActiveEpisode, activeMediaType, activeParty, isPartyHost, leaveWatchParty, updatePartyState, goBack } = useAppContext();
 
  useTVBackHandler(() => {
  if (activeParty) {
@@ -39,6 +39,11 @@ export function VideoPlayer() {
  bgOpacity: '0.4'
  });
  const [showSubMenu, setShowSubMenu] = useState(false);
+
+ // Episodes Sidebar States
+ const [showEpisodesMenu, setShowEpisodesMenu] = useState(false);
+ const [episodesList, setEpisodesList] = useState([]);
+ const [fetchingEpisodes, setFetchingEpisodes] = useState(false);
 
  // Next Episode Countdown States
  const [countdown, setCountdown] = useState(15);
@@ -72,6 +77,27 @@ export function VideoPlayer() {
  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
  };
  }, [resetControlsTimeout]);
+
+ // Fetch episodes when menu is opened or season changes
+ useEffect(() => {
+    if (movie?.type !== 'tv' || !activeMovieId || !activeSeason || !showEpisodesMenu) return;
+
+    const fetchEpisodes = async () => {
+      setFetchingEpisodes(true);
+      try {
+        const data = await tmdb.fetchTVSeasonDetails(activeMovieId, activeSeason);
+        if (data && data.episodes) {
+          setEpisodesList(data.episodes);
+        }
+      } catch (error) {
+        console.error("Error fetching episodes:", error);
+      } finally {
+        setFetchingEpisodes(false);
+      }
+    };
+
+    fetchEpisodes();
+  }, [activeMovieId, activeSeason, movie?.type, showEpisodesMenu]);
 
  const SERVERS = [
  { id: 'vidlink', name: 'Server 1 (VidLink Pro)' },
@@ -566,12 +592,12 @@ export function VideoPlayer() {
  >
  <Server size={18} />
  </button>
- {movie?.type === 'tv' && (
- <button
- onClick={(e) => { e.stopPropagation(); handleClose(e); }}
- className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer"
- title="Episodes"
- >
+  {movie?.type === 'tv' && (
+    <button
+      onClick={(e) => { e.stopPropagation(); setShowEpisodesMenu(true); }}
+      className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer"
+      title="Episodes"
+    >
  <ListVideo size={16} />
  <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">
  Episodes
@@ -825,6 +851,94 @@ export function VideoPlayer() {
  </>
  )}
  </AnimatePresence>
+
+      {/* Sliding Episodes Drawer */}
+      <AnimatePresence>
+        {showEpisodesMenu && movie?.type === 'tv' && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowEpisodesMenu(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[70] pointer-events-auto"
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+              className="absolute top-0 right-0 bottom-0 w-80 md:w-[400px] bg-[#080808]/95 backdrop-blur-2xl border-l border-white/10 z-[80] p-6 flex flex-col pointer-events-auto justify-between"
+            >
+              <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+                <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                  <div className="flex items-center gap-2.5">
+                    <ListVideo size={20} className="text-accent" />
+                    <h3 className="text-lg font-black uppercase tracking-wider italic">Episodes</h3>
+                  </div>
+                  <button 
+                    onClick={() => setShowEpisodesMenu(false)} 
+                    className="p-1.5 hover:bg-white/10 rounded-full transition-all cursor-pointer text-white/50 hover:text-white"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="flex gap-2 items-center">
+                  <select 
+                    value={activeSeason} 
+                    onChange={(e) => setActiveSeason(Number(e.target.value))}
+                    className="appearance-none bg-white/5 border border-white/10 rounded-lg px-4 py-3 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-600 transition-all text-xs uppercase tracking-widest w-full cursor-pointer"
+                  >
+                    {movie.seasons?.filter(s => s.season_number > 0).map(s => (
+                      <option key={s.id} value={s.season_number} className="bg-[#050505]">Season {s.season_number}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2.5 overflow-y-auto flex-1 pr-2 pb-4 hide-scrollbar">
+                  {fetchingEpisodes ? (
+                    <div className="text-center text-white/40 text-xs py-8 font-bold uppercase tracking-widest animate-pulse">Loading Episodes...</div>
+                  ) : (
+                    episodesList.map((ep) => {
+                      const isSelected = activeEpisode === ep.episode_number;
+                      return (
+                        <button
+                          key={ep.id}
+                          onClick={() => {
+                            setActiveEpisode(ep.episode_number);
+                            setShowEpisodesMenu(false);
+                          }}
+                          className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer active:scale-98 text-left gap-3 ${
+                            isSelected
+                              ? 'bg-accent/10 border-accent/40 shadow-[0_0_15px_rgba(229,9,20,0.15)]'
+                              : 'bg-white/5 border-white/5 text-white/60 hover:text-white hover:bg-white/10 hover:border-white/10'
+                          }`}
+                        >
+                          <div className="relative w-20 aspect-video rounded-md overflow-hidden flex-shrink-0 bg-white/5 border border-white/5">
+                            <img 
+                              src={ep.still_path ? tmdb.getBackdropUrl(ep.still_path, 'w300') : movie.backdrop} 
+                              className="w-full h-full object-cover" 
+                              alt="" 
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0 py-1">
+                            <h4 className={`text-[11px] font-black uppercase tracking-wider line-clamp-1 leading-tight ${isSelected ? 'text-accent' : 'text-white'}`}>
+                              {ep.episode_number}. {ep.name}
+                            </h4>
+                            <p className="text-[9px] text-white/40 mt-1 line-clamp-2 leading-relaxed">{ep.overview || "No description."}</p>
+                          </div>
+                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-accent animate-ping flex-shrink-0 mr-1"></div>}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
  {/* Sliding Subtitles Styling Drawer */}
  <AnimatePresence>
