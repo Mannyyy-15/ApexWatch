@@ -99,31 +99,31 @@ export function VideoPlayer() {
     fetchEpisodes();
   }, [activeMovieId, activeSeason, movie?.type, showEpisodesMenu]);
 
- const SERVERS = [
- { id: 'vidlink', name: 'Server 1 (VidLink Pro)' },
- { id: 'vidsrc_net', name: 'Server 2 (VidSrc Net)' },
- { id: 'vidsrc_cc', name: 'Server 3 (VidSrc CC)' },
- { id: 'vidsrc_pro', name: 'Server 4 (VidSrc Pro)' },
- { id: 'embed_su', name: 'Server 5 (Embed.su)' },
- { id: 'superembed', name: 'Server 6 (SuperEmbed)' },
- { id: 'vidplay', name: 'Server 7 (VidPlay)' },
- { id: 'autoembed', name: 'Server 8 (Autoembed)' },
- { id: '2embed', name: 'Server 9 (2Embed)' },
- { id: 'cineby_direct', name: 'Server 10 (Cineby Direct)' }
- ];
+  const SERVERS = [
+    { id: 'vidlink', name: 'Server 1 (VidLink Pro)' },
+    { id: 'videasy', name: 'Server 2 (Videasy HD)' },
+    { id: 'vidsrc_pm', name: 'Server 3 (VidSrc PM)' },
+    { id: 'autoembed_co', name: 'Server 4 (AutoEmbed Stream)' },
+    { id: 'smashystream', name: 'Server 5 (SmashyStream Pro)' },
+    { id: 'vidsrc_dev', name: 'Server 6 (VidSrc Dev)' },
+    { id: '2embed', name: 'Server 7 (2Embed Engine)' },
+    { id: 'vidsrc_xyz', name: 'Server 8 (VidSrc XYZ)' },
+    { id: 'vidsrc_in', name: 'Server 9 (VidSrc IN)' },
+    { id: 'vidsrc_vip', name: 'Server 10 (VidSrc VIP)' }
+  ];
 
- const [fallbackMessage, setFallbackMessage] = useState('');
+  const [fallbackMessage, setFallbackMessage] = useState('');
 
- const handleIframeError = useCallback(() => {
-   const currentIndex = SERVERS.findIndex(s => s.id === selectedServer);
-   if (currentIndex >= 0 && currentIndex < 2) { // Auto-switch only up to Server 3
-     const nextServer = SERVERS[currentIndex + 1];
-     setSelectedServer(nextServer.id);
-     setFallbackMessage(`Server ${currentIndex + 1} unresponsive. Changing to ${nextServer.name}...`);
-     setShowFallbackToast(true);
-     setTimeout(() => setShowFallbackToast(false), 5000);
-   }
- }, [selectedServer]);
+  const handleIframeError = useCallback(() => {
+    const currentIndex = SERVERS.findIndex(s => s.id === selectedServer);
+    if (currentIndex >= 0 && currentIndex < SERVERS.length - 1) { // Auto-switch to next server if one fails
+      const nextServer = SERVERS[currentIndex + 1];
+      setSelectedServer(nextServer.id);
+      setFallbackMessage(`Server ${currentIndex + 1} unresponsive. Changing to ${nextServer.name}...`);
+      setShowFallbackToast(true);
+      setTimeout(() => setShowFallbackToast(false), 5000);
+    }
+  }, [selectedServer]);
 
 
  useEffect(() => {
@@ -432,118 +432,119 @@ export function VideoPlayer() {
   );
   }
 
- const getEmbedUrl = () => {
- if (!movie) return '';
- const id = movie.tmdbId || movie.id;
- const s = activeSeason || 1;
- const e = activeEpisode || 1;
+  const getEmbedUrl = () => {
+    if (!movie) return '';
+    const id = movie.tmdbId || movie.id;
+    const s = activeSeason || 1;
+    const e = activeEpisode || 1;
 
- if (selectedServer === 'vidlink') {
- const baseUrl = movie.type === 'tv' 
- ? `https://vidlink.pro/tv/${id}/${s}/${e}`
- : `https://vidlink.pro/movie/${id}`;
- const params = new URLSearchParams({
- primaryColor: 'e50914',
- autoplay: 'true'
- });
- if (startTime > 5) params.set('t', Math.floor(startTime).toString());
- return `${baseUrl}?${params.toString()}`;
- }
+    if (selectedServer === 'vidlink') {
+      const baseUrl = movie.type === 'tv' 
+        ? `https://vidlink.pro/tv/${id}/${s}/${e}`
+        : `https://vidlink.pro/movie/${id}`;
+      const params = new URLSearchParams({
+        primaryColor: 'e50914',
+        autoplay: 'true'
+      });
+      if (startTime > 5) params.set('t', Math.floor(startTime).toString());
+      return `${baseUrl}?${params.toString()}`;
+    }
 
- if (selectedServer === 'vidsrc_net') {
- return movie.type === 'tv'
- ? `https://vidsrc.net/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
- : `https://vidsrc.net/embed/movie?tmdb=${id}`;
- }
+    if (selectedServer === 'videasy') {
+      return movie.type === 'tv'
+        ? `https://player.videasy.net/tv/${id}/${s}/${e}`
+        : `https://player.videasy.net/movie/${id}`;
+    }
 
- if (selectedServer === 'vidsrc_cc') {
- return movie.type === 'tv'
- ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
- : `https://vidsrc.cc/v2/embed/movie/${id}`;
- }
+    if (selectedServer === 'vidsrc_pm') {
+      return movie.type === 'tv'
+        ? `https://vidsrc.pm/embed/tv/${id}/${s}/${e}`
+        : `https://vidsrc.pm/embed/movie/${id}`;
+    }
 
- if (selectedServer === 'vidsrc_pro') {
- return movie.type === 'tv'
- ? `https://vidsrc.pro/embed/tv/${id}/${s}/${e}`
- : `https://vidsrc.pro/embed/movie/${id}`;
- }
+    if (selectedServer === 'autoembed_co') {
+      return movie.type === 'tv'
+        ? `https://autoembed.co/tv/tmdb/${id}-${s}-${e}`
+        : `https://autoembed.co/movie/tmdb/${id}`;
+    }
 
- if (selectedServer === 'embed_su') {
- return movie.type === 'tv'
- ? `https://embed.su/embed/tv/${id}/${s}/${e}`
- : `https://embed.su/embed/movie/${id}`;
- }
+    if (selectedServer === 'smashystream') {
+      return movie.type === 'tv'
+        ? `https://player.smashystream.com/tv/${id}?s=${s}&e=${e}`
+        : `https://player.smashystream.com/movie/${id}`;
+    }
 
- if (selectedServer === 'superembed') {
- return movie.type === 'tv'
- ? `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${s}&e=${e}`
- : `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`;
- }
+    if (selectedServer === 'vidsrc_dev') {
+      return movie.type === 'tv'
+        ? `https://vidsrc.dev/embed/tv/${id}/${s}/${e}`
+        : `https://vidsrc.dev/embed/movie/${id}`;
+    }
 
- if (selectedServer === 'vidplay') {
- return movie.type === 'tv'
- ? `https://vidplay.online/embed/tv/${id}/${s}/${e}`
- : `https://vidplay.online/embed/movie/${id}`;
- }
+    if (selectedServer === '2embed') {
+      return movie.type === 'tv'
+        ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
+        : `https://www.2embed.cc/embed/${id}`;
+    }
 
- if (selectedServer === 'autoembed') {
- return movie.type === 'tv'
- ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`
- : `https://player.autoembed.cc/embed/movie/${id}`;
- }
+    if (selectedServer === 'vidsrc_xyz') {
+      return movie.type === 'tv'
+        ? `https://vidsrc.xyz/embed/tv/${id}/${s}/${e}`
+        : `https://vidsrc.xyz/embed/movie/${id}`;
+    }
 
- if (selectedServer === '2embed') {
- return movie.type === 'tv'
- ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
- : `https://www.2embed.cc/embed/${id}`;
- }
+    if (selectedServer === 'vidsrc_in') {
+      return movie.type === 'tv'
+        ? `https://vidsrc.in/embed/tv/${id}/${s}/${e}`
+        : `https://vidsrc.in/embed/movie/${id}`;
+    }
 
- if (selectedServer === 'cineby_direct') {
- return movie.type === 'tv'
- ? `https://www.cineby.cc/embed/tv/${id}/${s}/${e}`
- : `https://www.cineby.cc/embed/movie/${id}`;
- }
+    if (selectedServer === 'vidsrc_vip') {
+      return movie.type === 'tv'
+        ? `https://vidsrc.vip/embed/tv/${id}/${s}/${e}`
+        : `https://vidsrc.vip/embed/movie/${id}`;
+    }
 
- return '';
- };
+    return '';
+  };
 
- const copyRoomCode = () => {
- if (activeParty) {
- navigator.clipboard.writeText(activeParty.partyCode);
- alert("Watch Party room code copied!");
- }
- };
+  const copyRoomCode = () => {
+    if (activeParty) {
+      navigator.clipboard.writeText(activeParty.partyCode);
+      alert("Watch Party room code copied!");
+    }
+  };
 
- const embedUrl = getEmbedUrl();
+  const embedUrl = getEmbedUrl();
 
- return (
- <motion.div 
- initial={{ opacity: 0 }} 
- animate={{ opacity: 1 }} 
- exit={{ opacity: 0 }} 
- className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden"
- >
- <div className="flex w-full h-full relative">
- {/* Left Side: Video Player Column */}
- <div className={`relative h-full transition-all duration-300 ${activeParty ? 'w-full md:w-[calc(100%-320px)]' : 'w-full'}`}>
- 
- {playerReady && (
- <motion.div 
- initial={{ opacity: 0 }} 
- animate={{ opacity: 1 }} 
- className="absolute inset-0 w-full h-full"
- >
- <iframe 
- ref={iframeRef}
- src={embedUrl} 
- className="w-full h-full border-none" 
- allowFullScreen 
- allow="autoplay; encrypted-media; picture-in-picture"
- title={movie.title}
- onError={handleIframeError}
- />
- </motion.div>
- )}
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }} 
+      className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden"
+    >
+      <div className="flex w-full h-full relative">
+        {/* Left Side: Video Player Column */}
+        <div className={`relative h-full transition-all duration-300 ${activeParty ? 'w-full md:w-[calc(100%-320px)]' : 'w-full'}`}>
+          
+          {playerReady && (
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              className="absolute inset-0 w-full h-full"
+            >
+              <iframe 
+                ref={iframeRef}
+                src={embedUrl} 
+                className="w-full h-full border-none" 
+                allowFullScreen 
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen; accelerometer; gyroscope; clipboard-write"
+                referrerPolicy="origin"
+                title={movie.title}
+                onError={handleIframeError}
+              />
+            </motion.div>
+          )}
 
 
  {/* Invisible Trigger Area to show controls when hovering/tapping the top of the screen */}
