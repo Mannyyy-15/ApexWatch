@@ -71,12 +71,21 @@ export function VideoPlayer() {
  }, 4000);
  }, []);
 
- useEffect(() => {
- resetControlsTimeout();
- return () => {
- if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
- };
- }, [resetControlsTimeout]);
+  useEffect(() => {
+    resetControlsTimeout();
+    return () => {
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    };
+  }, [resetControlsTimeout]);
+
+  // Reveal player controls on TV remote key activity
+  useEffect(() => {
+    const handleKeyActivity = () => {
+      resetControlsTimeout();
+    };
+    window.addEventListener('keydown', handleKeyActivity);
+    return () => window.removeEventListener('keydown', handleKeyActivity);
+  }, [resetControlsTimeout]);
 
  // Fetch episodes when menu is opened or season changes
  useEffect(() => {
@@ -521,7 +530,7 @@ export function VideoPlayer() {
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       exit={{ opacity: 0 }} 
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden video-player-container"
     >
       <div className="flex w-full h-full relative">
         {/* Left Side: Video Player Column */}
@@ -567,7 +576,8 @@ export function VideoPlayer() {
  >
  <button
  onClick={(e) => { e.stopPropagation(); handleClose(e); }}
- className="w-12 h-12 bg-black/60 backdrop-blur-md rounded-full border border-white/15 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg cursor-pointer"
+ tabIndex={0}
+ className="w-12 h-12 bg-black/60 backdrop-blur-md rounded-full border border-white/15 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg cursor-pointer tv-focusable"
  title="Go Back"
  >
  <ArrowLeft size={22} />
@@ -588,7 +598,8 @@ export function VideoPlayer() {
  >
  <button
  onClick={(e) => { e.stopPropagation(); setShowServerMenu(true); }}
- className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer"
+ tabIndex={0}
+ className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer tv-focusable"
  title="Select Server"
  >
  <Server size={18} />
@@ -596,7 +607,8 @@ export function VideoPlayer() {
   {movie?.type === 'tv' && (
     <button
       onClick={(e) => { e.stopPropagation(); setShowEpisodesMenu(true); }}
-      className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer"
+      tabIndex={0}
+      className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer tv-focusable"
       title="Episodes"
     >
  <ListVideo size={16} />
@@ -608,7 +620,8 @@ export function VideoPlayer() {
   {Capacitor.isNativePlatform() && (
     <button
       onClick={(e) => { e.stopPropagation(); handleManualRotate(); }}
-      className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer"
+      tabIndex={0}
+      className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer tv-focusable"
     >
       <RotateCw size={15} className="text-accent" />
       <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">

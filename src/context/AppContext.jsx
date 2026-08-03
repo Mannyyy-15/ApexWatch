@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useMemo } from 'react';
 import { auth, db, googleProvider } from '../firebase';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, onSnapshot, query } from 'firebase/firestore';
@@ -536,30 +536,39 @@ export function AppProvider({ children }) {
  }
  };
 
- return (<AppContext.Provider value={{
- currentView, setCurrentView: navigateTo,
- goBack,
- activeMovieId, setActiveMovieId,
- activeMediaType, setActiveMediaType,
- user, userData, profiles, setProfiles, activeProfile, setActiveProfile,
- loadingAuth, login, signUp, logout, loginWithGoogle,
- searchQuery, setSearchQuery,
- libraryTab, setLibraryTab,
- activeSeason, setActiveSeason,
- activeEpisode, setActiveEpisode,
- watchlist, setWatchlist,
- movieRows, setMovieRows,
- exploreCategory, setExploreCategory,
- cachedDetails, setCachedDetails,
- categoryCache, setCategoryCache,
- discoverCache, setDiscoverCache,
- heroCache, setHeroCache,
- downloads, addDownload, removeDownload,
- activeParty, isPartyHost, createWatchParty, joinWatchParty, leaveWatchParty, updatePartyState,
- updateAvailable, manualCheckForUpdates: window.manualCheckForUpdates
- }}>
- {children}
- </AppContext.Provider>);
+  const value = useMemo(() => ({
+    currentView, setCurrentView: navigateTo,
+    goBack,
+    activeMovieId, setActiveMovieId,
+    activeMediaType, setActiveMediaType,
+    user, userData, profiles, setProfiles, activeProfile, setActiveProfile,
+    loadingAuth, login, signUp, logout, loginWithGoogle,
+    searchQuery, setSearchQuery,
+    libraryTab, setLibraryTab,
+    activeSeason, setActiveSeason,
+    activeEpisode, setActiveEpisode,
+    watchlist, setWatchlist,
+    movieRows, setMovieRows,
+    exploreCategory, setExploreCategory,
+    cachedDetails, setCachedDetails,
+    categoryCache, setCategoryCache,
+    discoverCache, setDiscoverCache,
+    heroCache, setHeroCache,
+    downloads, addDownload, removeDownload,
+    activeParty, isPartyHost, createWatchParty, joinWatchParty, leaveWatchParty, updatePartyState,
+    updateAvailable, manualCheckForUpdates: window.manualCheckForUpdates
+  }), [
+    currentView, activeMovieId, activeMediaType, user, userData, profiles, activeProfile,
+    loadingAuth, searchQuery, libraryTab, activeSeason, activeEpisode, watchlist,
+    movieRows, exploreCategory, cachedDetails, categoryCache, discoverCache, heroCache,
+    downloads, activeParty, isPartyHost, updateAvailable
+  ]);
+
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+    </AppContext.Provider>
+  );
 }
 
 export function useAppContext() {

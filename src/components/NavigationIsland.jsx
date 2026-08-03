@@ -443,19 +443,20 @@ export function NavigationIsland() {
 }
 
 function MenuButton({ icon, label, onClick, variant = 'default' }) {
- return (
- <button 
- onClick={onClick}
- className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all text-left cursor-pointer ${
- variant === 'danger' 
- ? 'text-accent hover:bg-accent/10' 
- : 'text-white/70 hover:text-white hover:bg-white/5'
- }`}
- >
- {icon}
- <span className="text-xs font-bold">{label}</span>
- </button>
- );
+  return (
+    <button 
+      onClick={onClick}
+      tabIndex={0}
+      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all text-left cursor-pointer tv-focusable ${
+        variant === 'danger' 
+          ? 'text-accent hover:bg-accent/10' 
+          : 'text-white/70 hover:text-white hover:bg-white/5'
+      }`}
+    >
+      {icon}
+      <span className="text-xs font-bold">{label}</span>
+    </button>
+  );
 }
 
 function SidebarNavItem({ icon, label, active = false, onClick }) {

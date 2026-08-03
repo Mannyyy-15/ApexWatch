@@ -1,4 +1,5 @@
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
+import { Capacitor } from '@capacitor/core';
 import pkg from '../../package.json';
 
 const UPDATE_SERVER_URL = 'https://apex-watch.vercel.app'; // Production server

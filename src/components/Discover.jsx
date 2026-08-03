@@ -1,20 +1,69 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Play, X } from 'lucide-react';
+import { Search, Play, X, Mic, MicOff } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { tmdb } from '../utils/tmdb';
 import { MovieCardSkeleton } from './Skeleton';
 
 export function Discover() {
- const { setActiveMovieId, setActiveMediaType, setCurrentView, searchQuery, setSearchQuery, discoverCache, setDiscoverCache } = useAppContext();
- const [searchResults, setSearchResults] = useState([]);
- const [trending, setTrending] = useState([]);
- const [loading, setLoading] = useState(false);
- const [activeGenre, setActiveGenre] = useState('trending');
- const [recentSearches, setRecentSearches] = useState(() => {
- const saved = localStorage.getItem('apexwatch_recent_searches');
- return saved ? JSON.parse(saved) : [];
- });
+  const { setActiveMovieId, setActiveMediaType, setCurrentView, searchQuery, setSearchQuery, discoverCache, setDiscoverCache } = useAppContext();
+  const [searchResults, setSearchResults] = useState([]);
+  const [trending, setTrending] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [activeGenre, setActiveGenre] = useState('trending');
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const [recentSearches, setRecentSearches] = useState(() => {
+    const saved = localStorage.getItem('apexwatch_recent_searches');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const startVoiceSearch = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) {
+          setSearchQuery(transcript);
+        }
+      };
+
+      recognition.onerror = (err) => {
+        console.error("Speech recognition error:", err);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error("Failed to start voice recognition:", err);
+      setIsListening(false);
+    }
+  };
 
  const saveRecentSearch = (query) => {
  if (!query.trim()) return;
@@ -146,21 +195,37 @@ export function Discover() {
  <div className="absolute inset-y-0 left-4 md:left-6 flex items-center pointer-events-none text-white/40 group-focus-within:text-white transition-colors">
  <Search size={18} className="md:w-[28px] md:h-[28px]" />
  </div>
- <input 
- type="text" 
- placeholder="Movies, shows and more" 
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- className="w-full bg-[#1A1A24]/60 border border-white/10 rounded-xl md:rounded-2xl py-3.5 md:py-6 pl-12 md:pl-20 pr-12 md:pr-16 text-base md:text-2xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 focus:bg-[#1A1A24] transition-all font-semibold shadow-2xl"
- />
- {searchQuery && (
- <button 
- onClick={() => setSearchQuery('')}
- className="absolute inset-y-0 right-4 md:right-6 flex items-center text-white/40 hover:text-white transition-colors"
- >
- <X size={20} className="md:w-7 md:h-7" />
- </button>
- )}
+        <input 
+          type="text" 
+          placeholder={isListening ? "Listening... Speak now..." : "Movies, shows and more"} 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          tabIndex={0}
+          className={`w-full bg-[#1A1A24]/60 border rounded-xl md:rounded-2xl py-3.5 md:py-6 pl-12 md:pl-20 pr-24 md:pr-32 text-base md:text-2xl text-white placeholder-white/30 focus:outline-none transition-all font-semibold shadow-2xl tv-focusable ${
+            isListening ? 'border-red-500 ring-2 ring-red-500/50 bg-[#1A1A24]' : 'border-white/10 focus:border-white/30 focus:bg-[#1A1A24]'
+          }`}
+        />
+        <div className="absolute inset-y-0 right-4 md:right-6 flex items-center gap-3">
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              tabIndex={0}
+              className="text-white/40 hover:text-white transition-colors cursor-pointer tv-focusable p-1 rounded-full"
+            >
+              <X size={20} className="md:w-6 md:h-6" />
+            </button>
+          )}
+          <button 
+            onClick={startVoiceSearch}
+            tabIndex={0}
+            className={`p-2 rounded-full transition-all cursor-pointer tv-focusable ${
+              isListening ? 'bg-red-600 text-white animate-pulse' : 'bg-white/5 hover:bg-white/15 text-white/60 hover:text-white border border-white/10'
+            }`}
+            title={isListening ? "Listening... Click to stop" : "Search by voice"}
+          >
+            {isListening ? <MicOff size={18} className="md:w-5 md:h-5" /> : <Mic size={18} className="md:w-5 md:h-5" />}
+          </button>
+        </div>
  </div>
  </div>
 
@@ -175,7 +240,8 @@ export function Discover() {
  <button
  key={idx}
  onClick={() => setSearchQuery(term)}
- className="flex items-center gap-1.5 px-3.5 md:px-5 py-1.5 md:py-2.5 bg-white/5 border border-white/10 rounded-lg md:rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all font-bold text-xs md:text-sm uppercase tracking-wider cursor-pointer"
+ tabIndex={0}
+ className="flex items-center gap-1.5 px-3.5 md:px-5 py-1.5 md:py-2.5 bg-white/5 border border-white/10 rounded-lg md:rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all font-bold text-xs md:text-sm uppercase tracking-wider cursor-pointer tv-focusable"
  >
  <span>{term}</span>
  </button>

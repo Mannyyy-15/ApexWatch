@@ -1,29 +1,30 @@
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { NavigationIsland } from './components/NavigationIsland';
 import { Hero } from './components/Hero';
 import { MovieGrid } from './components/MovieGrid';
-import { MovieDetails } from './components/MovieDetails';
-import { VideoPlayer } from './components/VideoPlayer';
-import { Discover } from './components/Discover';
-import { ProfilesSelection } from './components/ProfilesSelection';
-import { Auth } from './components/Auth';
-import { Onboarding } from './components/Onboarding';
-import { StatsDashboard } from './components/StatsDashboard';
-import { CategoryView } from './components/CategoryView';
-import { ProfileLibrary } from './components/ProfileLibrary';
-import { DevConsole } from './components/DevConsole';
-import { UpdaterModal } from './components/UpdaterModal';
-import { CategoryExplore } from './components/CategoryExplore';
-import { Browse } from './components/Browse';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { UpdateService } from './services/UpdateService';
 import { AnimatePresence, motion } from 'motion/react';
-import { useState, useEffect, useRef } from 'react';
 import { ArrowUp, Keyboard, X } from 'lucide-react';
 import { useTV } from './hooks/useTV';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { StatusBar, Style } from '@capacitor/status-bar';
+
+const MovieDetails = lazy(() => import('./components/MovieDetails').then(m => ({ default: m.MovieDetails })));
+const VideoPlayer = lazy(() => import('./components/VideoPlayer').then(m => ({ default: m.VideoPlayer })));
+const Discover = lazy(() => import('./components/Discover').then(m => ({ default: m.Discover })));
+const ProfilesSelection = lazy(() => import('./components/ProfilesSelection').then(m => ({ default: m.ProfilesSelection })));
+const Auth = lazy(() => import('./components/Auth').then(m => ({ default: m.Auth })));
+const Onboarding = lazy(() => import('./components/Onboarding').then(m => ({ default: m.Onboarding })));
+const StatsDashboard = lazy(() => import('./components/StatsDashboard').then(m => ({ default: m.StatsDashboard })));
+const CategoryView = lazy(() => import('./components/CategoryView').then(m => ({ default: m.CategoryView })));
+const ProfileLibrary = lazy(() => import('./components/ProfileLibrary').then(m => ({ default: m.ProfileLibrary })));
+const DevConsole = lazy(() => import('./components/DevConsole').then(m => ({ default: m.DevConsole })));
+const UpdaterModal = lazy(() => import('./components/UpdaterModal').then(m => ({ default: m.UpdaterModal })));
+const CategoryExplore = lazy(() => import('./components/CategoryExplore').then(m => ({ default: m.CategoryExplore })));
+const Browse = lazy(() => import('./components/Browse').then(m => ({ default: m.Browse })));
 
 const pageVariants = {
  initial: {
@@ -190,6 +191,7 @@ function MainLayout() {
  {currentView !== 'auth' && currentView !== 'onboarding' && currentView !== 'profiles' && currentView !== 'details' && currentView !== 'player' && <NavigationIsland />}
  
  <main ref={scrollContainerRef} className="w-full h-screen overflow-y-auto overflow-x-hidden hide-scrollbar pb-24 md:pb-0 md:pl-[120px] relative">
+ <Suspense fallback={null}>
  <AnimatePresence mode="wait">
  {currentView === 'home' && (
  <motion.div 
@@ -293,6 +295,7 @@ function MainLayout() {
  </motion.div>
  )}
  </AnimatePresence>
+ </Suspense>
  </main>
 
  {/* Floating Actions */}
@@ -313,6 +316,7 @@ function MainLayout() {
 
  {/* Shortcuts Help Modal */}
  {/* Overlays */}
+ <Suspense fallback={null}>
  <AnimatePresence>
  {(showShortcutsHelp || showDevConsole) && (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 pointer-events-auto">
@@ -337,6 +341,7 @@ function MainLayout() {
  {currentView === 'profiles' && <ProfilesSelection key="profiles"/>}
  </AnimatePresence>
  <UpdaterModal />
+ </Suspense>
  </div>);
 }
 
