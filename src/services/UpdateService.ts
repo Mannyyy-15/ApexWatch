@@ -29,6 +29,22 @@ class UpdateServiceClass {
         return this.targetVersion;
     }
 
+    async getCurrentAppVersion(): Promise<string> {
+        let currentVersion = pkg.version;
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const currentBundle = await CapacitorUpdater.current();
+                if (currentBundle && currentBundle.bundle && currentBundle.bundle.id) {
+                    const cleanId = currentBundle.bundle.id.replace(/^update-/, '');
+                    if (cleanId) currentVersion = cleanId;
+                }
+            } catch (e) {
+                console.warn('[UpdateService] Could not fetch current CapacitorUpdater bundle:', e);
+            }
+        }
+        return currentVersion;
+    }
+
     async checkForUpdate(silent = true): Promise<boolean> {
         if (!silent) this.emit({ phase: 'checking', progress: 0 });
         try {
@@ -36,7 +52,7 @@ class UpdateServiceClass {
             if (!res.ok) throw new Error('Failed to fetch version metadata');
             
             const data = await res.json();
-            const currentVersion = pkg.version;
+            const currentVersion = await this.getCurrentAppVersion();
             
             if (this.isNewerVersion(currentVersion, data.latestVersion)) {
                 this.targetVersion = data.latestVersion;

@@ -123,11 +123,22 @@ export function AppProvider({ children }) {
  }
 
  const data = updateSnap.data();
- console.log(`[UpdateCheck] Local version: ${pkg.version} | Firebase version: ${data.latestVersion}`);
- 
  if (!data.latestVersion) return false;
 
- const oldParts = pkg.version.split('.').map(Number);
+ let currentVersion = pkg.version;
+ if (Capacitor.isNativePlatform()) {
+ try {
+ const currentBundle = await CapacitorUpdater.current();
+ if (currentBundle?.bundle?.id) {
+ const cleanId = currentBundle.bundle.id.replace(/^update-/, '');
+ if (cleanId) currentVersion = cleanId;
+ }
+ } catch (e) {}
+ }
+
+ console.log(`[UpdateCheck] Installed version: ${currentVersion} | Remote version: ${data.latestVersion}`);
+ 
+ const oldParts = currentVersion.split('.').map(Number);
  const newParts = data.latestVersion.split('.').map(Number);
  let isNewer = false;
  for (let i = 0; i < 3; i++) {
@@ -143,6 +154,8 @@ export function AppProvider({ children }) {
  const separator = finalUrl.includes('?') ? '&' : '?';
  window.__LATEST_APK_URL__ = `${finalUrl}${separator}t=${Date.now()}`;
  }
+ } else {
+ setUpdateAvailable(false);
  }
  return isNewer;
  } catch (error) {

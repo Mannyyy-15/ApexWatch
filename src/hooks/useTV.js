@@ -47,7 +47,9 @@ export function useTV() {
 
       // Determine active view container to prevent leaking focus to covered background elements
       let containerSelector = '';
-      if (document.querySelector('.video-player-container')) {
+      if (document.querySelector('.updater-modal-container')) {
+        containerSelector = '.updater-modal-container ';
+      } else if (document.querySelector('.video-player-container')) {
         containerSelector = '.video-player-container ';
       } else if (document.querySelector('.details-container')) {
         containerSelector = '.details-container ';
