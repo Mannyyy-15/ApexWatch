@@ -341,9 +341,45 @@ body.is-tv .library-container {
   padding-top: 40px !important;
 }
 
+/* Hotstar & Netflix TV Style Card Sizing (10-Foot Large Display) */
+body.is-tv .movie-card-standard {
+  width: min(290px, calc((100vw - 160px) / 4.2)) !important;
+}
+
+body.is-tv .movie-card-cw {
+  width: min(420px, calc((100vw - 160px) / 2.8)) !important;
+}
+
+body.is-tv .movie-card-top10 {
+  width: min(340px, calc((100vw - 160px) / 3.4)) !important;
+}
+
+/* TV Card Title & Metadata Typography */
+body.is-tv h2.row-title {
+  font-size: 2.4rem !important;
+  font-weight: 900 !important;
+  margin-bottom: 1.25rem !important;
+  letter-spacing: -0.02em !important;
+  color: #ffffff !important;
+}
+
+body.is-tv .movie-card-standard h3,
+body.is-tv .movie-card-cw h3,
+body.is-tv .movie-card-top10 h3 {
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+  margin-top: 0.5rem !important;
+}
+
+body.is-tv .movie-card-standard span,
+body.is-tv .movie-card-cw span,
+body.is-tv .movie-card-top10 span {
+  font-size: 0.95rem !important;
+}
+
 /* Image scaling inside focused cards for premium organic look */
 .tv-focusable:focus img {
-  transform: scale(1.04) !important;
+  transform: scale(1.06) !important;
 }
 
 /* Show actions on focus */

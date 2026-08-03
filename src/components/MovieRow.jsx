@@ -13,10 +13,10 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
  <div
  className={`flex-shrink-0 snap-start cursor-pointer transition-all duration-500 group tv-focusable
  ${isTop10
- ? 'w-[calc((100vw-48px-24px)/2.4)] md:w-[calc((100vw-160px-100px)/5)] pl-8 md:pl-10'
+ ? 'movie-card-top10 w-[calc((100vw-48px-24px)/2.4)] md:w-[calc((100vw-160px-100px)/5)] pl-8 md:pl-10'
  : isContinueWatching 
- ? 'w-[calc((100vw-48px-12px)/1.5)] md:w-[calc((100vw-160px-40px)/3)]' 
- : 'w-[calc((100vw-48px-24px)/3)] md:w-[calc((100vw-160px-100px)/6)]'
+ ? 'movie-card-cw w-[calc((100vw-48px-12px)/1.5)] md:w-[calc((100vw-160px-40px)/3)]' 
+ : 'movie-card-standard w-[calc((100vw-48px-24px)/3)] md:w-[calc((100vw-160px-100px)/6)]'
  }`}
  style={isTop10 ? { position: 'relative' } : {}}
  onClick={(e) => {
@@ -187,7 +187,7 @@ export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", mov
  >
  {title && (
  <div className="flex items-center justify-between mb-3 md:mb-4 px-1 md:px-2">
- <h2 className="text-xl md:text-2xl font-black text-white/90 tracking-wide">
+ <h2 className="row-title text-xl md:text-2xl font-black text-white/90 tracking-wide">
  {title}
  </h2>
  </div>
