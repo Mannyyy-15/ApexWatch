@@ -343,22 +343,71 @@ body.is-tv .library-container {
 
 /* Hotstar & Netflix TV Style Card Sizing (10-Foot Large Display) */
 body.is-tv .movie-card-standard {
-  width: min(290px, calc((100vw - 160px) / 4.2)) !important;
+  width: min(310px, calc((100vw - 160px) / 4.2)) !important;
 }
 
 body.is-tv .movie-card-cw {
-  width: min(420px, calc((100vw - 160px) / 2.8)) !important;
+  width: min(450px, calc((100vw - 160px) / 2.7)) !important;
 }
 
 body.is-tv .movie-card-top10 {
-  width: min(340px, calc((100vw - 160px) / 3.4)) !important;
+  width: min(360px, calc((100vw - 160px) / 3.4)) !important;
+}
+
+/* 55-inch 4K TV / Large Smart TV Button & Hero Scaling Overrides */
+body.is-tv .hero-play-btn {
+  padding: 1.35rem 3.2rem !important;
+  font-size: 1.5rem !important;
+  border-radius: 1.5rem !important;
+  font-weight: 900 !important;
+  box-shadow: 0 0 25px rgba(229, 9, 20, 0.5) !important;
+}
+
+body.is-tv .hero-icon-btn {
+  width: 4.5rem !important;
+  height: 4.5rem !important;
+  border-radius: 1.5rem !important;
+}
+
+body.is-tv .hero-icon-btn svg {
+  width: 1.8rem !important;
+  height: 1.8rem !important;
+}
+
+body.is-tv .hero-title {
+  font-size: 5.8rem !important;
+  line-height: 0.95 !important;
+}
+
+body.is-tv .hero-desc {
+  font-size: 1.35rem !important;
+  max-width: 750px !important;
+  line-height: 1.6 !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+body.is-tv .hero-badge {
+  font-size: 0.95rem !important;
+  padding: 0.4rem 1rem !important;
+  font-weight: 900 !important;
+}
+
+body.is-tv .hero-badge-meta {
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+}
+
+/* Movie Details Modal TV Scaling */
+body.is-tv .details-container h1 {
+  font-size: 4.8rem !important;
+  line-height: 0.95 !important;
 }
 
 /* TV Card Title & Metadata Typography */
 body.is-tv h2.row-title {
-  font-size: 2.4rem !important;
+  font-size: 2.5rem !important;
   font-weight: 900 !important;
-  margin-bottom: 1.25rem !important;
+  margin-bottom: 1.5rem !important;
   letter-spacing: -0.02em !important;
   color: #ffffff !important;
 }
@@ -366,15 +415,16 @@ body.is-tv h2.row-title {
 body.is-tv .movie-card-standard h3,
 body.is-tv .movie-card-cw h3,
 body.is-tv .movie-card-top10 h3 {
-  font-size: 1.2rem !important;
+  font-size: 1.25rem !important;
   font-weight: 800 !important;
-  margin-top: 0.5rem !important;
+  margin-top: 0.6rem !important;
 }
 
 body.is-tv .movie-card-standard span,
 body.is-tv .movie-card-cw span,
 body.is-tv .movie-card-top10 span {
-  font-size: 0.95rem !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
 }
 
 /* Image scaling inside focused cards for premium organic look */

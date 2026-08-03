@@ -230,19 +230,19 @@ export function Hero() {
               className="w-full"
             >
               <div className="flex items-center gap-2.5 mb-6">
-                <span className="px-2.5 py-0.5 bg-accent/15 border border-accent/30 rounded-full text-[9px] font-black tracking-[0.2em] uppercase text-white">Trending</span>
+                <span className="hero-badge px-2.5 py-0.5 bg-accent/15 border border-accent/30 rounded-full text-[9px] font-black tracking-[0.2em] uppercase text-white">Trending</span>
                 <div className="flex items-center gap-1 px-2.5 py-0.5 bg-black/40 backdrop-blur-xl border border-white/5 rounded-full">
                   <span className="text-accent text-[10px] font-black uppercase">Match</span>
                   <span className="text-white text-[10px] font-black">{heroMovie.match}</span>
                 </div>
-                <span className="text-white/50 text-[11px] font-bold tracking-wider">{heroMovie.year} • {heroMovie.duration} • {heroMovie.rating || '18+'}</span>
+                <span className="hero-badge-meta text-white/50 text-[11px] font-bold tracking-wider">{heroMovie.year} • {heroMovie.duration} • {heroMovie.rating || '18+'}</span>
               </div>
 
-              <h1 className="display-text text-[5rem] lg:text-[6rem] font-black tracking-tighter mb-5 leading-[0.9] text-white filter drop-shadow-xl uppercase italic">
+              <h1 className="hero-title display-text text-[5rem] lg:text-[6rem] font-black tracking-tighter mb-5 leading-[0.9] text-white filter drop-shadow-xl uppercase italic">
                 {heroMovie.title}
               </h1>
 
-              <p className="max-w-xl text-base text-white/60 mb-8 font-medium leading-relaxed drop-shadow-md line-clamp-3">
+              <p className="hero-desc max-w-xl text-base text-white/60 mb-8 font-medium leading-relaxed drop-shadow-md line-clamp-3">
                 {heroMovie.description}
               </p>
 
@@ -253,14 +253,14 @@ export function Hero() {
                     setActiveMediaType(heroMovie.type);
                     setCurrentView('player');
                   }}
-                  className="flex items-center gap-3 bg-accent text-white px-9 py-4 rounded-2xl font-black text-base hover:bg-accent-hover hover:scale-105 transition-all duration-300 active:scale-95 cursor-pointer tv-focusable"
+                  className="hero-play-btn flex items-center gap-3 bg-accent text-white px-9 py-4 rounded-2xl font-black text-base hover:bg-accent-hover hover:scale-105 transition-all duration-300 active:scale-95 cursor-pointer tv-focusable"
                 >
                   <Play fill="currentColor" size={20} />
                   PLAY NOW
                 </button>
                 <button
                   onClick={toggleWatchlist}
-                  className="w-12 h-12 bg-glass-bg border border-glass-border flex items-center justify-center rounded-2xl hover:bg-glass-hover hover:border-white/15 transition-all text-white cursor-pointer tv-focusable"
+                  className="hero-icon-btn w-12 h-12 bg-glass-bg border border-glass-border flex items-center justify-center rounded-2xl hover:bg-glass-hover hover:border-white/15 transition-all text-white cursor-pointer tv-focusable"
                 >
                   {inWatchlist ? <Check size={18} /> : <Plus size={18} />}
                 </button>
@@ -270,7 +270,7 @@ export function Hero() {
                     setActiveMediaType(heroMovie.type);
                     setCurrentView('details');
                   }}
-                  className="w-12 h-12 bg-glass-bg border border-glass-border flex items-center justify-center rounded-2xl hover:bg-glass-hover hover:border-white/15 transition-all text-white/70 hover:text-white cursor-pointer tv-focusable"
+                  className="hero-icon-btn w-12 h-12 bg-glass-bg border border-glass-border flex items-center justify-center rounded-2xl hover:bg-glass-hover hover:border-white/15 transition-all text-white/70 hover:text-white cursor-pointer tv-focusable"
                 >
                   <Info size={18} />
                 </button>
