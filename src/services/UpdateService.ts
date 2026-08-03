@@ -77,27 +77,33 @@ class UpdateServiceClass {
         
         let zipUrl = '';
         try {
-            this.emit({ phase: 'downloading', progress: 0 });
+            this.emit({ phase: 'downloading', progress: 20 });
             
-            // 1. Download via Capgo's native C++/Swift engine
-            zipUrl = `${UPDATE_SERVER_URL}/update-${this.targetVersion}.zip`;
-            const uniqueVersionId = this.targetVersion;
-            
-            CapacitorUpdater.addListener('download', (info: any) => {
-                this.emit({ phase: 'downloading', progress: info.percent });
-            });
+            if (Capacitor.isNativePlatform()) {
+                zipUrl = `${UPDATE_SERVER_URL}/update-${this.targetVersion}.zip`;
+                const uniqueVersionId = this.targetVersion;
+                
+                CapacitorUpdater.addListener('download', (info: any) => {
+                    this.emit({ phase: 'downloading', progress: info.percent });
+                });
 
-            const bundle = await CapacitorUpdater.download({
-                url: zipUrl,
-                version: uniqueVersionId,
-            });
-            
-            this.downloadedBundle = bundle;
-
-            // 2. Ready for swap
-            this.emit({ phase: 'ready', progress: 100 });
-            return true;
-
+                const bundle = await CapacitorUpdater.download({
+                    url: zipUrl,
+                    version: uniqueVersionId,
+                });
+                
+                this.downloadedBundle = bundle;
+                this.emit({ phase: 'ready', progress: 100 });
+                return true;
+            } else {
+                // Mobile Web or Browser: Trigger APK download or reload
+                this.emit({ phase: 'downloading', progress: 70 });
+                setTimeout(() => {
+                    window.open('https://github.com/Mannyyy-15/ApexWatch/raw/main/ApexWatch.apk', '_blank');
+                    this.emit({ phase: 'ready', progress: 100 });
+                }, 500);
+                return true;
+            }
         } catch (error: any) {
             console.error('Update Install Error:', error);
             const errMsg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));

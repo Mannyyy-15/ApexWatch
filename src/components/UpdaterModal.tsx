@@ -19,10 +19,8 @@ export function UpdaterModal() {
             }
         });
 
-        // Trigger a background silent check on mount if native platform
-        if (Capacitor.isNativePlatform()) {
-            UpdateService.checkForUpdate(true); // Silent check
-        }
+        // Trigger a background silent check on mount for all devices
+        UpdateService.checkForUpdate(true); // Silent check
     }, []);
 
     // Auto-focus first button on TV remote D-Pad when update modal appears
