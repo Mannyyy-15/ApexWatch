@@ -150,43 +150,51 @@ export function NavigationIsland() {
  return (<>
  {/* TV Sidebar - Only shows when .is-tv class is on body */}
  <div className="tv-sidebar group/sidebar">
- <div 
- onClick={() => setCurrentView('home')} 
- onKeyDown={(e) => {
- if (e.key === 'Enter') setCurrentView('home');
- }}
- tabIndex={0}
- role="button"
- className="flex items-center gap-4 mb-12 px-3 py-2 outline-none group rounded-2xl tv-focusable"
- >
- <div className="w-12 h-12 rounded-2xl overflow-hidden group-focus:scale-110 group-hover:scale-110 transition-all duration-500 flex-shrink-0">
- <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
- </div>
- <span className="font-black text-2xl tracking-tighter uppercase italic nav-label">
- Apex<span className="text-red-600">Watch</span>
- </span>
- </div>
+    <div 
+      onClick={() => setCurrentView('home')} 
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') setCurrentView('home');
+      }}
+      tabIndex={0}
+      role="button"
+      className="flex items-center h-14 mb-8 outline-none rounded-2xl tv-focusable overflow-hidden cursor-pointer"
+    >
+      <div className="w-[70px] h-full flex items-center justify-center flex-shrink-0">
+        <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 border border-white/20">
+          <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
+        </div>
+      </div>
+      <span className="font-black text-xl tracking-tighter uppercase italic nav-label pr-4 whitespace-nowrap">
+        Apex<span className="text-red-600">Watch</span>
+      </span>
+    </div>
 
- <div className="flex flex-col gap-2">
- <NavItem icon={<Home size={32}/>} label={<span className="nav-label ml-4 text-lg">Home</span>} active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
- <NavItem icon={<Film size={32}/>} label={<span className="nav-label ml-4 text-lg">Movies</span>} active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
- <NavItem icon={<Tv size={32}/>} label={<span className="nav-label ml-4 text-lg">TV Shows</span>} active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
- <NavItem icon={<Sparkles size={32}/>} label={<span className="nav-label ml-4 text-lg">Anime</span>} active={currentView === 'anime'} onClick={() => setCurrentView('anime')}/>
- <NavItem icon={<Search size={32}/>} label={<span className="nav-label ml-4 text-lg">Search</span>} active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
- </div>
+    <div className="flex flex-col gap-3">
+      <TVNavItem icon={<Home size={28}/>} label="Home" active={currentView === 'home'} onClick={() => setCurrentView('home')}/>
+      <TVNavItem icon={<Film size={28}/>} label="Movies" active={currentView === 'movies'} onClick={() => setCurrentView('movies')}/>
+      <TVNavItem icon={<Tv size={28}/>} label="TV Shows" active={currentView === 'tv'} onClick={() => setCurrentView('tv')}/>
+      <TVNavItem icon={<Sparkles size={28}/>} label="Anime" active={currentView === 'anime'} onClick={() => setCurrentView('anime')}/>
+      <TVNavItem icon={<Search size={28}/>} label="Search" active={currentView === 'discover'} onClick={() => setCurrentView('discover')}/>
+    </div>
 
- <div className="mt-auto flex flex-col gap-2">
- {user && (
- <NavItem 
- icon={<div className="w-12 h-12 rounded-full overflow-hidden border border-white/20 flex-shrink-0"><img src={avatarUrl} alt="" className="w-full h-full object-cover"/></div>} 
- label={<span className="nav-label ml-4 text-lg">{activeProfile?.name || "Profile"}</span>} 
- active={currentView === 'profiles'} 
- onClick={() => setCurrentView('profiles')}
- />
- )}
- {updateAvailable && <NavItem icon={<Download size={32} className={`text-accent ${isUpdating ? 'animate-bounce' : ''}`} />} label={<span className="nav-label ml-4 text-lg text-red-500 font-bold italic">{isUpdating ? "Downloading Update..." : "Update App"}</span>} onClick={handleDownloadApp}/>}
- <NavItem icon={<LogOut size={32} className="ml-1"/>} label={<span className="nav-label ml-4 text-lg">Sign Out</span>} onClick={() => setShowSignOutConfirm(true)}/>
- </div>
+    <div className="mt-auto flex flex-col gap-3">
+      {user && (
+        <TVNavItem 
+          icon={<div className="w-9 h-9 rounded-full overflow-hidden border border-white/20 flex-shrink-0"><img src={avatarUrl} alt="" className="w-full h-full object-cover"/></div>} 
+          label={activeProfile?.name || "Profile"} 
+          active={currentView === 'profiles'} 
+          onClick={() => setCurrentView('profiles')}
+        />
+      )}
+      {updateAvailable && (
+        <TVNavItem 
+          icon={<Download size={28} className={`text-red-500 ${isUpdating ? 'animate-bounce' : ''}`} />} 
+          label={isUpdating ? "Updating..." : "Update App"} 
+          onClick={handleDownloadApp}
+        />
+      )}
+      <TVNavItem icon={<LogOut size={28} />} label="Sign Out" onClick={() => setShowSignOutConfirm(true)}/>
+    </div>
  </div>
 
  {/* Desktop Sidebar (Hotstar Style) */}
@@ -484,6 +492,27 @@ function SidebarNavItem({ icon, label, active = false, onClick }) {
             {label}
           </span>
         </div>
+      </div>
+    </button>
+  );
+}
+
+function TVNavItem({ icon, label, active = false, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      tabIndex={0}
+      className={`flex items-center h-14 w-full rounded-2xl transition-all duration-300 cursor-pointer tv-focusable overflow-hidden ${
+        active 
+          ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(229,9,20,0.6)]' 
+          : 'text-white/60 hover:text-white hover:bg-white/10'
+      }`}
+    >
+      <div className="w-[70px] h-full flex items-center justify-center flex-shrink-0">
+        {icon}
+      </div>
+      <div className="nav-label text-base font-bold tracking-wide uppercase whitespace-nowrap pr-4">
+        {label}
       </div>
     </button>
   );
