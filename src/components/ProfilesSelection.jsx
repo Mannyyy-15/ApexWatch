@@ -3,20 +3,29 @@ import { useAppContext } from '../context/AppContext';
 import { Plus } from 'lucide-react';
 import { firestoreService } from '../utils/firestore';
 import { AvatarBuilderModal } from './AvatarBuilderModal';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export function ProfilesSelection() {
  const { profiles, setActiveProfile, setCurrentView, user } = useAppContext();
  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
 
+ useEffect(() => {
+    const timer = setTimeout(() => {
+      const firstFocusable = document.querySelector('.profiles-container .tv-focusable');
+      if (firstFocusable) firstFocusable.focus();
+    }, 200);
+    return () => clearTimeout(timer);
+  }, []);
+
  const handleSelectProfile = (profile) => {
- setActiveProfile(profile);
- if (profile.hasOnboarded) {
- setCurrentView('home');
- } else {
- setCurrentView('onboarding');
- }
- };
+    sessionStorage.setItem('apexwatch_tv_profile_selected', 'true');
+    setActiveProfile(profile);
+    if (profile.hasOnboarded) {
+      setCurrentView('home');
+    } else {
+      setCurrentView('onboarding');
+    }
+  };
 
  const handleAddProfileClick = () => {
  if (!user) return;

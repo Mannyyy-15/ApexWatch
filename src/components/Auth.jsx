@@ -28,6 +28,14 @@ export function Auth() {
  loadBackground();
  }, []);
 
+ useEffect(() => {
+ const timer = setTimeout(() => {
+ const firstFocusable = document.querySelector('.auth-container .tv-focusable');
+ if (firstFocusable) firstFocusable.focus();
+ }, 200);
+ return () => clearTimeout(timer);
+ }, []);
+
  const handleSubmit = async (e) => {
  e.preventDefault();
  setError('');
@@ -41,7 +49,7 @@ export function Auth() {
  await signUp(email, password, name);
  }
  setSuccess('Successfully logged in!');
- setTimeout(() => setCurrentView('home'), 1500);
+ setTimeout(() => setCurrentView('profiles'), 1200);
  } catch (err) {
  console.error('Auth error:', err);
  setError(err.message.includes('auth/user-not-found') ? 'No account found.' : 
@@ -59,7 +67,7 @@ export function Auth() {
  try {
  await loginWithGoogle();
  setSuccess('Successfully logged in!');
- setTimeout(() => setCurrentView('home'), 1500);
+ setTimeout(() => setCurrentView('profiles'), 1200);
  } catch (err) {
  console.error('Google Auth error:', err);
  setError('Google login failed.');

@@ -52,6 +52,7 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
  src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster}
  alt={movie.title}
  loading="lazy"
+ decoding="async"
  className="w-full h-full object-cover transition-transform duration-700 ease-[0.16,1,0.3,1] group-hover:scale-105"
  />
 

@@ -217,18 +217,21 @@ export function AppProvider({ children }) {
  onSnapshot(q, (snapshot) => {
  const profs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
  setProfiles(profs);
- 
- // Persistent Profile Logic
- const savedProfileId = localStorage.getItem(`apexwatch_profile_${currentUser.uid}`);
- const savedProfile = profs.find(p => p.id === savedProfileId);
+  // Persistent Profile Logic
+  const savedProfileId = localStorage.getItem(`apexwatch_profile_${currentUser.uid}`);
+  const savedProfile = profs.find(p => p.id === savedProfileId);
+  const hasSelectedInSession = sessionStorage.getItem('apexwatch_tv_profile_selected');
 
- if (savedProfile && !activeProfile) {
- setActiveProfile(savedProfile);
- localStorage.setItem('apexwatch_cached_profile', JSON.stringify(savedProfile));
- if (currentView === 'profiles') setCurrentView('home');
- } else if (!activeProfile && profs.length > 0 && currentView !== 'onboarding') {
- setCurrentView('profiles');
- }
+  if (savedProfile && !activeProfile) {
+    setActiveProfile(savedProfile);
+    localStorage.setItem('apexwatch_cached_profile', JSON.stringify(savedProfile));
+  }
+
+  if (profs.length > 0 && currentView !== 'onboarding') {
+    if (!hasSelectedInSession || !activeProfile) {
+      setCurrentView('profiles');
+    }
+  }
  });
  }
  } else {
