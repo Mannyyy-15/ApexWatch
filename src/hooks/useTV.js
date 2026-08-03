@@ -148,9 +148,9 @@ export function useTV() {
         const nextEl = candidates[0].el;
         nextEl.focus();
 
-        // Scroll the newly focused element smoothly into the center of the 50-60" screen
+        // Scroll the newly focused element into view instantly on TV to avoid animation lag
         nextEl.scrollIntoView({
-          behavior: 'smooth',
+          behavior: document.body.classList.contains('is-tv') ? 'auto' : 'smooth',
           block: 'center',
           inline: 'center'
         });

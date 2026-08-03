@@ -54,9 +54,26 @@ export function VideoPlayer() {
  const [showControls, setShowControls] = useState(true);
  const controlsTimeoutRef = useRef(null);
 
- // Auto-fallback state
- const [autoSwitched, setAutoSwitched] = useState(false);
- const [showFallbackToast, setShowFallbackToast] = useState(false);
+  // Auto-fallback state
+  const [autoSwitched, setAutoSwitched] = useState(false);
+  const [showFallbackToast, setShowFallbackToast] = useState(false);
+
+  // Backgrounding & Memory Release Handler for TV / Mobile
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // App went to background (TV input switch or app minimized) -> pause audio/video playback
+        const iframe = document.querySelector('.video-player-container iframe');
+        if (iframe) {
+          try {
+            iframe.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+          } catch(e) {}
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
  // Watch Party Iframe Ref
  const iframeRef = useRef(null);
