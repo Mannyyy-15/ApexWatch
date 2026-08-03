@@ -77,7 +77,9 @@ export function useTV() {
         });
         if (visible.length > 0) {
           visible[0].focus();
-          visible[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+          if (!containerSelector.includes('updater-modal')) {
+            visible[0].scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+          }
         }
         return;
       }

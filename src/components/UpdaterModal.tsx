@@ -12,7 +12,7 @@ export function UpdaterModal() {
     useEffect(() => {
         UpdateService.setProgressListener((state) => {
             setProgressState(state);
-            if (state.phase === 'update_available' || state.phase === 'downloading' || state.phase === 'extracting' || state.phase === 'ready' || state.phase === 'error' || state.phase === 'checking') {
+            if (state.phase === 'update_available' || state.phase === 'downloading' || state.phase === 'extracting' || state.phase === 'ready' || state.phase === 'error') {
                 setIsVisible(true);
             } else {
                 setIsVisible(false);
@@ -28,13 +28,21 @@ export function UpdaterModal() {
     // Auto-focus first button on TV remote D-Pad when update modal appears
     useEffect(() => {
         if (isVisible) {
-            const timer = setTimeout(() => {
-                const firstFocusable = document.querySelector('.updater-modal-container .tv-focusable') as HTMLElement;
-                if (firstFocusable) {
-                    firstFocusable.focus();
+            const focusModalButton = () => {
+                const focusable = document.querySelectorAll('.updater-modal-container .tv-focusable');
+                if (focusable.length > 0) {
+                    (focusable[0] as HTMLElement).focus();
                 }
-            }, 150);
-            return () => clearTimeout(timer);
+            };
+            focusModalButton();
+            const t1 = setTimeout(focusModalButton, 50);
+            const t2 = setTimeout(focusModalButton, 200);
+            const t3 = setTimeout(focusModalButton, 500);
+            return () => {
+                clearTimeout(t1);
+                clearTimeout(t2);
+                clearTimeout(t3);
+            };
         }
     }, [isVisible, progressState.phase]);
 
@@ -54,17 +62,16 @@ export function UpdaterModal() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-                        onClick={() => progressState.phase === 'ready' || progressState.phase === 'error' || progressState.phase === 'update_available' ? setIsVisible(false) : null}
+                        className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+                        onClick={() => setIsVisible(false)}
                     />
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl flex flex-col items-center text-center"
+                        className="relative z-10 w-full max-w-sm bg-[#0d0d0d] border border-white/15 p-6 md:p-8 rounded-3xl shadow-2xl flex flex-col items-center text-center"
                     >
                         <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
-                            {progressState.phase === 'checking' && <RefreshCw className="text-white/50 animate-spin" size={28} />}
                             {progressState.phase === 'update_available' && <DownloadCloud className="text-accent animate-bounce" size={28} />}
                             {progressState.phase === 'downloading' && <DownloadCloud className="text-accent animate-pulse" size={28} />}
                             {progressState.phase === 'extracting' && <RefreshCw className="text-blue-500 animate-spin" size={28} />}
@@ -73,7 +80,6 @@ export function UpdaterModal() {
                         </div>
 
                         <h3 className="text-xl font-black text-white uppercase tracking-wider italic mb-2">
-                            {progressState.phase === 'checking' && 'Checking Update'}
                             {progressState.phase === 'update_available' && `Update ${UpdateService.getTargetVersion() || ''} Available`}
                             {progressState.phase === 'downloading' && 'Downloading'}
                             {progressState.phase === 'extracting' && 'Extracting Assets'}
@@ -82,7 +88,6 @@ export function UpdaterModal() {
                         </h3>
                         
                         <p className="text-white/40 text-xs mb-8">
-                            {progressState.phase === 'checking' && 'Looking for the latest version...'}
                             {progressState.phase === 'update_available' && 'A new version is ready to be installed over the air.'}
                             {progressState.phase === 'downloading' && 'Fetching the latest improvements over the air.'}
                             {progressState.phase === 'extracting' && 'Installing the new bundle directly to your device.'}
@@ -107,11 +112,12 @@ export function UpdaterModal() {
                         )}
 
                         <div className="w-full space-y-3">
-                            {(progressState.phase === 'checking' || progressState.phase === 'update_available') && (
+                            {progressState.phase === 'update_available' && (
                                 <button 
                                     onClick={handleInstall}
                                     tabIndex={0}
-                                    className="w-full py-3.5 bg-accent text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(229,9,20,0.3)] cursor-pointer tv-focusable"
+                                    autoFocus
+                                    className="w-full py-4 bg-accent text-white rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_25px_rgba(229,9,20,0.5)] cursor-pointer tv-focusable"
                                 >
                                     Install Now
                                 </button>
@@ -121,29 +127,20 @@ export function UpdaterModal() {
                                 <button 
                                     onClick={handleRestart}
                                     tabIndex={0}
-                                    className="w-full py-3.5 bg-green-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] cursor-pointer tv-focusable"
+                                    autoFocus
+                                    className="w-full py-4 bg-green-500 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_25px_rgba(34,197,94,0.5)] cursor-pointer tv-focusable"
                                 >
                                     Restart App to Apply
                                 </button>
                             )}
 
-                            {progressState.phase === 'error' && (
+                            {(progressState.phase === 'error' || progressState.phase === 'update_available') && (
                                 <button 
                                     onClick={() => setIsVisible(false)}
                                     tabIndex={0}
-                                    className="w-full py-3.5 bg-white/10 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all cursor-pointer tv-focusable"
+                                    className="w-full py-3.5 bg-white/10 text-white/70 hover:text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all cursor-pointer tv-focusable"
                                 >
-                                    Dismiss
-                                </button>
-                            )}
-
-                            {(progressState.phase === 'checking' || progressState.phase === 'update_available') && (
-                                <button 
-                                    onClick={() => setIsVisible(false)}
-                                    tabIndex={0}
-                                    className="w-full py-3.5 bg-transparent text-white/40 rounded-xl font-black text-[10px] uppercase tracking-widest hover:text-white transition-all cursor-pointer tv-focusable"
-                                >
-                                    Remind Me Later
+                                    Dismiss / Remind Me Later
                                 </button>
                             )}
                         </div>
