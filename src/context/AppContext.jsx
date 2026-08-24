@@ -220,15 +220,15 @@ export function AppProvider({ children }) {
   // Persistent Profile Logic
   const savedProfileId = localStorage.getItem(`apexwatch_profile_${currentUser.uid}`);
   const savedProfile = profs.find(p => p.id === savedProfileId);
-  const hasSelectedInSession = sessionStorage.getItem('apexwatch_tv_profile_selected');
+  const hasChosenProfileThisSession = sessionStorage.getItem('apexwatch_profile_chosen_session');
 
   if (savedProfile && !activeProfile) {
     setActiveProfile(savedProfile);
     localStorage.setItem('apexwatch_cached_profile', JSON.stringify(savedProfile));
   }
 
-  if (profs.length > 0 && currentView !== 'onboarding') {
-    if (!hasSelectedInSession || !activeProfile) {
+  if (profs.length > 0 && currentView !== 'onboarding' && currentView !== 'auth') {
+    if (!hasChosenProfileThisSession) {
       setCurrentView('profiles');
     }
   }

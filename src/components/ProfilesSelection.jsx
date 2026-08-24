@@ -18,6 +18,7 @@ export function ProfilesSelection() {
   }, []);
 
  const handleSelectProfile = (profile) => {
+    sessionStorage.setItem('apexwatch_profile_chosen_session', 'true');
     sessionStorage.setItem('apexwatch_tv_profile_selected', 'true');
     setActiveProfile(profile);
     if (profile.hasOnboarded) {

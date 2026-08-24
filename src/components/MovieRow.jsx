@@ -4,143 +4,143 @@ import { ChevronLeft, ChevronRight, Plus, Check, MoreVertical, Trash2 } from 'lu
 import { useAppContext } from '../context/AppContext';
 
 const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progress, onMovieClick, onRemoveFromContinueWatching }) => {
- const { watchlist, toggleWatchlist } = useAppContext();
- const isInWatchlist = watchlist.some(item => item.contentId === movie.id);
- const [showMenu, setShowMenu] = useState(false);
- const rank = index + 1;
+  const { watchlist, toggleWatchlist } = useAppContext();
+  const isInWatchlist = watchlist.some(item => item.contentId === movie.id);
+  const [showMenu, setShowMenu] = useState(false);
+  const rank = index + 1;
 
- return (
- <div
- className={`flex-shrink-0 snap-start cursor-pointer transition-all duration-500 group tv-focusable
- ${isTop10
- ? 'movie-card-top10 w-[calc((100vw-48px-24px)/2.4)] md:w-[calc((100vw-160px-100px)/5)] pl-8 md:pl-10'
- : isContinueWatching 
- ? 'movie-card-cw w-[calc((100vw-48px-12px)/1.5)] md:w-[calc((100vw-160px-40px)/3)]' 
- : 'movie-card-standard w-[calc((100vw-48px-24px)/3)] md:w-[calc((100vw-160px-100px)/6)]'
- }`}
- style={isTop10 ? { position: 'relative' } : {}}
- onClick={(e) => {
- if (e.target.closest('.watchlist-btn')) return;
- onMovieClick(movie.id, movie.type);
- }}
- onKeyDown={(e) => {
- if (e.key === 'Enter') onMovieClick(movie.id, movie.type);
- }}
- tabIndex={0}
- role="button"
- aria-label={`#${rank} ${movie.title}`}
- >
- {/* Top 10 Massive Number */}
- {isTop10 && (
- <div 
- className="absolute left-0 md:left-1 bottom-[35px] md:bottom-[45px] z-20 pointer-events-none select-none text-[100px] md:text-[140px] leading-[0.75] tracking-tighter"
- style={{ 
- color: '#0a0a0a',
- WebkitTextStroke: '3px white', 
- textShadow: '4px 4px 0px #E50914, 0px 10px 20px rgba(0,0,0,0.8)',
- fontFamily: "'Inter', sans-serif",
- fontWeight: 900,
- }}
- >
- {index + 1}
- </div>
- )}
+  return (
+    <div
+      className={`flex-shrink-0 snap-start cursor-pointer transition-all duration-300 group tv-focusable active:scale-[0.98]
+      ${isTop10
+        ? 'movie-card-top10 w-[calc((100vw-36px)/1.9)] sm:w-[calc((100vw-48px)/2.8)] md:w-[calc((100vw-160px-100px)/5)] min-w-[155px] sm:min-w-[190px] md:min-w-[210px] pl-8 sm:pl-10 md:pl-12'
+        : isContinueWatching 
+        ? 'movie-card-cw w-[calc((100vw-36px)/1.35)] sm:w-[calc((100vw-48px)/2.2)] md:w-[calc((100vw-160px-40px)/3)] min-w-[220px] sm:min-w-[280px] md:min-w-[320px]' 
+        : 'movie-card-standard w-[calc((100vw-36px)/2.4)] sm:w-[calc((100vw-48px)/3.5)] md:w-[calc((100vw-160px-100px)/6)] min-w-[130px] sm:min-w-[160px] md:min-w-[180px]'
+      }`}
+      style={isTop10 ? { position: 'relative' } : {}}
+      onClick={(e) => {
+        if (e.target.closest('.watchlist-btn')) return;
+        onMovieClick(movie.id, movie.type);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') onMovieClick(movie.id, movie.type);
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label={`#${rank} ${movie.title}`}
+    >
+      {/* Top 10 Massive Number */}
+      {isTop10 && (
+        <div 
+          className="absolute left-0 md:left-1 bottom-[32px] sm:bottom-[40px] md:bottom-[45px] z-20 pointer-events-none select-none text-[85px] sm:text-[110px] md:text-[140px] leading-[0.75] tracking-tighter"
+          style={{ 
+            color: '#0a0a0a',
+            WebkitTextStroke: '2.5px white', 
+            textShadow: '3px 3px 0px #E50914, 0px 10px 20px rgba(0,0,0,0.8)',
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 900,
+          }}
+        >
+          {index + 1}
+        </div>
+      )}
 
- {/* Thumbnail Container */}
- <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded md:rounded-md overflow-hidden mb-2 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-500 group-hover:border-accent/40 `}>
- <img
- src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster}
- alt={movie.title}
- loading="lazy"
- decoding="async"
- className="w-full h-full object-cover transition-transform duration-700 ease-[0.16,1,0.3,1] group-hover:scale-105"
- />
+      {/* Thumbnail Container */}
+      <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded-xl md:rounded-2xl overflow-hidden mb-2.5 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-300 group-hover:border-accent/50 `}>
+        <img
+          src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster}
+          alt={movie.title}
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+        />
 
- <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300"></div>
 
- {isContinueWatching && (
- <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20 z-10">
- <div className="h-full bg-accent transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, movie.progress || progress || 0))}%` }}></div>
- </div>
- )}
+        {isContinueWatching && (
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20 z-10">
+            <div className="h-full bg-accent transition-all duration-300" style={{ width: `${Math.max(0, Math.min(100, movie.progress || progress || 0))}%` }}></div>
+          </div>
+        )}
 
- {!isContinueWatching && (
- <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-2">
- <span className="px-1.5 py-0.5 bg-[#0a0a0a]/80 backdrop-blur-md text-white/95 text-[8px] md:text-[9px] font-black rounded border border-white/5 shadow-lg uppercase tracking-tighter">
- {movie.rating}
- </span>
- </div>
- )}
+        {!isContinueWatching && movie.rating && (
+          <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-2">
+            <span className="px-2 py-0.5 bg-[#0a0a0a]/85 backdrop-blur-md text-white font-black text-[9px] sm:text-[10px] md:text-xs rounded-md border border-white/10 shadow-lg uppercase tracking-wider">
+              ⭐ {movie.rating}
+            </span>
+          </div>
+        )}
 
- {isContinueWatching ? (
- <div className="absolute top-2 right-2 md:top-3 md:right-3 z-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" onMouseLeave={() => setShowMenu(false)}>
- <button
- onClick={(e) => {
- e.stopPropagation();
- setShowMenu(!showMenu);
- }}
- className="w-7 h-7 md:w-8 md:h-8 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 cursor-pointer"
- >
- <MoreVertical size={16} />
- </button>
- 
- <AnimatePresence>
- {showMenu && (
- <motion.div 
- initial={{ opacity: 0, y: -10, scale: 0.95 }}
- animate={{ opacity: 1, y: 0, scale: 1 }}
- exit={{ opacity: 0, y: -10, scale: 0.95 }}
- transition={{ duration: 0.2 }}
- className="absolute top-full right-0 mt-2 w-56 bg-[#111] border border-white/10 rounded-xl overflow-hidden py-1 z-50 origin-top-right"
- >
- <button
- onClick={(e) => {
- e.stopPropagation();
- setShowMenu(false);
- if (onRemoveFromContinueWatching) {
- onRemoveFromContinueWatching(movie.id);
- }
- }}
- className="w-full px-4 py-3 flex items-center gap-3 text-sm text-red-500 font-semibold hover:bg-red-500/10 transition-colors text-left"
- >
- <Trash2 size={16} />
- <span>Remove from history</span>
- </button>
- </motion.div>
- )}
- </AnimatePresence>
- </div>
- ) : (
- <button 
- onClick={(e) => {
- e.stopPropagation();
- toggleWatchlist(movie);
- }}
- className="watchlist-btn absolute top-2 right-2 md:top-3 md:right-3 w-7 h-7 md:w-8 md:h-8 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-accent hover:border-accent hover:scale-105 active:scale-95 z-30 cursor-pointer"
- aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
- >
- {isInWatchlist ? <Check size={14} className="md:w-4 md:h-4" /> : <Plus size={14} className="md:w-4 md:h-4" />}
- </button>
- )}
- </div>
+        {isContinueWatching ? (
+          <div className="absolute top-2 right-2 md:top-3 md:right-3 z-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" onMouseLeave={() => setShowMenu(false)}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(!showMenu);
+              }}
+              className="w-7 h-7 md:w-8 md:h-8 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 cursor-pointer"
+            >
+              <MoreVertical size={16} />
+            </button>
+            
+            <AnimatePresence>
+              {showMenu && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full right-0 mt-2 w-56 bg-[#111] border border-white/10 rounded-xl overflow-hidden py-1 z-50 origin-top-right"
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMenu(false);
+                      if (onRemoveFromContinueWatching) {
+                        onRemoveFromContinueWatching(movie.id);
+                      }
+                    }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-sm text-red-500 font-semibold hover:bg-red-500/10 transition-colors text-left"
+                  >
+                    <Trash2 size={16} />
+                    <span>Remove from history</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWatchlist(movie);
+            }}
+            className="watchlist-btn absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-9 md:h-9 bg-black/70 backdrop-blur-md border border-white/15 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-accent hover:border-accent hover:scale-105 active:scale-95 z-30 cursor-pointer shadow-xl"
+            aria-label={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+          >
+            {isInWatchlist ? <Check size={16} /> : <Plus size={16} />}
+          </button>
+        )}
+      </div>
 
- {/* Text Content */}
- <div className="px-0.5">
- <h3 className="text-[10px] md:text-sm font-bold text-white truncate mb-0.5 transition-colors duration-300 group-hover:text-accent">
- {movie.title}
- </h3>
- <div className="flex items-center gap-1.5 text-[8px] md:text-[10px] text-white/40 font-black uppercase tracking-wider">
- {isContinueWatching && movie.type === 'tv' && movie.season !== undefined ? (
- <span className="text-accent">S{movie.season} E{movie.episode}</span>
- ) : (
- <span>{movie.year}</span>
- )}
- <span className="w-0.5 h-0.5 bg-white/20 rounded-full"></span>
- <span>{movie.type === 'tv' ? 'TV' : 'Movie'}</span>
- </div>
- </div>
- </div>
- );
+      {/* Text Content */}
+      <div className="px-1">
+        <h3 className="text-xs sm:text-sm md:text-base font-bold text-white truncate mb-0.5 transition-colors duration-300 group-hover:text-accent">
+          {movie.title}
+        </h3>
+        <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] md:text-xs text-white/50 font-bold uppercase tracking-wider">
+          {isContinueWatching && movie.type === 'tv' && movie.season !== undefined ? (
+            <span className="text-accent font-black">S{movie.season} E{movie.episode}</span>
+          ) : (
+            <span>{movie.year}</span>
+          )}
+          <span className="w-1 h-1 bg-white/30 rounded-full"></span>
+          <span>{movie.type === 'tv' ? 'TV Show' : 'Movie'}</span>
+        </div>
+      </div>
+    </div>
+  );
 });
 
 export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", movies, isContinueWatching = false, isTop10 = false, continueWatchingItems, onMovieClick, onRemoveFromContinueWatching }) {
