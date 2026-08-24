@@ -25,6 +25,7 @@ const DevConsole = lazy(() => import('./components/DevConsole').then(m => ({ def
 const UpdaterModal = lazy(() => import('./components/UpdaterModal').then(m => ({ default: m.UpdaterModal })));
 const CategoryExplore = lazy(() => import('./components/CategoryExplore').then(m => ({ default: m.CategoryExplore })));
 const Browse = lazy(() => import('./components/Browse').then(m => ({ default: m.Browse })));
+const TVReceiverOverlay = lazy(() => import('./components/TVReceiverOverlay').then(m => ({ default: m.TVReceiverOverlay })));
 
 const pageVariants = {
  initial: {
@@ -341,6 +342,7 @@ function MainLayout() {
  {currentView === 'profiles' && <ProfilesSelection key="profiles"/>}
  </AnimatePresence>
  <UpdaterModal />
+ <TVReceiverOverlay />
  </Suspense>
  </div>);
 }

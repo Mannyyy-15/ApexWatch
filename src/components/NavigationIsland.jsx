@@ -1,7 +1,8 @@
-import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked, Smartphone, Download, BarChart3, LayoutGrid } from 'lucide-react';
+import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked, Smartphone, Download, BarChart3, LayoutGrid, Cast } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { CastModal } from './CastModal';
 import { tmdb } from '../utils/tmdb';
 import pkg from '../../package.json';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
@@ -34,6 +35,7 @@ export function NavigationIsland() {
  const devHoldTimeoutRef = useRef(null);
  const [deferredPrompt, setDeferredPrompt] = useState(null);
  const [isUpdating, setIsUpdating] = useState(false);
+ const [showCastModal, setShowCastModal] = useState(false);
  const isNative = Capacitor.isNativePlatform();
 
  useEffect(() => {
@@ -202,7 +204,7 @@ export function NavigationIsland() {
   initial={{ x: -100, opacity: 0 }} 
   animate={{ x: 0, opacity: 1 }} 
   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
-  className="hidden md:flex flex-col fixed top-6 bottom-6 left-6 z-[60] w-[80px] bg-black/60 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 overflow-visible"
+  className="desktop-sidebar hidden md:flex flex-col fixed top-6 bottom-6 left-6 z-[60] w-[80px] bg-black/60 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-500 overflow-visible"
   >
   <div className="flex flex-col h-full py-8 items-start justify-center w-full relative">
  {/* Logo */}
@@ -259,6 +261,7 @@ export function NavigationIsland() {
  <MenuButton icon={<BookMarked size={16}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
  <MenuButton icon={<History size={16}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
  <MenuButton icon={<Download size={16}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
+ <MenuButton icon={<Cast size={16}/>} label="Cast to TV" onClick={() => { setShowCastModal(true); setShowProfileMenu(false); }} />
  <MenuButton icon={<Users size={16}/>} label="Switch Profile" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
  </div>
  <div className="mt-1 pt-1 border-t border-white/5">
@@ -272,6 +275,7 @@ export function NavigationIsland() {
 
  {/* Bottom Actions */}
  <div className="flex flex-col gap-2 w-full mb-6">
+ <SidebarNavItem icon={<Cast size={24} strokeWidth={2.5}/>} label="Cast to TV" onClick={() => setShowCastModal(true)}/>
  {!isNative && (
  <SidebarNavItem icon={<Smartphone size={24} strokeWidth={2.5}/>} label="Get App" onClick={handleDownloadApp}/>
  )}
@@ -447,6 +451,7 @@ export function NavigationIsland() {
  </div>
  )}
  </AnimatePresence>
+ <CastModal isOpen={showCastModal} onClose={() => setShowCastModal(false)} />
  </>);
 }
 

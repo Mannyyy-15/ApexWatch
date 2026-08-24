@@ -16,6 +16,7 @@ async function createZip() {
     function addDirToZip(dirPath, currentZip) {
         const files = fs.readdirSync(dirPath);
         for (const file of files) {
+            if (file.endsWith('.apk') || file.endsWith('.zip')) continue;
             const fullPath = path.join(dirPath, file);
             const stat = fs.statSync(fullPath);
             if (stat.isDirectory()) {

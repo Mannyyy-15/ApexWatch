@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Play, RotateCw, X, Server, Globe, Users, Subtitles, ListVideo } from 'lucide-react';
+import { ArrowLeft, Play, RotateCw, X, Server, Globe, Users, Subtitles, ListVideo, Cast } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { tmdb } from '../utils/tmdb';
 import { useTVBackHandler } from '../hooks/useTV';
 import { firestoreService } from '../utils/firestore';
+import { CastModal } from './CastModal';
+import { CastRemoteControl } from './CastRemoteControl';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar } from '@capacitor/status-bar';
@@ -29,6 +31,8 @@ export function VideoPlayer() {
  const [showResumeToast, setShowResumeToast] = useState(false);
  const [selectedServer, setSelectedServer] = useState('vidlink');
  const [showServerMenu, setShowServerMenu] = useState(false);
+ const [showCastModal, setShowCastModal] = useState(false);
+ const [activeCastSession, setActiveCastSession] = useState(null);
 
  // Watch Party & Custom Caption States
  const [localTime, setLocalTime] = useState(0);
@@ -564,6 +568,7 @@ export function VideoPlayer() {
                 src={embedUrl} 
                 className="w-full h-full border-none" 
                 allowFullScreen 
+                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-downloads allow-pointer-lock"
                 allow="autoplay; encrypted-media; picture-in-picture; fullscreen; accelerometer; gyroscope; clipboard-write"
                 referrerPolicy="origin"
                 title={movie.title}
@@ -613,14 +618,22 @@ export function VideoPlayer() {
  transition={{ duration: 0.2 }}
  className="absolute top-6 right-6 pointer-events-auto z-50 flex items-center gap-2.5"
  >
- <button
- onClick={(e) => { e.stopPropagation(); setShowServerMenu(true); }}
- tabIndex={0}
- className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer tv-focusable"
- title="Select Server"
- >
- <Server size={18} />
- </button>
+  <button
+    onClick={(e) => { e.stopPropagation(); setShowCastModal(true); }}
+    tabIndex={0}
+    className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-accent hover:border-accent transition-all shadow-xl cursor-pointer tv-focusable"
+    title="Cast to TV"
+  >
+    <Cast size={18} />
+  </button>
+  <button
+    onClick={(e) => { e.stopPropagation(); setShowServerMenu(true); }}
+    tabIndex={0}
+    className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer tv-focusable"
+    title="Select Server"
+  >
+    <Server size={18} />
+  </button>
   {movie?.type === 'tv' && (
     <button
       onClick={(e) => { e.stopPropagation(); setShowEpisodesMenu(true); }}
@@ -1081,6 +1094,45 @@ export function VideoPlayer() {
  </>
  )}
  </AnimatePresence>
+
+ {/* Cast to TV Modal */}
+ <CastModal
+   isOpen={showCastModal}
+   onClose={() => setShowCastModal(false)}
+   currentMedia={{
+     id: movie.id || movie.tmdbId,
+     tmdbId: movie.tmdbId || movie.id,
+     title: movie.title,
+     type: movie.type,
+     season: activeSeason || 1,
+     episode: activeEpisode || 1,
+     poster: movie.poster,
+     backdrop: movie.backdrop,
+     currentTime: localTime,
+     duration: duration,
+     server: selectedServer
+   }}
+   onCastStarted={(sessionInfo) => {
+     setActiveCastSession({
+       ...sessionInfo,
+       title: movie.title,
+       mediaType: movie.type,
+       season: activeSeason || 1,
+       episode: activeEpisode || 1,
+       currentTime: localTime,
+       duration: duration,
+       server: selectedServer
+     });
+   }}
+ />
+
+ {/* Active Cast Remote Control (Floating Controller) */}
+ {activeCastSession && (
+   <CastRemoteControl
+     castSession={activeCastSession}
+     onDisconnect={() => setActiveCastSession(null)}
+   />
+ )}
  </motion.div>
  );
 }

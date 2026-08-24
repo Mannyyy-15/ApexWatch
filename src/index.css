@@ -248,6 +248,10 @@ body.is-tv p { font-size: 1.25rem; }
   display: none !important;
 }
 
+body.is-tv .desktop-sidebar {
+  display: none !important;
+}
+
 body.is-tv .tv-sidebar {
   display: flex !important;
   position: fixed;
