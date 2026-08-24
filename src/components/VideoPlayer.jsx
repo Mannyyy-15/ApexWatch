@@ -97,15 +97,33 @@ export function VideoPlayer() {
  // Watch Party Iframe Ref
  const iframeRef = useRef(null);
 
- const resetControlsTimeout = useCallback(() => {
- setShowControls(true);
- if (controlsTimeoutRef.current) {
- clearTimeout(controlsTimeoutRef.current);
- }
- controlsTimeoutRef.current = setTimeout(() => {
- setShowControls(false);
- }, 4000);
- }, []);
+  const resetControlsTimeout = useCallback(() => {
+    setShowControls(true);
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
+    controlsTimeoutRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 4500);
+  }, []);
+
+  const toggleControls = useCallback((e) => {
+    if (e && e.target && e.target.closest('button, [role="button"], input, select, .pointer-events-auto')) {
+      return;
+    }
+    setShowControls(prev => {
+      if (prev) {
+        if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+        return false;
+      } else {
+        if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+        controlsTimeoutRef.current = setTimeout(() => {
+          setShowControls(false);
+        }, 4500);
+        return true;
+      }
+    });
+  }, []);
 
   useEffect(() => {
     resetControlsTimeout();
@@ -591,14 +609,12 @@ export function VideoPlayer() {
             </motion.div>
           )}
 
-
- {/* Invisible Trigger Area to show controls when hovering/tapping the top of the screen */}
- <div 
- className="absolute top-0 left-0 right-0 h-32 z-40"
- onMouseMove={resetControlsTimeout}
- onTouchStart={resetControlsTimeout}
- onClick={resetControlsTimeout}
- />
+          {/* Full Screen Invisible Trigger Area to toggle controls when clicking/tapping anywhere in the player */}
+          <div 
+            className="absolute inset-0 z-30 cursor-pointer"
+            onMouseMove={resetControlsTimeout}
+            onClick={toggleControls}
+          />
 
  {/* Top-Left Controls: Back */}
  <AnimatePresence>

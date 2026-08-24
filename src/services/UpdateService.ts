@@ -36,7 +36,9 @@ class UpdateServiceClass {
                 const currentBundle = await CapacitorUpdater.current();
                 if (currentBundle && currentBundle.bundle && currentBundle.bundle.id) {
                     const cleanId = currentBundle.bundle.id.replace(/^update-/, '');
-                    if (cleanId) currentVersion = cleanId;
+                    if (/^\d+\.\d+/.test(cleanId)) {
+                        currentVersion = cleanId;
+                    }
                 }
             } catch (e) {
                 console.warn('[UpdateService] Could not fetch current CapacitorUpdater bundle:', e);
@@ -54,6 +56,8 @@ class UpdateServiceClass {
             const data = await res.json();
             const currentVersion = await this.getCurrentAppVersion();
             
+            console.log(`[UpdateService] Current: ${currentVersion}, Latest Remote: ${data.latestVersion}`);
+
             if (this.isNewerVersion(currentVersion, data.latestVersion)) {
                 this.targetVersion = data.latestVersion;
                 this.emit({ phase: 'update_available', progress: 0 });
@@ -150,11 +154,15 @@ class UpdateServiceClass {
     }
 
     private isNewerVersion(oldVer: string, newVer: string): boolean {
-        const oldParts = oldVer.split('.').map(Number);
-        const newParts = newVer.split('.').map(Number);
-        for (let i = 0; i < 3; i++) {
-            if (newParts[i] > oldParts[i]) return true;
-            if (newParts[i] < oldParts[i]) return false;
+        if (!newVer) return false;
+        if (!oldVer || !/^\d+\.\d+/.test(oldVer)) oldVer = pkg.version;
+        const oldParts = oldVer.split('.').map(n => parseInt(n) || 0);
+        const newParts = newVer.split('.').map(n => parseInt(n) || 0);
+        for (let i = 0; i < Math.max(oldParts.length, newParts.length); i++) {
+            const o = oldParts[i] || 0;
+            const n = newParts[i] || 0;
+            if (n > o) return true;
+            if (n < o) return false;
         }
         return false;
     }
