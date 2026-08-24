@@ -609,34 +609,48 @@ export function VideoPlayer() {
             </motion.div>
           )}
 
-          {/* Full Screen Invisible Trigger Area to toggle controls when clicking/tapping anywhere in the player */}
+          {/* Top Hover & Tap Area (Non-blocking: middle of screen is 100% click-through for player play/pause) */}
           <div 
-            className="absolute inset-0 z-30 cursor-pointer"
+            className="absolute top-0 left-0 right-0 h-24 z-30 pointer-events-none"
             onMouseMove={resetControlsTimeout}
-            onClick={toggleControls}
           />
 
- {/* Top-Left Controls: Back */}
- <AnimatePresence>
- {showControls && (
- <motion.div
- initial={{ opacity: 0, y: -10 }}
- animate={{ opacity: 1, y: 0 }}
- exit={{ opacity: 0, y: -10 }}
- transition={{ duration: 0.2 }}
- className="absolute top-6 left-6 pointer-events-auto z-50"
- >
- <button
- onClick={(e) => { e.stopPropagation(); handleClose(e); }}
- tabIndex={0}
- className="w-12 h-12 bg-black/60 backdrop-blur-md rounded-full border border-white/15 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg cursor-pointer tv-focusable"
- title="Go Back"
- >
- <ArrowLeft size={22} />
- </button>
- </motion.div>
- )}
- </AnimatePresence>
+          {/* Floating Top Controls Toggle Pill (Allows 1-tap toggle without blocking video center) */}
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowControls(prev => !prev);
+              }}
+              className="px-3.5 py-1 bg-black/70 hover:bg-black/90 backdrop-blur-xl border border-white/15 rounded-full text-[10px] font-bold text-white/70 hover:text-white transition-all shadow-lg flex items-center gap-1.5 cursor-pointer active:scale-95"
+              title="Toggle Controls & Server Menu"
+            >
+              <Server size={12} className="text-accent" />
+              <span>{showControls ? 'Hide Controls' : 'Servers & Controls'}</span>
+            </button>
+          </div>
+
+          {/* Top-Left Controls: Back */}
+          <AnimatePresence>
+            {showControls && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-6 left-6 pointer-events-auto z-50"
+              >
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleClose(e); }}
+                  tabIndex={0}
+                  className="w-12 h-12 bg-black/60 backdrop-blur-md rounded-full border border-white/15 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg cursor-pointer tv-focusable"
+                  title="Go Back"
+                >
+                  <ArrowLeft size={22} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
  {/* Top-Right Controls: Subtitles, Server, Rotate */}
  <AnimatePresence>

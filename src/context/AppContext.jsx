@@ -111,61 +111,17 @@ export function AppProvider({ children }) {
 
  // ── Check For App Updates ──────────────────────────────────────
  const checkForUpdates = async (manual = false) => {
- if (!Capacitor.isNativePlatform() && !manual) return false;
- try {
- console.log('[UpdateCheck] Checking Firebase for new version...');
- const updateDocRef = doc(db, 'app', 'metadata');
- const updateSnap = await getDoc(updateDocRef);
- 
- if (!updateSnap.exists()) {
- console.log('[UpdateCheck] Metadata document not found in Firebase.');
- return false;
- }
-
- const data = updateSnap.data();
- if (!data.latestVersion) return false;
-
- let currentVersion = pkg.version;
- if (Capacitor.isNativePlatform()) {
- try {
- const currentBundle = await CapacitorUpdater.current();
- if (currentBundle?.bundle?.id) {
- const cleanId = currentBundle.bundle.id.replace(/^update-/, '');
- if (cleanId) currentVersion = cleanId;
- }
- } catch (e) {}
- }
-
- console.log(`[UpdateCheck] Installed version: ${currentVersion} | Remote version: ${data.latestVersion}`);
- 
- const oldParts = currentVersion.split('.').map(Number);
- const newParts = data.latestVersion.split('.').map(Number);
- let isNewer = false;
- for (let i = 0; i < 3; i++) {
- if (newParts[i] > oldParts[i]) { isNewer = true; break; }
- if (newParts[i] < oldParts[i]) break;
- }
- 
- console.log(`[UpdateCheck] Is newer version available? ${isNewer}`);
- if (isNewer) {
- setUpdateAvailable(true);
- const finalUrl = data.zipUrl || data.apkUrl;
- if (finalUrl) {
- const separator = finalUrl.includes('?') ? '&' : '?';
- window.__LATEST_APK_URL__ = `${finalUrl}${separator}t=${Date.now()}`;
- }
- } else {
- setUpdateAvailable(false);
- }
- return isNewer;
- } catch (error) {
- console.error('[UpdateCheck] Failed to check for updates:', error.message);
- return false;
- }
+   try {
+     const hasUpdate = await UpdateService.checkForUpdate(!manual);
+     setUpdateAvailable(hasUpdate);
+     return hasUpdate;
+   } catch (error) {
+     console.error('[UpdateCheck] Failed to check for updates:', error);
+     return false;
+   }
  };
- // Expose to window for manual calls if needed, but we will pass it in context
  window.manualCheckForUpdates = () => checkForUpdates(true);
- setTimeout(() => checkForUpdates(false), 3000);
+ setTimeout(() => checkForUpdates(false), 2000);
 
  return () => {
  if (backListener) backListener.remove();

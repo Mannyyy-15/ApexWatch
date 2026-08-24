@@ -18,9 +18,6 @@ export function TVReceiverOverlay() {
   const [incomingCastToast, setIncomingCastToast] = useState(null);
 
   useEffect(() => {
-    const isTV = document.body.classList.contains('is-tv');
-    if (!isTV) return;
-    
     let cleanup = null;
     try {
       const { code } = castService.registerTVReceiver(user, (sessionData) => {
@@ -30,11 +27,11 @@ export function TVReceiverOverlay() {
 
         if (command === 'LOAD_MEDIA' && mediaId) {
           setIncomingCastToast({
-            title,
+            title: title || 'Streaming Media',
             senderName: senderName || 'Mobile Device'
           });
 
-          // Switch TV playback immediately
+          // Switch receiver playback immediately
           if (setActiveMovieId) setActiveMovieId(mediaId);
           if (setActiveMediaType) setActiveMediaType(mediaType || 'movie');
           if (setActiveSeason) setActiveSeason(season || 1);
@@ -42,6 +39,8 @@ export function TVReceiverOverlay() {
           if (setCurrentView) setCurrentView('player');
 
           setTimeout(() => setIncomingCastToast(null), 6000);
+        } else if (command === 'STOP') {
+          if (setCurrentView) setCurrentView('home');
         }
       });
 

@@ -35,20 +35,23 @@ export function CastModal({ isOpen, onClose, currentMedia, onCastStarted }) {
 
   // Handle Direct TV Cloud Cast
   const handleConnectTV = async (tv) => {
-    if (!currentMedia) {
-      setErrorMsg('No active media to cast.');
-      return;
-    }
     setConnectingTvId(tv.tvId);
     setErrorMsg('');
 
     try {
-      const success = await castService.castToTV(tv.tvId, currentMedia);
-      if (success) {
+      if (currentMedia) {
+        const success = await castService.castToTV(tv.tvId, currentMedia);
+        if (success) {
+          if (onCastStarted) onCastStarted({ type: 'apex_cast', tvName: tv.name || 'Smart TV', tvId: tv.tvId });
+          onClose();
+        } else {
+          setErrorMsg('Failed to cast to TV. Make sure the TV is online with ApexWatch open.');
+        }
+      } else {
+        // Paired mode
+        castService.activeTvId = tv.tvId;
         if (onCastStarted) onCastStarted({ type: 'apex_cast', tvName: tv.name || 'Smart TV', tvId: tv.tvId });
         onClose();
-      } else {
-        setErrorMsg('Failed to connect to TV. Please make sure the app is open on the TV.');
       }
     } catch (err) {
       setErrorMsg('Connection error: ' + (err.message || err));
