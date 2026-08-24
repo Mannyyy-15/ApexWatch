@@ -79,6 +79,21 @@ export function VideoPlayer() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
+  // Popup ad blocker: blocks embed ad networks from opening new tabs
+  useEffect(() => {
+    const originalOpen = window.open;
+    window.open = function(url, target, features) {
+      if (url && (String(url).includes('github.com') || String(url).includes('apex-watch') || String(url).includes('apk'))) {
+        return originalOpen.apply(window, arguments);
+      }
+      console.log('Blocked ad popup redirect:', url);
+      return null;
+    };
+    return () => {
+      window.open = originalOpen;
+    };
+  }, []);
+
  // Watch Party Iframe Ref
  const iframeRef = useRef(null);
 
@@ -568,7 +583,6 @@ export function VideoPlayer() {
                 src={embedUrl} 
                 className="w-full h-full border-none" 
                 allowFullScreen 
-                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-downloads allow-pointer-lock"
                 allow="autoplay; encrypted-media; picture-in-picture; fullscreen; accelerometer; gyroscope; clipboard-write"
                 referrerPolicy="origin"
                 title={movie.title}
