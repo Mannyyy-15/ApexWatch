@@ -14,10 +14,10 @@
   <link rel="icon" type="image/png" href="/logo.png" />
   <script>
     window.addEventListener('error', function(e) {
-      document.body.innerHTML += '<div style="position:fixed;inset:0;z-index:999999;background:red;color:white;padding:20px;overflow:auto;word-wrap:break-word;"><h3>JS Error</h3><p>' + e.message + '</p><p>' + e.filename + ':' + e.lineno + '</p><pre>' + (e.error ? e.error.stack : '') + '</pre></div>';
+      console.error('Captured JS Error:', e.message, e.filename, e.lineno);
     });
     window.addEventListener('unhandledrejection', function(e) {
-      document.body.innerHTML += '<div style="position:fixed;inset:0;z-index:999999;background:red;color:white;padding:20px;overflow:auto;word-wrap:break-word;"><h3>Promise Error</h3><p>' + e.reason + '</p></div>';
+      console.warn('Captured Unhandled Rejection:', e.reason);
     });
   </script>
   <script src="https://www.gstatic.com/cv/js/t/js_version/cast_sender.js?loadCastFramework=1"></script>

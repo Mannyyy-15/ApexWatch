@@ -18,35 +18,41 @@ export function TVReceiverOverlay() {
   const [incomingCastToast, setIncomingCastToast] = useState(null);
 
   useEffect(() => {
-    // Only register receiver if TV mode is active or enabled
     const isTV = document.body.classList.contains('is-tv');
+    if (!isTV) return;
     
-    const { code } = castService.registerTVReceiver(user, (sessionData) => {
-      if (!sessionData) return;
+    let cleanup = null;
+    try {
+      const { code } = castService.registerTVReceiver(user, (sessionData) => {
+        if (!sessionData) return;
 
-      const { command, mediaId, mediaType, title, season, episode, currentTime, server, senderName } = sessionData;
+        const { command, mediaId, mediaType, title, season, episode, currentTime, server, senderName } = sessionData;
 
-      if (command === 'LOAD_MEDIA' && mediaId) {
-        setIncomingCastToast({
-          title,
-          senderName: senderName || 'Mobile Device'
-        });
+        if (command === 'LOAD_MEDIA' && mediaId) {
+          setIncomingCastToast({
+            title,
+            senderName: senderName || 'Mobile Device'
+          });
 
-        // Switch TV playback immediately
-        if (setActiveMovieId) setActiveMovieId(mediaId);
-        if (setActiveMediaType) setActiveMediaType(mediaType || 'movie');
-        if (setActiveSeason) setActiveSeason(season || 1);
-        if (setActiveEpisode) setActiveEpisode(episode || 1);
-        if (setCurrentView) setCurrentView('player');
+          // Switch TV playback immediately
+          if (setActiveMovieId) setActiveMovieId(mediaId);
+          if (setActiveMediaType) setActiveMediaType(mediaType || 'movie');
+          if (setActiveSeason) setActiveSeason(season || 1);
+          if (setActiveEpisode) setActiveEpisode(episode || 1);
+          if (setCurrentView) setCurrentView('player');
 
-        setTimeout(() => setIncomingCastToast(null), 6000);
-      }
-    });
+          setTimeout(() => setIncomingCastToast(null), 6000);
+        }
+      });
 
-    setTvPairingCode(code);
+      setTvPairingCode(code);
+      cleanup = () => castService.unregisterTVReceiver();
+    } catch (e) {
+      console.warn('TV receiver registration error:', e);
+    }
 
     return () => {
-      castService.unregisterTVReceiver();
+      if (cleanup) cleanup();
     };
   }, [user]);
 
