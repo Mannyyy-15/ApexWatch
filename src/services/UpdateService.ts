@@ -54,6 +54,9 @@ class UpdateServiceClass {
     }
 
     async checkForUpdate(silent = true): Promise<boolean> {
+        if (!Capacitor.isNativePlatform()) {
+            return false;
+        }
         if (!silent) this.emit({ phase: 'checking', progress: 0 });
         try {
             let latestRemote = '1.0.0';

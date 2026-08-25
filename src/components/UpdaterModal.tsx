@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export function UpdaterModal() {
+    if (!Capacitor.isNativePlatform()) return null;
     const [isVisible, setIsVisible] = useState(false);
     const [progressState, setProgressState] = useState<UpdateProgress>({ phase: 'idle', progress: 0 });
 

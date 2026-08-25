@@ -219,7 +219,7 @@ export function Discover() {
       aspect = "aspect-[16/10]" 
     } = options;
 
-    const bgImage = (isTall || !item.backdrop || item.backdrop.includes('unsplash')) ? item.poster : item.backdrop;
+    const bgImage = isTall ? (item.poster || item.backdrop) : (item.backdrop || item.poster);
 
     return (
       <motion.div
@@ -227,63 +227,65 @@ export function Discover() {
         whileHover={{ scale: 1.015 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => handleMovieClick(item.id, item.type)}
-        className={`group relative rounded-xl md:rounded-2xl overflow-hidden cursor-pointer select-none bg-[#121319] border border-white/5 hover:border-white/20 transition-all duration-300 shadow-md ${aspect} ${className} tv-focusable`}
+        className={`group relative rounded-xl md:rounded-2xl overflow-hidden cursor-pointer select-none bg-[#14151c] border border-white/5 hover:border-white/20 transition-all duration-300 shadow-md ${aspect} ${className} tv-focusable`}
         tabIndex={0}
       >
         {/* Background Image */}
         <img
-          src={bgImage || item.poster}
+          src={bgImage}
           alt={item.title}
           loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
         />
 
         {/* Cinematic Gradient Vignette */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none" />
 
-        {/* Dynamic Badges */}
-        {badgeType === 'new_release' && (
-          <div className="absolute bottom-2.5 left-2.5 z-10">
-            <span className="px-2 py-0.5 rounded bg-gradient-to-r from-pink-600 via-rose-600 to-red-600 text-white font-black text-[8px] md:text-[9px] uppercase tracking-wider shadow-lg">
-              New Release
-            </span>
-          </div>
-        )}
-
-        {badgeType === 'live' && (
-          <div className="absolute bottom-2.5 right-2.5 z-10 flex items-center gap-1 bg-red-600/90 backdrop-blur-md px-2 py-0.5 rounded-full text-white font-black text-[8px] md:text-[9px] uppercase tracking-wider shadow-lg">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-            <span>Live</span>
-          </div>
-        )}
-
-        {badgeType === 'top10' && (
-          <div className="absolute top-2.5 left-2.5 z-10 bg-accent text-white font-black text-[8px] md:text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md shadow-lg">
-            Top 10
-          </div>
-        )}
-
-        {badgeType === 'rating' && item.rating && (
-          <div className="absolute top-2.5 right-2.5 z-10 bg-black/60 backdrop-blur-md border border-white/15 text-white font-bold text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-lg">
-            <Star size={10} className="text-yellow-400 fill-yellow-400" />
-            <span>{typeof item.rating === 'number' ? item.rating.toFixed(1) : item.match || '4K'}</span>
-          </div>
-        )}
-
-        {/* Content Title Overlay */}
-        {!badgeType && (
-          <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10">
-            <h4 className="text-white font-bold text-xs md:text-sm line-clamp-1 group-hover:text-accent transition-colors drop-shadow-md">
-              {item.title}
-            </h4>
-            <div className="flex items-center gap-1.5 text-[9px] md:text-[10px] text-white/60 font-semibold mt-0.5">
-              <span>{item.year || '2026'}</span>
-              <span>•</span>
-              <span className="uppercase">{item.type === 'tv' ? 'Series' : 'Movie'}</span>
+        {/* Top Badges */}
+        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10">
+          {item.rating && (
+            <div className="bg-black/60 backdrop-blur-md border border-white/15 text-white font-bold text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-lg">
+              <Star size={9} className="text-yellow-400 fill-yellow-400" />
+              <span>{typeof item.rating === 'number' ? item.rating.toFixed(1) : item.match || '8.2'}</span>
             </div>
+          )}
+          {badgeType === 'top10' && (
+            <div className="bg-accent text-white font-black text-[8px] md:text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md shadow-lg">
+              Top 10
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Content & Badges */}
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 flex flex-col gap-1">
+          {badgeType === 'new_release' && (
+            <div>
+              <span className="px-2 py-0.5 rounded bg-gradient-to-r from-pink-600 via-rose-600 to-red-600 text-white font-black text-[7px] md:text-[8px] uppercase tracking-wider shadow-lg inline-block">
+                New Release
+              </span>
+            </div>
+          )}
+
+          {badgeType === 'live' && (
+            <div>
+              <span className="inline-flex items-center gap-1 bg-red-600 px-2 py-0.5 rounded text-white font-black text-[7px] md:text-[8px] uppercase tracking-wider shadow-lg">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                Live
+              </span>
+            </div>
+          )}
+
+          <h4 className={`text-white font-black leading-tight line-clamp-1 group-hover:text-accent transition-colors drop-shadow-md ${isTall ? 'text-sm md:text-base' : 'text-xs md:text-sm'}`}>
+            {item.title}
+          </h4>
+          
+          <div className="flex items-center gap-1.5 text-[8px] md:text-[10px] text-white/60 font-semibold">
+            <span>{item.year || '2026'}</span>
+            <span>•</span>
+            <span className="uppercase tracking-wider">{item.type === 'tv' ? 'Series' : 'Movie'}</span>
           </div>
-        )}
+        </div>
 
         {/* Hover Play Button */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
@@ -367,7 +369,7 @@ export function Discover() {
   };
 
   return (
-    <div className="discover-container min-h-screen pt-4 md:pt-6 px-3 md:px-6 lg:px-10 pb-32 w-full max-w-[1400px] mx-auto relative z-10">
+    <div className="discover-container min-h-screen pt-6 md:pt-10 lg:pt-12 px-3.5 md:px-6 lg:px-10 pb-36 w-full max-w-[1400px] mx-auto relative z-10">
       
       {/* Search Bar - Exact JioCinema / Hotstar Pill Design */}
       <div className="mb-4 md:mb-6 w-full max-w-3xl mx-auto">

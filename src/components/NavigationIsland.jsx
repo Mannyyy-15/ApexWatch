@@ -261,27 +261,29 @@ export function NavigationIsland() {
  </div>
  </motion.div>
 
-  {/* Mobile Top Header */}
-  <div className="md:hidden fixed top-0 left-0 right-0 px-4 py-3 z-50 flex items-center justify-between bg-gradient-to-b from-black/90 via-black/50 to-transparent pointer-events-none navigation-island-mobile">
-    <div className="flex items-center gap-2 pointer-events-auto cursor-pointer" onClick={() => setCurrentView('home')}>
-      <div className="w-7 h-7 rounded-full overflow-hidden">
-        <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
+  {/* Mobile Top Header (Hidden on discover/search to give full room to search bar) */}
+  {currentView !== 'discover' && (
+    <div className="md:hidden fixed top-0 left-0 right-0 px-4 py-3 z-50 flex items-center justify-between bg-gradient-to-b from-black/90 via-black/50 to-transparent pointer-events-none navigation-island-mobile">
+      <div className="flex items-center gap-2 pointer-events-auto cursor-pointer" onClick={() => setCurrentView('home')}>
+        <div className="w-7 h-7 rounded-full overflow-hidden">
+          <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
+        </div>
+        <span className="font-black tracking-tighter text-lg uppercase italic text-white/90">
+          Apex<span className="text-accent">Watch</span>
+        </span>
       </div>
-      <span className="font-black tracking-tighter text-lg uppercase italic text-white/90">
-        Apex<span className="text-accent">Watch</span>
-      </span>
-    </div>
 
-    {!isNative && (
-      <button 
-        onClick={handleDownloadApp}
-        className="pointer-events-auto flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent hover:bg-red-700 text-white font-black text-[10px] uppercase tracking-wider shadow-lg shadow-red-950/50 active:scale-95 transition-all cursor-pointer border border-white/15"
-      >
-        <Smartphone size={13} />
-        <span>Get App</span>
-      </button>
-    )}
-  </div>
+      {!isNative && (
+        <button 
+          onClick={handleDownloadApp}
+          className="pointer-events-auto flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent hover:bg-red-700 text-white font-black text-[10px] uppercase tracking-wider shadow-lg shadow-red-950/50 active:scale-95 transition-all cursor-pointer border border-white/15"
+        >
+          <Smartphone size={13} />
+          <span>Get App</span>
+        </button>
+      )}
+    </div>
+  )}
 
  {/* Mobile Bottom Dock - Redesigned */}
  <motion.div 
