@@ -263,38 +263,43 @@ export function VideoPlayer() {
  const formatted = tmdb.formatMovie(data);
  setMovie(formatted);
 
- // If joining a Watch Party, sync starting time from the active room
- if (activeParty) {
- setStartTime(activeParty.currentTime || 0);
- } else if (user && activeProfile) {
- const progress = await firestoreService.getWatchProgress(user.uid, activeProfile.id, activeMovieId);
- if (progress && progress.progressSeconds > 30) { 
- setSavedProgress(progress);
- setShowResumeToast(true);
- setTimeout(() => setShowResumeToast(false), 10000);
- }
- 
- // Save to history immediately so the timestamp updates and it shows in "Recent Watch"
- await firestoreService.saveWatchProgress(user.uid, activeProfile.id, formatted.id, {
- progressSeconds: progress?.progressSeconds || 0,
- durationSeconds: progress?.durationSeconds || 0,
- completed: progress?.completed || false,
- contentType: formatted.type,
- title: formatted.title,
- poster: formatted.poster,
- backdrop: formatted.backdrop,
- year: formatted.year,
- season: activeSeason,
- episode: activeEpisode,
- genres: formatted.tags || []
- });
- }
- setPlayerReady(true);
- } catch (error) {
- console.error('Error loading movie for player:', error instanceof Error ? (error.stack || error.message) : JSON.stringify(error));
- } finally {
- setLoading(false);
- }
+        // If joining a Watch Party, sync starting time from the active room
+        if (activeParty) {
+          setStartTime(activeParty.currentTime || 0);
+        } else if (user && activeProfile) {
+          try {
+            const progress = await firestoreService.getWatchProgress(user.uid, activeProfile.id, activeMovieId);
+            if (progress && progress.progressSeconds > 30) { 
+              setSavedProgress(progress);
+              setShowResumeToast(true);
+              setTimeout(() => setShowResumeToast(false), 10000);
+            }
+            
+            // Save to history
+            await firestoreService.saveWatchProgress(user.uid, activeProfile.id, formatted.id, {
+              progressSeconds: progress?.progressSeconds || 0,
+              durationSeconds: progress?.durationSeconds || 0,
+              completed: progress?.completed || false,
+              contentType: formatted.type,
+              title: formatted.title,
+              poster: formatted.poster,
+              backdrop: formatted.backdrop,
+              year: formatted.year,
+              season: activeSeason,
+              episode: activeEpisode,
+              genres: formatted.tags || []
+            });
+          } catch (progressErr) {
+            console.warn('Progress load warning (fallback to local):', progressErr);
+          }
+        }
+        setPlayerReady(true);
+      } catch (error) {
+        console.error('Error loading movie for player:', error instanceof Error ? (error.stack || error.message) : JSON.stringify(error));
+        setPlayerReady(true);
+      } finally {
+        setLoading(false);
+      }
  };
 
  loadMovieAndProgress();
@@ -600,9 +605,9 @@ export function VideoPlayer() {
                 ref={iframeRef}
                 src={embedUrl} 
                 className="w-full h-full border-none" 
-                allowFullScreen 
-                allow="autoplay; encrypted-media; picture-in-picture; fullscreen; accelerometer; gyroscope; clipboard-write"
-                referrerPolicy="origin"
+                allowFullScreen={true}
+                allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; accelerometer *; gyroscope *; clipboard-write *"
+                referrerPolicy="no-referrer"
                 title={movie.title}
                 onError={handleIframeError}
               />
