@@ -57,6 +57,8 @@ export function AppProvider({ children }) {
  const [heroCache, setHeroCache] = useState(null); // Cache for Hero trending movies
  const [downloads, setDownloads] = useState([]);
  const [updateAvailable, setUpdateAvailable] = useState(false);
+ const [showAIMoodModal, setShowAIMoodModal] = useState(false);
+ const [showSurpriseModal, setShowSurpriseModal] = useState(false);
 
  // ── View History Stack (for hardware back button) ──────────────────
  // Root views where back should EXIT the app, not go back
@@ -547,12 +549,14 @@ export function AppProvider({ children }) {
     heroCache, setHeroCache,
     downloads, addDownload, removeDownload,
     activeParty, isPartyHost, createWatchParty, joinWatchParty, leaveWatchParty, updatePartyState,
-    updateAvailable, manualCheckForUpdates: window.manualCheckForUpdates
+    updateAvailable, manualCheckForUpdates: window.manualCheckForUpdates,
+    showAIMoodModal, setShowAIMoodModal,
+    showSurpriseModal, setShowSurpriseModal
   }), [
     currentView, activeMovieId, activeMediaType, user, userData, profiles, activeProfile,
     loadingAuth, searchQuery, libraryTab, activeSeason, activeEpisode, watchlist,
     movieRows, exploreCategory, cachedDetails, categoryCache, discoverCache, heroCache,
-    downloads, activeParty, isPartyHost, updateAvailable
+    downloads, activeParty, isPartyHost, updateAvailable, showAIMoodModal, showSurpriseModal
   ]);
 
   return (

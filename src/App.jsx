@@ -26,6 +26,8 @@ const UpdaterModal = lazy(() => import('./components/UpdaterModal').then(m => ({
 const CategoryExplore = lazy(() => import('./components/CategoryExplore').then(m => ({ default: m.CategoryExplore })));
 const Browse = lazy(() => import('./components/Browse').then(m => ({ default: m.Browse })));
 const TVReceiverOverlay = lazy(() => import('./components/TVReceiverOverlay').then(m => ({ default: m.TVReceiverOverlay })));
+const AIMoodMatcherModal = lazy(() => import('./components/AIMoodMatcherModal').then(m => ({ default: m.AIMoodMatcherModal })));
+const SurpriseMeModal = lazy(() => import('./components/SurpriseMeModal').then(m => ({ default: m.SurpriseMeModal })));
 
 const VIEW_INDEX = {
   home: 0,
@@ -143,7 +145,7 @@ function ShortcutsModal({ onClose }) {
 }
 
 function MainLayout() {
-  const { currentView } = useAppContext();
+  const { currentView, showAIMoodModal, setShowAIMoodModal, showSurpriseModal, setShowSurpriseModal } = useAppContext();
   const isTV = useTV();
   const [showScrollUp, setShowScrollUp] = useState(false);
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
@@ -399,17 +401,19 @@ function MainLayout() {
  )}
  </AnimatePresence>
 
- <AnimatePresence>
- {currentView === 'auth' && <Auth key="auth"/>}
- {currentView === 'onboarding' && <Onboarding key="onboarding"/>}
- {currentView === 'details' && <MovieDetails key="details"/>}
- {currentView === 'player' && <VideoPlayer key="player"/>}
- {currentView === 'profiles' && <ProfilesSelection key="profiles"/>}
- </AnimatePresence>
- <UpdaterModal />
- <TVReceiverOverlay />
- </Suspense>
- </div>);
+  <AnimatePresence>
+  {currentView === 'auth' && <Auth key="auth"/>}
+  {currentView === 'onboarding' && <Onboarding key="onboarding"/>}
+  {currentView === 'details' && <MovieDetails key="details"/>}
+  {currentView === 'player' && <VideoPlayer key="player"/>}
+  {currentView === 'profiles' && <ProfilesSelection key="profiles"/>}
+  </AnimatePresence>
+  <AIMoodMatcherModal isOpen={showAIMoodModal} onClose={() => setShowAIMoodModal(false)} />
+  <SurpriseMeModal isOpen={showSurpriseModal} onClose={() => setShowSurpriseModal(false)} />
+  <UpdaterModal />
+  <TVReceiverOverlay />
+  </Suspense>
+  </div>);
 }
 
 export default function App() {

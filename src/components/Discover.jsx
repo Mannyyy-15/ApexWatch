@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Play, X, Mic, MicOff, TrendingUp, Sparkles, Film, Tv, Flame, Clapperboard, Smile, Swords, Ghost, Rocket, Heart, Star } from 'lucide-react';
+import { Search, Play, X, Mic, MicOff, TrendingUp, Sparkles, Film, Tv, Flame, Clapperboard, Smile, Swords, Ghost, Rocket, Heart, Star, Dices } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { tmdb } from '../utils/tmdb';
 import { MovieCardSkeleton } from './Skeleton';
@@ -31,7 +31,7 @@ const SEARCH_PLACEHOLDERS = [
 ];
 
 export function Discover() {
-  const { setActiveMovieId, setActiveMediaType, setCurrentView, searchQuery, setSearchQuery, discoverCache, setDiscoverCache } = useAppContext();
+  const { setActiveMovieId, setActiveMediaType, setCurrentView, searchQuery, setSearchQuery, discoverCache, setDiscoverCache, setShowAIMoodModal, setShowSurpriseModal } = useAppContext();
   const [searchResults, setSearchResults] = useState([]);
   const [categoryContent, setCategoryContent] = useState([]);
   const [trending, setTrending] = useState([]);
@@ -403,18 +403,47 @@ export function Discover() {
               </button>
             )}
 
-            {/* AI Sparkle / Voice Button */}
+            {/* AI Sparkles Matcher Button */}
+            <button 
+              onClick={() => setShowAIMoodModal(true)}
+              tabIndex={0}
+              className="p-2 rounded-xl transition-all cursor-pointer tv-focusable text-accent hover:bg-accent/10"
+              title="AI Mood Matcher & Vibe Search"
+            >
+              <Sparkles size={18} className="animate-pulse" />
+            </button>
+
+            {/* Voice Search Button */}
             <button 
               onClick={startVoiceSearch}
               tabIndex={0}
               className={`p-2 rounded-xl transition-all cursor-pointer tv-focusable ${
                 isListening ? 'bg-accent text-white animate-pulse' : 'text-white/60 hover:text-white hover:bg-white/10'
               }`}
-              title={isListening ? "Listening... Click to stop" : "Voice & Smart Search"}
+              title={isListening ? "Listening... Click to stop" : "Voice Search"}
             >
-              {isListening ? <MicOff size={18} /> : <Sparkles size={18} className="text-white/70" />}
+              {isListening ? <MicOff size={18} /> : <Mic size={18} />}
             </button>
           </div>
+        </div>
+
+        {/* Quick Discovery AI & Surprise Strip */}
+        <div className="flex items-center justify-center gap-2.5 mt-3">
+          <button
+            onClick={() => setShowAIMoodModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-accent/20 to-pink-600/20 border border-accent/30 hover:border-accent text-white font-bold text-[11px] uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-md"
+          >
+            <Sparkles size={13} className="text-accent" />
+            <span>AI Mood Finder</span>
+          </button>
+
+          <button
+            onClick={() => setShowSurpriseModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/25 text-white font-bold text-[11px] uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-md"
+          >
+            <Dices size={13} className="text-yellow-400" />
+            <span>Surprise Me</span>
+          </button>
         </div>
       </div>
 

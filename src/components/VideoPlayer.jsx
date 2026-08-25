@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Play, RotateCw, X, Server, Globe, Users, Subtitles, ListVideo, Cast } from 'lucide-react';
+import { ArrowLeft, Play, RotateCw, X, Server, Globe, Users, Subtitles, ListVideo, Cast, Zap, FastForward, Gauge, RefreshCw } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { tmdb } from '../utils/tmdb';
 import { useTVBackHandler } from '../hooks/useTV';
@@ -61,6 +61,77 @@ export function VideoPlayer() {
   // Auto-fallback state
   const [autoSwitched, setAutoSwitched] = useState(false);
   const [showFallbackToast, setShowFallbackToast] = useState(false);
+
+  // Pro Controls & Smart Actions
+  const [hudToast, setHudToast] = useState(null);
+  const [showSkipIntro, setShowSkipIntro] = useState(true);
+  const [speed, setSpeed] = useState(1.0);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [doubleTapFeedback, setDoubleTapFeedback] = useState(null);
+  const lastTapRef = useRef({ left: 0, right: 0 });
+
+  const showHud = useCallback((text) => {
+    setHudToast(text);
+    setTimeout(() => setHudToast(null), 2000);
+  }, []);
+
+  const handleSkipIntro = useCallback(() => {
+    const target = (localTime || 0) + 85;
+    setStartTime(target);
+    setShowSkipIntro(false);
+    showHud('⚡ Skipped Intro (+85s)');
+    setPlayerReady(false);
+    setTimeout(() => setPlayerReady(true), 200);
+  }, [localTime, showHud]);
+
+  const handleSeek = useCallback((delta) => {
+    const target = Math.max(0, (localTime || 0) + delta);
+    setStartTime(target);
+    showHud(delta > 0 ? `⏩ +${delta}s` : `⏪ ${delta}s`);
+    setPlayerReady(false);
+    setTimeout(() => setPlayerReady(true), 200);
+  }, [localTime, showHud]);
+
+  const handleDoubleTap = (side) => {
+    const now = Date.now();
+    const last = lastTapRef.current[side];
+    if (now - last < 320) {
+      // Double tap detected!
+      setDoubleTapFeedback(side);
+      setTimeout(() => setDoubleTapFeedback(null), 800);
+      handleSeek(side === 'right' ? 10 : -10);
+    }
+    lastTapRef.current[side] = now;
+  };
+
+  // Global Keyboard Shortcuts Listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+      const key = e.key.toLowerCase();
+      if (key === 'i') {
+        handleSkipIntro();
+      } else if (key === 'arrowright' || key === 'l') {
+        handleSeek(10);
+      } else if (key === 'arrowleft' || key === 'j') {
+        handleSeek(-10);
+      } else if (key === 's') {
+        setShowServerMenu(prev => !prev);
+      } else if (key === 'e' && movie?.type === 'tv') {
+        setShowEpisodesMenu(prev => !prev);
+      } else if (key === 'f') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen?.().catch(() => {});
+          showHud('🖥️ Fullscreen');
+        } else {
+          document.exitFullscreen?.().catch(() => {});
+          showHud('Exit Fullscreen');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSkipIntro, handleSeek, movie?.type, showHud]);
 
   // Backgrounding & Memory Release Handler for TV / Mobile
   useEffect(() => {
@@ -737,6 +808,44 @@ export function VideoPlayer() {
                 transition={{ duration: 0.2 }}
                 className="absolute top-6 right-6 pointer-events-auto z-50 flex items-center gap-2.5"
               >
+                {/* Playback Speed Switcher */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowSpeedMenu(prev => !prev); }}
+                    tabIndex={0}
+                    className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-3 py-2 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer tv-focusable font-bold text-[11px]"
+                    title="Playback Speed"
+                  >
+                    <Gauge size={15} />
+                    <span>{speed}x</span>
+                  </button>
+
+                  <AnimatePresence>
+                    {showSpeedMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-12 right-0 bg-[#0e0e0e]/95 backdrop-blur-xl border border-white/15 rounded-2xl p-1.5 shadow-2xl z-50 flex flex-col gap-1 w-24"
+                      >
+                        {[0.75, 1.0, 1.25, 1.5, 2.0].map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => {
+                              setSpeed(s);
+                              setShowSpeedMenu(false);
+                              showHud(`Speed: ${s}x`);
+                            }}
+                            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${speed === s ? 'bg-accent text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}
+                          >
+                            {s}x {s === 1.0 && '(Normal)'}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowCastModal(true); }}
                   tabIndex={0}
@@ -778,6 +887,70 @@ export function VideoPlayer() {
                     </span>
                   </button>
                 )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Double Tap Zones for Mobile Seeking */}
+          <div 
+            className="md:hidden absolute top-24 bottom-24 left-0 w-1/4 z-20 pointer-events-auto"
+            onClick={() => handleDoubleTap('left')}
+          >
+            {doubleTapFeedback === 'left' && (
+              <div className="h-full flex items-center justify-center">
+                <div className="p-3.5 bg-black/80 backdrop-blur-md rounded-2xl border border-white/20 text-white font-black text-xs animate-ping">
+                  ⏪ -10s
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div 
+            className="md:hidden absolute top-24 bottom-24 right-0 w-1/4 z-20 pointer-events-auto"
+            onClick={() => handleDoubleTap('right')}
+          >
+            {doubleTapFeedback === 'right' && (
+              <div className="h-full flex items-center justify-center">
+                <div className="p-3.5 bg-black/80 backdrop-blur-md rounded-2xl border border-white/20 text-white font-black text-xs animate-ping">
+                  ⏩ +10s
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Floating Skip Intro Action Pill */}
+          <AnimatePresence>
+            {showSkipIntro && (
+              <motion.div
+                initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 30, scale: 0.9 }}
+                className="absolute bottom-8 left-6 z-[60] pointer-events-auto"
+              >
+                <button
+                  onClick={handleSkipIntro}
+                  className="px-4 py-2.5 bg-black/80 hover:bg-accent/90 backdrop-blur-xl border border-white/20 hover:border-accent text-white rounded-2xl flex items-center gap-2 shadow-[0_0_25px_rgba(0,0,0,0.8)] font-black text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer tv-focusable group"
+                  title="Skip Intro (+85 seconds)"
+                >
+                  <Zap size={15} className="text-accent group-hover:text-white animate-pulse" />
+                  <span>Skip Intro (+85s)</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Centered HUD Toast for Shortcuts & Gestures */}
+          <AnimatePresence>
+            {hudToast && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[80] pointer-events-none"
+              >
+                <div className="bg-black/90 backdrop-blur-2xl border border-white/25 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5">
+                  <span className="text-white text-sm md:text-base font-black uppercase tracking-wider">{hudToast}</span>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

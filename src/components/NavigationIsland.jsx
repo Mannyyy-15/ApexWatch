@@ -1,4 +1,4 @@
-import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked, Smartphone, Download, BarChart3, LayoutGrid, Cast } from 'lucide-react';
+import { Search, Home, Compass, User, Play, Menu, LogOut, LogIn, Users, Film, Tv, Sparkles, Library, History, BookMarked, Smartphone, Download, BarChart3, LayoutGrid, Cast, Dices } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -22,7 +22,9 @@ export function NavigationIsland() {
  setActiveMovieId,
  setActiveMediaType,
  updateAvailable,
- manualCheckForUpdates
+ manualCheckForUpdates,
+ setShowAIMoodModal,
+ setShowSurpriseModal
  } = useAppContext();
  const [showProfileMenu, setShowProfileMenu] = useState(false);
  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
@@ -253,6 +255,8 @@ export function NavigationIsland() {
 
  {/* Bottom Actions */}
  <div className="flex flex-col gap-2 w-full mb-6">
+ <SidebarNavItem icon={<Sparkles size={24} className="text-accent" strokeWidth={2.5}/>} label="AI Mood Match" onClick={() => setShowAIMoodModal(true)}/>
+ <SidebarNavItem icon={<Dices size={24} className="text-yellow-400" strokeWidth={2.5}/>} label="Surprise Me" onClick={() => setShowSurpriseModal(true)}/>
  <SidebarNavItem icon={<Cast size={24} strokeWidth={2.5}/>} label="Cast to TV" onClick={() => setShowCastModal(true)}/>
  {!isNative && (
  <SidebarNavItem icon={<Smartphone size={24} strokeWidth={2.5}/>} label="Get App" onClick={handleDownloadApp}/>
@@ -373,18 +377,20 @@ export function NavigationIsland() {
  <p className="text-accent text-[9px] font-black uppercase tracking-widest">Active Profile</p>
  </div>
  </div>
- <div className="grid grid-cols-2 gap-1.5">
- <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
- <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
- <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
- {isNative ? (
- updateAvailable && (
- <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
- )
- ) : (
- <MenuButton icon={<Smartphone size={14}/>} label="Download App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
- )}
- <MenuButton icon={<Users size={14}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
+  <div className="grid grid-cols-2 gap-1.5">
+  <MenuButton icon={<Sparkles size={14} className="text-accent"/>} label="AI Vibe Match" onClick={() => { setShowAIMoodModal(true); setShowProfileMenu(false); }} />
+  <MenuButton icon={<Dices size={14} className="text-yellow-400"/>} label="Surprise Me" onClick={() => { setShowSurpriseModal(true); setShowProfileMenu(false); }} />
+  <MenuButton icon={<BookMarked size={14}/>} label="Watchlist" onClick={() => { setLibraryTab('Watchlist'); setCurrentView('library'); setShowProfileMenu(false); }} />
+  <MenuButton icon={<History size={14}/>} label="History" onClick={() => { setLibraryTab('History'); setCurrentView('library'); setShowProfileMenu(false); }} />
+  <MenuButton icon={<Download size={14}/>} label="Downloads" onClick={() => { setLibraryTab('Downloads'); setCurrentView('library'); setShowProfileMenu(false); }} />
+  {isNative ? (
+  updateAvailable && (
+  <MenuButton icon={<Download size={14} className="text-accent"/>} label="Update App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+  )
+  ) : (
+  <MenuButton icon={<Smartphone size={14}/>} label="Download App" onClick={() => { handleDownloadApp(); setShowProfileMenu(false); }} />
+  )}
+  <MenuButton icon={<Users size={14}/>} label="Switch" onClick={() => { setCurrentView('profiles'); setShowProfileMenu(false); }} />
  <div className="col-span-2 mt-1 border-t border-white/5 pt-1.5">
  <MenuButton icon={<LogOut size={14}/>} label="Log out" onClick={() => { setShowSignOutConfirm(true); setShowProfileMenu(false); }} variant="danger" />
  <div className="text-center pt-2 pb-1">
