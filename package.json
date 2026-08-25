@@ -1,11 +1,11 @@
 {
   "name": "apexwatch",
   "private": true,
-  "version": "1.0.99",
+  "version": "1.0.100",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
+    "build": "vite build && node scripts/zip.js",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
@@ -14,7 +14,7 @@
     "build:android": "npm run build && npx cap sync",
     "build:ios": "npm run build && npx cap sync",
     "build:apk": "npm run build && npx cap sync && cd android && gradlew.bat assembleDebug",
-    "build:update": "npm run build && node scripts/zip.js"
+    "build:update": "npm run build"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^8.3.0",

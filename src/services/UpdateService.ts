@@ -50,12 +50,27 @@ class UpdateServiceClass {
     async checkForUpdate(silent = true): Promise<boolean> {
         if (!silent) this.emit({ phase: 'checking', progress: 0 });
         try {
-            const res = await fetch(`${UPDATE_SERVER_URL}/version.json?t=${Date.now()}`);
-            if (!res.ok) throw new Error('Failed to fetch version metadata');
+            let data: any = null;
             
-            const data = await res.json();
+            // 1. Try Vercel Production
+            try {
+                const res = await fetch(`${UPDATE_SERVER_URL}/version.json?t=${Date.now()}`);
+                if (res.ok) data = await res.json();
+            } catch (e) {
+                console.warn('[UpdateService] Vercel version check failed, trying GitHub fallback:', e);
+            }
+
+            // 2. Fallback to GitHub Raw if Vercel is unavailable
+            if (!data || !data.latestVersion) {
+                const ghRes = await fetch(`https://raw.githubusercontent.com/Mannyyy-15/ApexWatch/main/public/version.json?t=${Date.now()}`);
+                if (ghRes.ok) data = await ghRes.json();
+            }
+
+            if (!data || !data.latestVersion) {
+                throw new Error('Could not fetch version information from any server');
+            }
+            
             const currentVersion = await this.getCurrentAppVersion();
-            
             console.log(`[UpdateService] Current: ${currentVersion}, Latest Remote: ${data.latestVersion}`);
 
             if (this.isNewerVersion(currentVersion, data.latestVersion)) {
@@ -81,7 +96,7 @@ class UpdateServiceClass {
         
         let zipUrl = '';
         try {
-            this.emit({ phase: 'downloading', progress: 20 });
+            this.emit({ phase: 'downloading', progress: 10 });
             
             if (Capacitor.isNativePlatform()) {
                 zipUrl = `${UPDATE_SERVER_URL}/update-${this.targetVersion}.zip`;
@@ -91,10 +106,21 @@ class UpdateServiceClass {
                     this.emit({ phase: 'downloading', progress: info.percent });
                 });
 
-                const bundle = await CapacitorUpdater.download({
-                    url: zipUrl,
-                    version: uniqueVersionId,
-                });
+                let bundle: any = null;
+                try {
+                    bundle = await CapacitorUpdater.download({
+                        url: zipUrl,
+                        version: uniqueVersionId,
+                    });
+                } catch (downloadErr) {
+                    console.warn(`[UpdateService] Primary zip download failed (${zipUrl}), trying GitHub release fallback...`, downloadErr);
+                    // Fallback to GitHub Release or Raw
+                    zipUrl = `https://raw.githubusercontent.com/Mannyyy-15/ApexWatch/main/public/update-${this.targetVersion}.zip`;
+                    bundle = await CapacitorUpdater.download({
+                        url: zipUrl,
+                        version: uniqueVersionId,
+                    });
+                }
                 
                 this.downloadedBundle = bundle;
                 this.emit({ phase: 'ready', progress: 100 });
@@ -103,7 +129,7 @@ class UpdateServiceClass {
                 // Mobile Web or Browser: Trigger APK download or reload
                 this.emit({ phase: 'downloading', progress: 70 });
                 setTimeout(() => {
-                    window.open('https://github.com/Mannyyy-15/ApexWatch/raw/main/ApexWatch.apk', '_blank');
+                    window.open(`https://github.com/Mannyyy-15/ApexWatch/releases/download/v${this.targetVersion}/ApexWatch.apk`, '_blank');
                     this.emit({ phase: 'ready', progress: 100 });
                 }, 500);
                 return true;

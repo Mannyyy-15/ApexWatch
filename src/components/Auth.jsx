@@ -201,10 +201,19 @@ export function Auth() {
  <button 
  onClick={handleGoogleLogin}
  disabled={loading}
- className="w-full bg-glass-bg border border-glass-border text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-glass-hover hover:border-white/20 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer tv-focusable"
+ className="w-full bg-glass-bg border border-glass-border text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-glass-hover hover:border-white/20 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer tv-focusable mb-3"
  >
  <Chrome size={16} />
  Continue with Google
+ </button>
+
+ <button 
+ onClick={() => {
+ setCurrentView('profiles');
+ }}
+ className="w-full bg-white/5 border border-white/10 text-white/70 hover:text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition-all flex items-center justify-center cursor-pointer tv-focusable"
+ >
+ Skip & Explore as Guest
  </button>
 
  <div className="mt-6 text-center">

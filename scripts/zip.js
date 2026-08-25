@@ -8,9 +8,16 @@ const __dirname = path.dirname(__filename);
 
 const distPath = path.resolve(__dirname, '../dist');
 const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'));
-const outPath = path.resolve(__dirname, `../public/update-${pkg.version}.zip`);
+const publicDir = path.resolve(__dirname, '../public');
+const outPublicZip = path.join(publicDir, `update-${pkg.version}.zip`);
+const outDistZip = path.join(distPath, `update-${pkg.version}.zip`);
 
 async function createZip() {
+    if (!fs.existsSync(distPath)) {
+        console.warn('dist folder does not exist yet. Skipping zip creation.');
+        return;
+    }
+
     const zip = new JSZip();
 
     function addDirToZip(dirPath, currentZip) {
@@ -29,7 +36,7 @@ async function createZip() {
 
     addDirToZip(distPath, zip);
     
-    // Capgo requires the capacitor.config.json in the root of the zip
+    // Capgo requires capacitor.config.json in the root of the zip
     const capConfigPath = path.resolve(__dirname, '../capacitor.config.json');
     if (fs.existsSync(capConfigPath)) {
         zip.file('capacitor.config.json', fs.readFileSync(capConfigPath));
@@ -44,26 +51,37 @@ async function createZip() {
     });
 
     // Ensure public dir exists
-    const publicDir = path.dirname(outPath);
     if (!fs.existsSync(publicDir)) {
         fs.mkdirSync(publicDir, { recursive: true });
     }
 
-    // Clean old zips
-    const oldFiles = fs.readdirSync(publicDir);
-    for (const f of oldFiles) {
+    // Clean old zips in public
+    const oldPublicFiles = fs.readdirSync(publicDir);
+    for (const f of oldPublicFiles) {
         if (f.startsWith('update-') && f.endsWith('.zip')) {
-            fs.unlinkSync(path.join(publicDir, f));
+            try { fs.unlinkSync(path.join(publicDir, f)); } catch (e) {}
         }
     }
 
-    fs.writeFileSync(outPath, content);
-    console.log(`Successfully created ${outPath}`);
+    // Write zip to public/ and dist/
+    fs.writeFileSync(outPublicZip, content);
+    try { fs.writeFileSync(outDistZip, content); } catch (e) {}
+    console.log(`Successfully created ${outPublicZip} and ${outDistZip}`);
 
-    // Automatically update version.json
-    const versionJsonPath = path.resolve(__dirname, '../public/version.json');
-    fs.writeFileSync(versionJsonPath, JSON.stringify({ latestVersion: pkg.version }, null, 2));
-    console.log(`Updated version.json to ${pkg.version}`);
+    // Automatically update version.json in both public and dist
+    const versionData = JSON.stringify({ 
+        latestVersion: pkg.version, 
+        updatedAt: new Date().toISOString(),
+        zipUrl: `https://apex-watch.vercel.app/update-${pkg.version}.zip`,
+        apkUrl: `https://github.com/Mannyyy-15/ApexWatch/releases/download/v${pkg.version}/ApexWatch.apk`
+    }, null, 2);
+
+    fs.writeFileSync(path.join(publicDir, 'version.json'), versionData);
+    if (fs.existsSync(distPath)) {
+        fs.writeFileSync(path.join(distPath, 'version.json'), versionData);
+    }
+    console.log(`Updated version.json to v${pkg.version} in public and dist`);
 }
 
 createZip().catch(console.error);
+
