@@ -79,15 +79,15 @@ export function VideoPlayer() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  // Popup ad blocker: blocks embed ad networks from opening new tabs
+  // Safe popup limiter: prevents popup spam without crashing embed scripts
   useEffect(() => {
     const originalOpen = window.open;
+    const dummyWin = { closed: false, focus: () => {}, blur: () => {}, close: () => {}, postMessage: () => {} };
     window.open = function(url, target, features) {
       if (url && (String(url).includes('github.com') || String(url).includes('apex-watch') || String(url).includes('apk'))) {
         return originalOpen.apply(window, arguments);
       }
-      console.log('Blocked ad popup redirect:', url);
-      return null;
+      return dummyWin;
     };
     return () => {
       window.open = originalOpen;
@@ -305,51 +305,69 @@ export function VideoPlayer() {
  loadMovieAndProgress();
  }, [activeMovieId, user, activeProfile, activeParty?.partyCode]);
 
- // Handle messages and watch progress updates
- useEffect(() => {
- if (!movie || !user || !activeProfile) return;
+  // Handle messages and watch progress updates with high-efficiency throttling
+  const lastSavedTimeRef = useRef(0);
+  const lastThrottleTimeRef = useRef(0);
 
- const handleMessage = async (event) => {
- try {
- if (typeof event.data === 'string') {
- const payload = JSON.parse(event.data);
- if (payload.type === 'PLAYER_EVENT') {
- const { event: eventName, currentTime, progress, duration: videoDuration } = payload.data;
- 
- if (currentTime !== undefined) setLocalTime(currentTime);
- if (videoDuration !== undefined) setDuration(videoDuration);
+  useEffect(() => {
+    if (!movie || !user || !activeProfile) return;
 
- // If host, sync active plays/pauses to Firestore
- if (activeParty && isPartyHost) {
- if (eventName === 'pause') {
- updatePartyState({ isPlaying: false, currentTime });
- } else if (eventName === 'play') {
- updatePartyState({ isPlaying: true, currentTime });
- }
- }
+    const handleMessage = (event) => {
+      try {
+        if (typeof event.data === 'string') {
+          let payload;
+          try {
+            payload = JSON.parse(event.data);
+          } catch (_) {
+            return;
+          }
+          if (payload && payload.type === 'PLAYER_EVENT') {
+            const { event: eventName, currentTime, duration: videoDuration } = payload.data || {};
+            const now = Date.now();
+            
+            // Throttle state update to at most once per 1.5s
+            if (currentTime !== undefined && (now - lastThrottleTimeRef.current > 1500 || eventName === 'pause')) {
+              lastThrottleTimeRef.current = now;
+              setLocalTime(currentTime);
+            }
+            if (videoDuration !== undefined && videoDuration > 0 && duration === 0) {
+              setDuration(videoDuration);
+            }
 
- // Save watch progress to history list
- await firestoreService.saveWatchProgress(user.uid, activeProfile.id, movie.id, {
- progressSeconds: currentTime || 0,
- durationSeconds: videoDuration || duration,
- completed: ((currentTime || 0) / (videoDuration || duration)) >= 0.95,
- contentType: movie.type,
- title: movie.title,
- poster: movie.poster,
- backdrop: movie.backdrop,
- year: movie.year,
- season: activeSeason,
- episode: activeEpisode,
- genres: movie.tags || []
- });
- }
- }
- } catch (e) {}
- };
+            // If host, sync active plays/pauses to Firestore
+            if (activeParty && isPartyHost) {
+              if (eventName === 'pause') {
+                updatePartyState({ isPlaying: false, currentTime });
+              } else if (eventName === 'play') {
+                updatePartyState({ isPlaying: true, currentTime });
+              }
+            }
 
- window.addEventListener('message', handleMessage);
- return () => window.removeEventListener('message', handleMessage);
- }, [movie, user, activeProfile, activeParty, isPartyHost, duration]);
+            // Save watch progress at most once every 15 seconds or when paused
+            if (currentTime !== undefined && (Math.abs(currentTime - lastSavedTimeRef.current) >= 15 || eventName === 'pause')) {
+              lastSavedTimeRef.current = currentTime;
+              firestoreService.saveWatchProgress(user.uid, activeProfile.id, movie.id, {
+                progressSeconds: currentTime || 0,
+                durationSeconds: videoDuration || duration || 0,
+                completed: ((currentTime || 0) / (videoDuration || duration || 1)) >= 0.95,
+                contentType: movie.type,
+                title: movie.title,
+                poster: movie.poster,
+                backdrop: movie.backdrop,
+                year: movie.year,
+                season: activeSeason,
+                episode: activeEpisode,
+                genres: movie.tags || []
+              }).catch(() => {});
+            }
+          }
+        }
+      } catch (_) {}
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [movie?.id, user?.uid, activeProfile?.id, activeParty?.partyCode, isPartyHost, duration, activeSeason, activeEpisode]);
 
  // Host Watch Party Periodical Sync Effect
  useEffect(() => {
@@ -924,29 +942,26 @@ export function VideoPlayer() {
                         onClick={() => {
                           setSelectedServer(srv.id);
                           setShowServerMenu(false);
-                        }}
-                        className={`w-full flex items-center justify-between p-3 md:p-4 rounded-xl border font-bold text-[11px] md:text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-98 text-left ${
-className="absolute bottom-24 right-8 z-[60] pointer-events-auto bg-[#0a0a0a]/95 border border-white/10 rounded-2xl p-5 w-72 border-r-4 border-r-accent"
- >
- <h4 className="text-[10px] font-black text-accent uppercase tracking-widest mb-1.5">Next Episode playing</h4>
- <p className="text-white font-bold text-sm mb-3">Season {activeSeason}, Episode {activeEpisode + 1}</p>
- <div className="flex items-center justify-between gap-3">
- <button 
- onClick={handleNextEpisode}
- className="flex-1 py-2 px-3 bg-accent text-white font-black text-[10px] uppercase tracking-wider rounded-lg active:scale-95 transition-all cursor-pointer"
- >
- Play Now ({countdown}s)
- </button>
- <button 
- onClick={() => setCancelAutoPlay(true)}
- className="py-2 px-3 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white font-black text-[10px] uppercase tracking-wider rounded-lg transition-all cursor-pointer"
- >
- Cancel
- </button>
- </div>
- </motion.div>
- )}
- </AnimatePresence>
+                        }}                        className={`w-full flex items-center justify-between p-3 md:p-4 rounded-xl border font-bold text-[11px] md:text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-98 text-left ${
+                          isSelected
+                            ? 'bg-accent border-accent text-white shadow-lg'
+                            : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white animate-pulse' : 'bg-white/20'}`} />
+                          <span>{srv.name}</span>
+                        </div>
+                        {isSelected && <span className="text-[9px] bg-white/20 px-2 py-0.5 rounded-full">Active</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
  {/* Resume Playback Toast */}
  <AnimatePresence>
