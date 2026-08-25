@@ -146,7 +146,19 @@ class UpdateServiceClass {
         try {
             if (Capacitor.isNativePlatform()) {
                 await CapacitorUpdater.notifyAppReady();
-                console.log('[UpdateService] Notified Capgo that app is ready (health check passed)');
+                console.log('[UpdateService] Notified Capgo that app is ready');
+                
+                // Safety check: ensure phone is not stuck on an old downloaded bundle
+                try {
+                    const currentBundle = await CapacitorUpdater.current();
+                    if (currentBundle?.bundle?.id) {
+                        const cleanId = currentBundle.bundle.id.replace(/^update-/, '');
+                        if (/^\d+\.\d+/.test(cleanId) && this.isNewerVersion(cleanId, pkg.version)) {
+                            console.log(`[UpdateService] Active bundle (${cleanId}) is older than APK (${pkg.version}). Resetting to APK.`);
+                            await CapacitorUpdater.reset();
+                        }
+                    }
+                } catch (_) {}
             }
         } catch (error) {
             console.error('[UpdateService] Error notifying app ready:', error);

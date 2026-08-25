@@ -4,6 +4,10 @@
   "webDir": "dist",
   "bundledWebRuntime": false,
   "plugins": {
+    "CapacitorUpdater": {
+      "resetWhenUpdate": true,
+      "autoUpdate": false
+    },
     "FirebaseAuthentication": {
       "skipNativeAuth": false,
       "providers": ["google.com"]
