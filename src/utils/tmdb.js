@@ -109,6 +109,25 @@ export const tmdb = {
  return data.results || [];
  },
 
+  fetchIndianTrending: async () => {
+    try {
+      const [movies, tv] = await Promise.all([
+        tmdb.fetchDiscover('movie', { with_original_language: 'hi|te|ta|ml|kn', sort_by: 'popularity.desc' }),
+        tmdb.fetchDiscover('tv', { with_original_language: 'hi|te|ta|ml|kn', sort_by: 'popularity.desc' })
+      ]);
+      const mixed = [];
+      const maxLen = Math.max(movies.length, tv.length);
+      for (let i = 0; i < maxLen; i++) {
+        if (tv[i]) mixed.push({ ...tv[i], media_type: 'tv' });
+        if (movies[i]) mixed.push({ ...movies[i], media_type: 'movie' });
+      }
+      return mixed;
+    } catch (e) {
+      console.error('Error fetching Indian content:', e);
+      return [];
+    }
+  },
+
  fetchRecommended: async (id, type = 'movie') => {
  if (!id || id === 'undefined') return [];
  const data = await fetchWithErrorHandling(`${BASE_URL}/${type}/${id}/recommendations?region=IN`);
