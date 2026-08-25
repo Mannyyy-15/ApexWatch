@@ -164,29 +164,78 @@ export function VideoPlayer() {
 
   const SERVERS = [
     { id: 'autoembed_co', name: 'Server 1 (AutoEmbed HD - Fast)' },
-    { id: 'videasy', name: 'Server 2 (Videasy Ultra)' },
-    { id: 'vidlink', name: 'Server 3 (VidLink Pro)' },
+    { id: 'videasy', name: 'Server 2 (Videasy Ultra - Multi-Lang)' },
+    { id: 'vidlink', name: 'Server 3 (VidLink Pro 4K)' },
     { id: 'vidsrc_pm', name: 'Server 4 (VidSrc PM)' },
-    { id: 'vidsrc_to', name: 'Server 5 (VidSrc TO)' },
+    { id: 'vidsrc_to', name: 'Server 5 (VidSrc TO Engine)' },
     { id: 'embed_su', name: 'Server 6 (EmbedSU Stream)' },
-    { id: 'multiembed', name: 'Server 7 (MultiEmbed MOV)' },
-    { id: 'smashystream', name: 'Server 8 (SmashyStream Pro)' },
-    { id: '2embed', name: 'Server 9 (2Embed Engine)' },
-    { id: 'vidsrc_vip', name: 'Server 10 (VidSrc VIP)' }
+    { id: 'vidsrc_cc', name: 'Server 7 (VidSrc CC v2)' },
+    { id: 'moviesapi', name: 'Server 8 (MoviesAPI Club)' },
+    { id: 'multiembed', name: 'Server 9 (MultiEmbed MOV)' },
+    { id: 'smashystream', name: 'Server 10 (SmashyStream Pro)' },
+    { id: '2embed', name: 'Server 11 (2Embed Engine)' },
+    { id: 'vidsrc_vip', name: 'Server 12 (VidSrc VIP)' }
   ];
 
   const [fallbackMessage, setFallbackMessage] = useState('');
+  const [showSlowPrompt, setShowSlowPrompt] = useState(false);
+  const [switchCountdown, setSwitchCountdown] = useState(6);
+  const watchdogTimerRef = useRef(null);
+  const countdownIntervalRef = useRef(null);
+
+  const switchToNextServer = useCallback(() => {
+    setShowSlowPrompt(false);
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+    const currentIndex = SERVERS.findIndex(s => s.id === selectedServer);
+    const nextIndex = (currentIndex + 1) % SERVERS.length;
+    const nextServer = SERVERS[nextIndex];
+    setSelectedServer(nextServer.id);
+    setFallbackMessage(`Switching to ${nextServer.name}...`);
+    setShowFallbackToast(true);
+    setTimeout(() => setShowFallbackToast(false), 4000);
+  }, [selectedServer]);
 
   const handleIframeError = useCallback(() => {
-    const currentIndex = SERVERS.findIndex(s => s.id === selectedServer);
-    if (currentIndex >= 0 && currentIndex < SERVERS.length - 1) { // Auto-switch to next server if one fails
-      const nextServer = SERVERS[currentIndex + 1];
-      setSelectedServer(nextServer.id);
-      setFallbackMessage(`Server ${currentIndex + 1} unresponsive. Changing to ${nextServer.name}...`);
-      setShowFallbackToast(true);
-      setTimeout(() => setShowFallbackToast(false), 5000);
+    switchToNextServer();
+  }, [switchToNextServer]);
+
+  // Stall & Buffering Watchdog: prompts user or auto-switches if server doesn't respond
+  useEffect(() => {
+    setShowSlowPrompt(false);
+    if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+
+    // If stream does not report timeupdate within 8.5s, trigger prompt
+    watchdogTimerRef.current = setTimeout(() => {
+      if (localTime === 0) {
+        setShowSlowPrompt(true);
+        setSwitchCountdown(6);
+        countdownIntervalRef.current = setInterval(() => {
+          setSwitchCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(countdownIntervalRef.current);
+              switchToNextServer();
+              return 6;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
+    }, 8500);
+
+    return () => {
+      if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+    };
+  }, [selectedServer, activeMovieId, activeSeason, activeEpisode]);
+
+  // Dismiss watchdog once playback starts
+  useEffect(() => {
+    if (localTime > 0 && showSlowPrompt) {
+      setShowSlowPrompt(false);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     }
-  }, [selectedServer]);
+  }, [localTime, showSlowPrompt]);
 
 
  useEffect(() => {
@@ -559,6 +608,17 @@ export function VideoPlayer() {
         ? `https://embed.su/embed/tv/${id}/${s}/${e}`
         : `https://embed.su/embed/movie/${id}`;
     }
+    if (selectedServer === 'vidsrc_cc') {
+      return movie.type === 'tv'
+        ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
+        : `https://vidsrc.cc/v2/embed/movie/${id}`;
+    }
+
+    if (selectedServer === 'moviesapi') {
+      return movie.type === 'tv'
+        ? `https://moviesapi.club/tv/${id}-${s}-${e}`
+        : `https://moviesapi.club/movie/${id}`;
+    }
 
     if (selectedServer === 'multiembed') {
       return movie.type === 'tv'
@@ -612,8 +672,7 @@ export function VideoPlayer() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               className="absolute inset-0 w-full h-full"
-            >
-              <iframe 
+            >              <iframe 
                 ref={iframeRef}
                 src={embedUrl} 
                 className="w-full h-full border-none" 
@@ -646,7 +705,6 @@ export function VideoPlayer() {
               <span>{showControls ? 'Hide Controls' : 'Servers & Controls'}</span>
             </button>
           </div>
-
           {/* Top-Left Controls: Back */}
           <AnimatePresence>
             {showControls && (
@@ -669,221 +727,259 @@ export function VideoPlayer() {
             )}
           </AnimatePresence>
 
- {/* Top-Right Controls: Subtitles, Server, Rotate */}
- <AnimatePresence>
- {showControls && (
- <motion.div
- initial={{ opacity: 0, y: -10 }}
- animate={{ opacity: 1, y: 0 }}
- exit={{ opacity: 0, y: -10 }}
- transition={{ duration: 0.2 }}
- className="absolute top-6 right-6 pointer-events-auto z-50 flex items-center gap-2.5"
- >
-  <button
-    onClick={(e) => { e.stopPropagation(); setShowCastModal(true); }}
-    tabIndex={0}
-    className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-accent hover:border-accent transition-all shadow-xl cursor-pointer tv-focusable"
-    title="Cast to TV"
-  >
-    <Cast size={18} />
-  </button>
-  <button
-    onClick={(e) => { e.stopPropagation(); setShowServerMenu(true); }}
-    tabIndex={0}
-    className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer tv-focusable"
-    title="Select Server"
-  >
-    <Server size={18} />
-  </button>
-  {movie?.type === 'tv' && (
-    <button
-      onClick={(e) => { e.stopPropagation(); setShowEpisodesMenu(true); }}
-      tabIndex={0}
-      className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer tv-focusable"
-      title="Episodes"
-    >
- <ListVideo size={16} />
- <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">
- Episodes
- </span>
- </button>
- )}
-  {Capacitor.isNativePlatform() && (
-    <button
-      onClick={(e) => { e.stopPropagation(); handleManualRotate(); }}
-      tabIndex={0}
-      className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer tv-focusable"
-    >
-      <RotateCw size={15} className="text-accent" />
-      <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">
-        {isPortrait ? 'Landscape' : 'Portrait'}
-      </span>
-    </button>
-  )}
- </motion.div>
- )}
- </AnimatePresence>
+          {/* Top-Right Controls: Cast, Server, Episodes, Rotate */}
+          <AnimatePresence>
+            {showControls && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-6 right-6 pointer-events-auto z-50 flex items-center gap-2.5"
+              >
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowCastModal(true); }}
+                  tabIndex={0}
+                  className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-accent hover:border-accent transition-all shadow-xl cursor-pointer tv-focusable"
+                  title="Cast to TV"
+                >
+                  <Cast size={18} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowServerMenu(true); }}
+                  tabIndex={0}
+                  className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-3 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer tv-focusable"
+                  title="Select Server"
+                >
+                  <Server size={18} />
+                </button>
+                {movie?.type === 'tv' && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowEpisodesMenu(true); }}
+                    tabIndex={0}
+                    className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white hover:text-black transition-all shadow-xl cursor-pointer tv-focusable"
+                    title="Episodes"
+                  >
+                    <ListVideo size={16} />
+                    <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">
+                      Episodes
+                    </span>
+                  </button>
+                )}
+                {Capacitor.isNativePlatform() && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleManualRotate(); }}
+                    tabIndex={0}
+                    className="flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15 text-white hover:bg-white/20 transition-all shadow-xl cursor-pointer tv-focusable"
+                  >
+                    <RotateCw size={15} className="text-accent" />
+                    <span className="font-bold text-[11px] uppercase tracking-wider hidden sm:inline">
+                      {isPortrait ? 'Landscape' : 'Portrait'}
+                    </span>
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
- {/* Guest Synced Pause Blur Overlay */}
- {activeParty && !activeParty.isPlaying && !isPartyHost && (
- <div className="absolute inset-0 z-40 bg-black/75 backdrop-blur-md flex flex-col items-center justify-center pointer-events-auto text-center p-6">
- <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-6 border border-accent/20 animate-pulse">
- <Play size={36} className="text-accent ml-1" />
- </div>
- <h3 className="text-2xl font-black uppercase tracking-widest italic text-white mb-2">Watch Party Paused</h3>
- <p className="text-white/40 text-sm max-w-xs font-semibold">The host has paused streaming. Sync will resume automatically.</p>
- </div>
- )}
+          {/* Guest Synced Pause Blur Overlay */}
+          {activeParty && !activeParty.isPlaying && !isPartyHost && (
+            <div className="absolute inset-0 z-40 bg-black/75 backdrop-blur-md flex flex-col items-center justify-center pointer-events-auto text-center p-6">
+              <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mb-6 border border-accent/20 animate-pulse">
+                <Play size={36} className="text-accent ml-1" />
+              </div>
+              <h3 className="text-2xl font-black uppercase tracking-widest italic text-white mb-2">Watch Party Paused</h3>
+              <p className="text-white/40 text-sm max-w-xs font-semibold">The host has paused streaming. Sync will resume automatically.</p>
+            </div>
+          )}
 
+          {/* Netflix-style Next Episode Auto-Play Countdown Popup */}
+          <AnimatePresence>
+            {showNextEpPopup && (
+              <motion.div
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 50, scale: 0.9 }}
+                className="absolute bottom-24 right-8 z-[60] pointer-events-auto bg-[#0a0a0a]/95 border border-white/10 rounded-2xl p-5 w-72 border-r-4 border-r-accent"
+              >
+                <h4 className="text-[10px] font-black text-accent uppercase tracking-widest mb-1.5">Next Episode playing</h4>
+                <p className="text-white font-bold text-sm mb-3">Season {activeSeason}, Episode {activeEpisode + 1}</p>
+                <div className="flex items-center justify-between gap-3">
+                  <button 
+                    onClick={handleNextEpisode}
+                    className="flex-1 py-2 px-3 bg-accent text-white font-black text-[10px] uppercase tracking-wider rounded-lg active:scale-95 transition-all cursor-pointer"
+                  >
+                    Play Now ({countdown}s)
+                  </button>
+                  <button 
+                    onClick={() => setCancelAutoPlay(true)}
+                    className="py-2 px-3 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white font-black text-[10px] uppercase tracking-wider rounded-lg transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
- {/* Netflix-style Next Episode Auto-Play Countdown Popup */}
- <AnimatePresence>
- {showNextEpPopup && (
- <motion.div
- initial={{ opacity: 0, y: 50, scale: 0.9 }}
- animate={{ opacity: 1, y: 0, scale: 1 }}
- exit={{ opacity: 0, y: 50, scale: 0.9 }}
- className="absolute bottom-24 right-8 z-[60] pointer-events-auto bg-[#0a0a0a]/95 border border-white/10 rounded-2xl p-5 w-72 border-r-4 border-r-accent"
- >
- <h4 className="text-[10px] font-black text-accent uppercase tracking-widest mb-1.5">Next Episode playing</h4>
- <p className="text-white font-bold text-sm mb-3">Season {activeSeason}, Episode {activeEpisode + 1}</p>
- <div className="flex items-center justify-between gap-3">
- <button 
- onClick={handleNextEpisode}
- className="flex-1 py-2 px-3 bg-accent text-white font-black text-[10px] uppercase tracking-wider rounded-lg active:scale-95 transition-all cursor-pointer"
- >
- Play Now ({countdown}s)
- </button>
- <button 
- onClick={() => setCancelAutoPlay(true)}
- className="py-2 px-3 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white font-black text-[10px] uppercase tracking-wider rounded-lg transition-all cursor-pointer"
- >
- Cancel
- </button>
- </div>
- </motion.div>
- )}
- </AnimatePresence>
+          {/* Resume Playback Toast */}
+          <AnimatePresence>
+            {showResumeToast && savedProgress && (
+              <motion.div
+                initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 50, scale: 0.9 }}
+                className="absolute top-24 right-6 z-[70] pointer-events-auto"
+              >
+                <button 
+                  onClick={() => {
+                    setStartTime(savedProgress.progressSeconds);
+                    setShowResumeToast(false);
+                    setPlayerReady(false);
+                    setTimeout(() => setPlayerReady(true), 200);
+                  }}
+                  className="bg-black/90 backdrop-blur-2xl border border-white/20 p-4 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all group border-l-4 border-l-red-600"
+                >
+                  <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <Play size={20} fill="currentColor" className="ml-1" />
+                  </div>
+                  <div className="text-left pr-4">
+                    <p className="text-white font-black text-[10px] uppercase tracking-widest mb-0.5 opacity-50">Resume Playback?</p>
+                    <p className="text-white text-sm font-bold">
+                      Last watched at {Math.floor(savedProgress.progressSeconds / 60)}:{(Math.floor(savedProgress.progressSeconds % 60)).toString().padStart(2, '0')}
+                    </p>
+                  </div>
+                  <div 
+                    onClick={(e) => { e.stopPropagation(); setShowResumeToast(false); }}
+                    className="p-2 hover:bg-white/10 rounded-full text-white/30 hover:text-white transition-all ml-2"
+                  >
+                    <X size={16} />
+                  </div>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
- {/* Resume Playback Toast */}
- <AnimatePresence>
- {showResumeToast && savedProgress && (
- <motion.div
- initial={{ opacity: 0, x: 50, scale: 0.9 }}
- animate={{ opacity: 1, x: 0, scale: 1 }}
- exit={{ opacity: 0, x: 50, scale: 0.9 }}
- className="absolute top-24 right-6 z-[70] pointer-events-auto"
- >
- <button 
- onClick={() => {
- setStartTime(savedProgress.progressSeconds);
- setShowResumeToast(false);
- setPlayerReady(false);
- setTimeout(() => setPlayerReady(true), 200);
- }}
- className="bg-black/90 backdrop-blur-2xl border border-white/20 p-4 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all group border-l-4 border-l-red-600"
- >
- <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
- <Play size={20} fill="currentColor" className="ml-1" />
- </div>
- <div className="text-left pr-4">
- <p className="text-white font-black text-[10px] uppercase tracking-widest mb-0.5 opacity-50">Resume Playback?</p>
- <p className="text-white text-sm font-bold">
- Last watched at {Math.floor(savedProgress.progressSeconds / 60)}:{(Math.floor(savedProgress.progressSeconds % 60)).toString().padStart(2, '0')}
- </p>
- </div>
- <div 
- onClick={(e) => { e.stopPropagation(); setShowResumeToast(false); }}
- className="p-2 hover:bg-white/10 rounded-full text-white/30 hover:text-white transition-all ml-2"
- >
- <X size={16} />
- </div>
- </button>
- </motion.div>
- )}
- </AnimatePresence>
+          {/* Slow Server Response / Buffering Watchdog Alert */}
+          <AnimatePresence>
+            {showSlowPrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 30, scale: 0.95 }}
+                className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[70] pointer-events-auto w-[90%] max-w-md"
+              >
+                <div className="bg-[#0e0e0e]/95 backdrop-blur-2xl border border-yellow-500/30 rounded-2xl p-4 shadow-[0_0_35px_rgba(234,179,8,0.2)] flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-yellow-500 flex-shrink-0">
+                      <RefreshCw size={20} className="animate-spin" />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="text-white text-xs font-black uppercase tracking-wider">Slow Stream Response?</h4>
+                      <p className="text-white/60 text-[10px] truncate">Auto-switching in {switchCountdown}s or switch now</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={switchToNextServer}
+                      className="py-2 px-3 bg-yellow-500 hover:bg-yellow-400 text-black font-black text-[10px] uppercase tracking-wider rounded-xl transition-all cursor-pointer active:scale-95 shadow-md"
+                    >
+                      Next Server
+                    </button>
+                    <button
+                      onClick={() => setShowSlowPrompt(false)}
+                      className="p-2 hover:bg-white/10 text-white/40 hover:text-white rounded-lg transition-all cursor-pointer"
+                      title="Keep waiting"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
- {/* Auto-Fallback Toast */}
- <AnimatePresence>
- {showFallbackToast && (
- <motion.div
- initial={{ opacity: 0, y: -20, x: '-50%' }}
- animate={{ opacity: 1, y: 0, x: '-50%' }}
- exit={{ opacity: 0, y: -20, x: '-50%' }}
- className="absolute top-6 left-1/2 z-[70] pointer-events-none"
- >
- <div className="bg-black/90 backdrop-blur-2xl border border-white/20 px-6 py-3 rounded-full flex items-center gap-3 ">
- <Server size={18} className="text-yellow-500 animate-pulse" />
- <span className="text-white text-xs font-bold uppercase tracking-wider">{fallbackMessage}</span>
- </div>
- </motion.div>
- )}
- </AnimatePresence>
- </div>
+          {/* Auto-Fallback Toast */}
+          <AnimatePresence>
+            {showFallbackToast && (
+              <motion.div
+                initial={{ opacity: 0, y: -20, x: '-50%' }}
+                animate={{ opacity: 1, y: 0, x: '-50%' }}
+                exit={{ opacity: 0, y: -20, x: '-50%' }}
+                className="absolute top-6 left-1/2 z-[70] pointer-events-none"
+              >
+                <div className="bg-black/90 backdrop-blur-2xl border border-white/20 px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl">
+                  <Server size={18} className="text-yellow-500 animate-pulse" />
+                  <span className="text-white text-xs font-bold uppercase tracking-wider">{fallbackMessage}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
- {/* Right Side: Watch Party Sidebar */}
- {activeParty && (
- <div className="hidden md:flex w-80 h-full bg-[#080808]/95 border-l border-white/10 flex-col p-6 justify-between relative z-40">
- <div className="space-y-6">
- <div className="pb-4 border-b border-white/5">
- <div className="flex items-center gap-2 mb-1">
- <Users size={20} className="text-accent" />
- <h3 className="text-lg font-black uppercase tracking-wider italic text-white">Watch Party</h3>
- </div>
- <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Co-streaming room</p>
- </div>
+        {/* Right Side: Watch Party Sidebar */}
+        {activeParty && (
+          <div className="hidden md:flex w-80 h-full bg-[#080808]/95 border-l border-white/10 flex-col p-6 justify-between relative z-40">
+            <div className="space-y-6">
+              <div className="pb-4 border-b border-white/5">
+                <div className="flex items-center gap-2 mb-1">
+                  <Users size={20} className="text-accent" />
+                  <h3 className="text-lg font-black uppercase tracking-wider italic text-white">Watch Party</h3>
+                </div>
+                <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Co-streaming room</p>
+              </div>
 
- {/* Room Code Info Box */}
- <div className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center">
- <span className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1.5">Invite Room Code</span>
- <h4 className="text-2xl font-black tracking-widest text-accent font-mono mb-3">{activeParty.partyCode}</h4>
- <button 
- onClick={copyRoomCode}
- className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[9px] font-black uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer"
- >
- Copy Code
- </button>
- </div>
+              {/* Room Code Info Box */}
+              <div className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center">
+                <span className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1.5">Invite Room Code</span>
+                <h4 className="text-2xl font-black tracking-widest text-accent font-mono mb-3">{activeParty.partyCode}</h4>
+                <button 
+                  onClick={copyRoomCode}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[9px] font-black uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer"
+                >
+                  Copy Code
+                </button>
+              </div>
 
- {/* Members Joined List */}
- <div className="space-y-3">
- <h5 className="text-[9px] font-black text-white/40 uppercase tracking-widest">Members ({activeParty.members?.length || 1})</h5>
- <div className="space-y-2 max-h-60 overflow-y-auto pr-1 hide-scrollbar">
- {activeParty.members?.map((member, idx) => (
- <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-white/3 border border-white/5">
- <div className="flex items-center gap-2.5 min-w-0">
- <div className="w-8 h-8 rounded-full overflow-hidden border border-white/15">
- <img src={member.avatar} alt="" className="w-full h-full object-cover" />
- </div>
- <span className="text-xs font-bold text-white truncate">{member.name}</span>
- </div>
- {activeParty.hostId === user?.uid && idx === 0 ? (
- <span className="text-[7px] font-black bg-accent text-white py-0.5 px-1.5 rounded uppercase tracking-wider">Host</span>
- ) : (
- <span className="text-[7px] font-black bg-white/10 text-white/60 py-0.5 px-1.5 rounded uppercase tracking-wider">Member</span>
- )}
- </div>
- ))}
- </div>
- </div>
- </div>
+              {/* Members Joined List */}
+              <div className="space-y-3">
+                <h5 className="text-[9px] font-black text-white/40 uppercase tracking-widest">Members ({activeParty.members?.length || 1})</h5>
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1 hide-scrollbar">
+                  {activeParty.members?.map((member, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-white/3 border border-white/5">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-full overflow-hidden border border-white/15">
+                          <img src={member.avatar} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <span className="text-xs font-bold text-white truncate">{member.name}</span>
+                      </div>
+                      {activeParty.hostId === user?.uid && idx === 0 ? (
+                        <span className="text-[7px] font-black bg-accent text-white py-0.5 px-1.5 rounded uppercase tracking-wider">Host</span>
+                      ) : (
+                        <span className="text-[7px] font-black bg-white/10 text-white/60 py-0.5 px-1.5 rounded uppercase tracking-wider">Member</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
- {/* Footer Control: Leave Room */}
- <div className="space-y-4">
- <div className="p-3 bg-white/5 border border-white/5 rounded-2xl flex items-center gap-2.5 text-[9px] text-white/40 font-black uppercase tracking-wide">
- <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></div>
- <span>Party Session Active</span>
- </div>
- <button 
- onClick={handleClose}
- className="w-full py-3.5 bg-accent hover:bg-red-700 text-white font-black uppercase tracking-widest text-[10px] rounded-xl transition-all active:scale-95 cursor-pointer "
- >
- Leave Watch Party
- </button>
- </div>
- </div>
- )}
- </div>
+            {/* Footer Control: Leave Room */}
+            <div className="space-y-4">
+              <div className="p-3 bg-white/5 border border-white/5 rounded-2xl flex items-center gap-2.5 text-[9px] text-white/40 font-black uppercase tracking-wide">
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></div>
+                <span>Party Session Active</span>
+              </div>
+              <button 
+                onClick={handleClose}
+                className="w-full py-3.5 bg-accent hover:bg-red-700 text-white font-black uppercase tracking-widest text-[10px] rounded-xl transition-all active:scale-95 cursor-pointer"
+              >
+                Leave Watch Party
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Sliding Server Switcher Drawer */}
       <AnimatePresence>
@@ -936,7 +1032,8 @@ export function VideoPlayer() {
                         onClick={() => {
                           setSelectedServer(srv.id);
                           setShowServerMenu(false);
-                        }}                        className={`w-full flex items-center justify-between p-3 md:p-4 rounded-xl border font-bold text-[11px] md:text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-98 text-left ${
+                        }}
+                        className={`w-full flex items-center justify-between p-3 md:p-4 rounded-xl border font-bold text-[11px] md:text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-98 text-left ${
                           isSelected
                             ? 'bg-accent border-accent text-white shadow-lg'
                             : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
@@ -956,7 +1053,6 @@ export function VideoPlayer() {
           </>
         )}
       </AnimatePresence>
-
 
       {/* Sliding Episodes Drawer */}
       <AnimatePresence>
