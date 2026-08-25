@@ -6,6 +6,7 @@ import { firestoreService } from '../utils/firestore';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import UpdateService from '../services/UpdateService';
 import pkg from '../../package.json';
 
 const AppContext = createContext(undefined);
@@ -492,25 +493,39 @@ export function AppProvider({ children }) {
  };
 
  const toggleWatchlist = async (movie) => {
- if (!user || !activeProfile) return;
- 
- const isInList = watchlist.some(item => item.contentId === movie.id);
- if (isInList) {
- await firestoreService.removeFromWatchlist(user.uid, activeProfile.id, movie.id);
- setWatchlist(prev => prev.filter(item => item.contentId !== movie.id));
- } else {
- const watchlistItem = {
- contentId: movie.id,
- contentType: movie.type || 'movie',
- title: movie.title,
- poster: movie.poster,
- year: movie.year,
- addedAt: Date.now()
- };
- await firestoreService.addToWatchlist(user.uid, activeProfile.id, movie.id, movie.type || 'movie');
- setWatchlist(prev => [...prev, watchlistItem]);
- }
- };
+    if (!movie) return;
+    const movieId = movie.id || movie.tmdbId;
+    const isInList = watchlist.some(item => (item.contentId === movieId || item.id === movieId));
+
+    if (isInList) {
+      if (user && activeProfile) {
+        await firestoreService.removeFromWatchlist(user.uid, activeProfile.id, movieId).catch(() => {});
+      }
+      setWatchlist(prev => {
+        const updated = prev.filter(item => (item.contentId !== movieId && item.id !== movieId));
+        localStorage.setItem('apexwatch_cached_watchlist', JSON.stringify(updated));
+        return updated;
+      });
+    } else {
+      const watchlistItem = {
+        contentId: movieId,
+        id: movieId,
+        contentType: movie.type || 'movie',
+        title: movie.title || movie.name,
+        poster: movie.poster,
+        year: movie.year,
+        addedAt: Date.now()
+      };
+      if (user && activeProfile) {
+        await firestoreService.addToWatchlist(user.uid, activeProfile.id, movieId, movie.type || 'movie').catch(() => {});
+      }
+      setWatchlist(prev => {
+        const updated = [...prev, watchlistItem];
+        localStorage.setItem('apexwatch_cached_watchlist', JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
 
   const value = useMemo(() => ({
     currentView, setCurrentView: navigateTo,
@@ -523,7 +538,7 @@ export function AppProvider({ children }) {
     libraryTab, setLibraryTab,
     activeSeason, setActiveSeason,
     activeEpisode, setActiveEpisode,
-    watchlist, setWatchlist,
+    watchlist, setWatchlist, toggleWatchlist,
     movieRows, setMovieRows,
     exploreCategory, setExploreCategory,
     cachedDetails, setCachedDetails,
