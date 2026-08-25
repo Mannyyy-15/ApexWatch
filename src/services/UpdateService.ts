@@ -50,31 +50,39 @@ class UpdateServiceClass {
     async checkForUpdate(silent = true): Promise<boolean> {
         if (!silent) this.emit({ phase: 'checking', progress: 0 });
         try {
-            let data: any = null;
+            let latestRemote = '1.0.0';
             
-            // 1. Try Vercel Production
+            // 1. Query GitHub Raw directly (real-time, zero CDN delay)
+            try {
+                const ghRes = await fetch(`https://raw.githubusercontent.com/Mannyyy-15/ApexWatch/main/public/version.json?t=${Date.now()}`);
+                if (ghRes.ok) {
+                    const ghData = await ghRes.json();
+                    if (ghData?.latestVersion) {
+                        latestRemote = ghData.latestVersion;
+                    }
+                }
+            } catch (e) {
+                console.warn('[UpdateService] GitHub version check error:', e);
+            }
+
+            // 2. Query Vercel (and pick whichever version is higher)
             try {
                 const res = await fetch(`${UPDATE_SERVER_URL}/version.json?t=${Date.now()}`);
-                if (res.ok) data = await res.json();
+                if (res.ok) {
+                    const vercelData = await res.json();
+                    if (vercelData?.latestVersion && this.isNewerVersion(latestRemote, vercelData.latestVersion)) {
+                        latestRemote = vercelData.latestVersion;
+                    }
+                }
             } catch (e) {
-                console.warn('[UpdateService] Vercel version check failed, trying GitHub fallback:', e);
-            }
-
-            // 2. Fallback to GitHub Raw if Vercel is unavailable
-            if (!data || !data.latestVersion) {
-                const ghRes = await fetch(`https://raw.githubusercontent.com/Mannyyy-15/ApexWatch/main/public/version.json?t=${Date.now()}`);
-                if (ghRes.ok) data = await ghRes.json();
-            }
-
-            if (!data || !data.latestVersion) {
-                throw new Error('Could not fetch version information from any server');
+                console.warn('[UpdateService] Vercel version check error:', e);
             }
             
             const currentVersion = await this.getCurrentAppVersion();
-            console.log(`[UpdateService] Current: ${currentVersion}, Latest Remote: ${data.latestVersion}`);
+            console.log(`[UpdateService] Current: ${currentVersion}, Latest Remote: ${latestRemote}`);
 
-            if (this.isNewerVersion(currentVersion, data.latestVersion)) {
-                this.targetVersion = data.latestVersion;
+            if (this.isNewerVersion(currentVersion, latestRemote)) {
+                this.targetVersion = latestRemote;
                 this.emit({ phase: 'update_available', progress: 0 });
                 return true;
             }

@@ -170,25 +170,27 @@ export function AppProvider({ children }) {
  // Fetch Profiles
  const profilesRef = collection(db, 'users', currentUser.uid, 'profiles');
  const q = query(profilesRef);
- onSnapshot(q, (snapshot) => {
- const profs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
- setProfiles(profs);
-  // Persistent Profile Logic
-  const savedProfileId = localStorage.getItem(`apexwatch_profile_${currentUser.uid}`);
-  const savedProfile = profs.find(p => p.id === savedProfileId);
-  const hasChosenProfileThisSession = sessionStorage.getItem('apexwatch_profile_chosen_session');
+        onSnapshot(q, (snapshot) => {
+          const profs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setProfiles(profs);
+          // Persistent Profile Logic
+          const savedProfileId = localStorage.getItem(`apexwatch_profile_${currentUser.uid}`);
+          const savedProfile = profs.find(p => p.id === savedProfileId);
+          const hasChosenProfileThisSession = sessionStorage.getItem('apexwatch_profile_chosen_session');
 
-  if (savedProfile && !activeProfile) {
-    setActiveProfile(savedProfile);
-    localStorage.setItem('apexwatch_cached_profile', JSON.stringify(savedProfile));
-  }
+          if (savedProfile && !activeProfile) {
+            setActiveProfile(savedProfile);
+            localStorage.setItem('apexwatch_cached_profile', JSON.stringify(savedProfile));
+          }
 
-  if (profs.length > 0 && currentView !== 'onboarding' && currentView !== 'auth') {
-    if (!hasChosenProfileThisSession) {
-      setCurrentView('profiles');
-    }
-  }
- });
+          if (profs.length > 0 && currentView !== 'onboarding' && currentView !== 'auth') {
+            if (!hasChosenProfileThisSession) {
+              setCurrentView('profiles');
+            }
+          }
+        }, (error) => {
+          console.warn('[AppContext] Profiles snapshot error suppressed:', error);
+        });
  }
  } else {
  setUser(null);
@@ -351,12 +353,14 @@ export function AppProvider({ children }) {
  const code = activeParty.partyCode;
  const partyRef = doc(db, 'watchParties', code);
 
- const unsubscribe = onSnapshot(partyRef, (snap) => {
- if (snap.exists()) {
- const data = snap.data();
- setActiveParty(data);
- }
- });
+    const unsubscribe = onSnapshot(partyRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        setActiveParty(data);
+      }
+    }, (err) => {
+      console.warn('[AppContext] WatchParty snapshot error suppressed:', err);
+    });
  return () => unsubscribe();
  }, [activeParty?.partyCode, user?.uid]);
 
