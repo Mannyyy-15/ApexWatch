@@ -29,7 +29,7 @@ export function VideoPlayer() {
  const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
  const [savedProgress, setSavedProgress] = useState(null);
  const [showResumeToast, setShowResumeToast] = useState(false);
- const [selectedServer, setSelectedServer] = useState('vidlink');
+ const [selectedServer, setSelectedServer] = useState('autoembed_co');
  const [showServerMenu, setShowServerMenu] = useState(false);
  const [showCastModal, setShowCastModal] = useState(false);
  const [activeCastSession, setActiveCastSession] = useState(null);
@@ -163,15 +163,15 @@ export function VideoPlayer() {
   }, [activeMovieId, activeSeason, movie?.type, showEpisodesMenu]);
 
   const SERVERS = [
-    { id: 'vidlink', name: 'Server 1 (VidLink Pro)' },
-    { id: 'videasy', name: 'Server 2 (Videasy HD)' },
-    { id: 'vidsrc_pm', name: 'Server 3 (VidSrc PM)' },
-    { id: 'autoembed_co', name: 'Server 4 (AutoEmbed Stream)' },
-    { id: 'smashystream', name: 'Server 5 (SmashyStream Pro)' },
-    { id: 'vidsrc_dev', name: 'Server 6 (VidSrc Dev)' },
-    { id: '2embed', name: 'Server 7 (2Embed Engine)' },
-    { id: 'vidsrc_xyz', name: 'Server 8 (VidSrc XYZ)' },
-    { id: 'vidsrc_in', name: 'Server 9 (VidSrc IN)' },
+    { id: 'autoembed_co', name: 'Server 1 (AutoEmbed HD - Fast)' },
+    { id: 'videasy', name: 'Server 2 (Videasy Ultra)' },
+    { id: 'vidlink', name: 'Server 3 (VidLink Pro)' },
+    { id: 'vidsrc_pm', name: 'Server 4 (VidSrc PM)' },
+    { id: 'vidsrc_to', name: 'Server 5 (VidSrc TO)' },
+    { id: 'embed_su', name: 'Server 6 (EmbedSU Stream)' },
+    { id: 'multiembed', name: 'Server 7 (MultiEmbed MOV)' },
+    { id: 'smashystream', name: 'Server 8 (SmashyStream Pro)' },
+    { id: '2embed', name: 'Server 9 (2Embed Engine)' },
     { id: 'vidsrc_vip', name: 'Server 10 (VidSrc VIP)' }
   ];
 
@@ -524,16 +524,10 @@ export function VideoPlayer() {
     const s = activeSeason || 1;
     const e = activeEpisode || 1;
 
-    if (selectedServer === 'vidlink') {
-      const baseUrl = movie.type === 'tv' 
-        ? `https://vidlink.pro/tv/${id}/${s}/${e}`
-        : `https://vidlink.pro/movie/${id}`;
-      const params = new URLSearchParams({
-        primaryColor: 'e50914',
-        autoplay: 'true'
-      });
-      if (startTime > 5) params.set('t', Math.floor(startTime).toString());
-      return `${baseUrl}?${params.toString()}`;
+    if (selectedServer === 'autoembed_co') {
+      return movie.type === 'tv'
+        ? `https://autoembed.co/tv/tmdb/${id}-${s}-${e}`
+        : `https://autoembed.co/movie/tmdb/${id}`;
     }
 
     if (selectedServer === 'videasy') {
@@ -542,16 +536,34 @@ export function VideoPlayer() {
         : `https://player.videasy.net/movie/${id}`;
     }
 
+    if (selectedServer === 'vidlink') {
+      return movie.type === 'tv' 
+        ? `https://vidlink.pro/tv/${id}/${s}/${e}`
+        : `https://vidlink.pro/movie/${id}`;
+    }
+
     if (selectedServer === 'vidsrc_pm') {
       return movie.type === 'tv'
         ? `https://vidsrc.pm/embed/tv/${id}/${s}/${e}`
         : `https://vidsrc.pm/embed/movie/${id}`;
     }
 
-    if (selectedServer === 'autoembed_co') {
+    if (selectedServer === 'vidsrc_to') {
       return movie.type === 'tv'
-        ? `https://autoembed.co/tv/tmdb/${id}-${s}-${e}`
-        : `https://autoembed.co/movie/tmdb/${id}`;
+        ? `https://vidsrc.to/embed/tv/${id}/${s}/${e}`
+        : `https://vidsrc.to/embed/movie/${id}`;
+    }
+
+    if (selectedServer === 'embed_su') {
+      return movie.type === 'tv'
+        ? `https://embed.su/embed/tv/${id}/${s}/${e}`
+        : `https://embed.su/embed/movie/${id}`;
+    }
+
+    if (selectedServer === 'multiembed') {
+      return movie.type === 'tv'
+        ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`
+        : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
     }
 
     if (selectedServer === 'smashystream') {
@@ -560,28 +572,10 @@ export function VideoPlayer() {
         : `https://player.smashystream.com/movie/${id}`;
     }
 
-    if (selectedServer === 'vidsrc_dev') {
-      return movie.type === 'tv'
-        ? `https://vidsrc.dev/embed/tv/${id}/${s}/${e}`
-        : `https://vidsrc.dev/embed/movie/${id}`;
-    }
-
     if (selectedServer === '2embed') {
       return movie.type === 'tv'
         ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
         : `https://www.2embed.cc/embed/${id}`;
-    }
-
-    if (selectedServer === 'vidsrc_xyz') {
-      return movie.type === 'tv'
-        ? `https://vidsrc.xyz/embed/tv/${id}/${s}/${e}`
-        : `https://vidsrc.xyz/embed/movie/${id}`;
-    }
-
-    if (selectedServer === 'vidsrc_in') {
-      return movie.type === 'tv'
-        ? `https://vidsrc.in/embed/tv/${id}/${s}/${e}`
-        : `https://vidsrc.in/embed/movie/${id}`;
     }
 
     if (selectedServer === 'vidsrc_vip') {
@@ -590,7 +584,7 @@ export function VideoPlayer() {
         : `https://vidsrc.vip/embed/movie/${id}`;
     }
 
-    return '';
+    return `https://autoembed.co/movie/tmdb/${id}`;
   };
 
   const copyRoomCode = () => {
@@ -963,199 +957,6 @@ export function VideoPlayer() {
         )}
       </AnimatePresence>
 
- {/* Resume Playback Toast */}
- <AnimatePresence>
- {showResumeToast && savedProgress && (
- <motion.div
- initial={{ opacity: 0, x: 50, scale: 0.9 }}
- animate={{ opacity: 1, x: 0, scale: 1 }}
- exit={{ opacity: 0, x: 50, scale: 0.9 }}
- className="absolute top-24 right-6 z-[70] pointer-events-auto"
- >
- <button 
- onClick={() => {
- setStartTime(savedProgress.progressSeconds);
- setShowResumeToast(false);
- setPlayerReady(false);
- setTimeout(() => setPlayerReady(true), 200);
- }}
- className="bg-black/90 backdrop-blur-2xl border border-white/20 p-4 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all group border-l-4 border-l-red-600"
- >
- <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
- <Play size={20} fill="currentColor" className="ml-1" />
- </div>
- <div className="text-left pr-4">
- <p className="text-white font-black text-[10px] uppercase tracking-widest mb-0.5 opacity-50">Resume Playback?</p>
- <p className="text-white text-sm font-bold">
- Last watched at {Math.floor(savedProgress.progressSeconds / 60)}:{(Math.floor(savedProgress.progressSeconds % 60)).toString().padStart(2, '0')}
- </p>
- </div>
- <div 
- onClick={(e) => { e.stopPropagation(); setShowResumeToast(false); }}
- className="p-2 hover:bg-white/10 rounded-full text-white/30 hover:text-white transition-all ml-2"
- >
- <X size={16} />
- </div>
- </button>
- </motion.div>
- )}
- </AnimatePresence>
-
- {/* Auto-Fallback Toast */}
- <AnimatePresence>
- {showFallbackToast && (
- <motion.div
- initial={{ opacity: 0, y: -20, x: '-50%' }}
- animate={{ opacity: 1, y: 0, x: '-50%' }}
- exit={{ opacity: 0, y: -20, x: '-50%' }}
- className="absolute top-6 left-1/2 z-[70] pointer-events-none"
- >
- <div className="bg-black/90 backdrop-blur-2xl border border-white/20 px-6 py-3 rounded-full flex items-center gap-3 ">
- <Server size={18} className="text-yellow-500 animate-pulse" />
- <span className="text-white text-xs font-bold uppercase tracking-wider">{fallbackMessage}</span>
- </div>
- </motion.div>
- )}
- </AnimatePresence>
- </div>
-
- {/* Right Side: Watch Party Sidebar */}
- {activeParty && (
- <div className="hidden md:flex w-80 h-full bg-[#080808]/95 border-l border-white/10 flex-col p-6 justify-between relative z-40">
- <div className="space-y-6">
- <div className="pb-4 border-b border-white/5">
- <div className="flex items-center gap-2 mb-1">
- <Users size={20} className="text-accent" />
- <h3 className="text-lg font-black uppercase tracking-wider italic text-white">Watch Party</h3>
- </div>
- <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Co-streaming room</p>
- </div>
-
- {/* Room Code Info Box */}
- <div className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center">
- <span className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1.5">Invite Room Code</span>
- <h4 className="text-2xl font-black tracking-widest text-accent font-mono mb-3">{activeParty.partyCode}</h4>
- <button 
- onClick={copyRoomCode}
- className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[9px] font-black uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer"
- >
- Copy Code
- </button>
- </div>
-
- {/* Members Joined List */}
- <div className="space-y-3">
- <h5 className="text-[9px] font-black text-white/40 uppercase tracking-widest">Members ({activeParty.members?.length || 1})</h5>
- <div className="space-y-2 max-h-60 overflow-y-auto pr-1 hide-scrollbar">
- {activeParty.members?.map((member, idx) => (
- <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-white/3 border border-white/5">
- <div className="flex items-center gap-2.5 min-w-0">
- <div className="w-8 h-8 rounded-full overflow-hidden border border-white/15">
- <img src={member.avatar} alt="" className="w-full h-full object-cover" />
- </div>
- <span className="text-xs font-bold text-white truncate">{member.name}</span>
- </div>
- {activeParty.hostId === user?.uid && idx === 0 ? (
- <span className="text-[7px] font-black bg-accent text-white py-0.5 px-1.5 rounded uppercase tracking-wider">Host</span>
- ) : (
- <span className="text-[7px] font-black bg-white/10 text-white/60 py-0.5 px-1.5 rounded uppercase tracking-wider">Member</span>
- )}
- </div>
- ))}
- </div>
- </div>
- </div>
-
- {/* Footer Control: Leave Room */}
- <div className="space-y-4">
- <div className="p-3 bg-white/5 border border-white/5 rounded-2xl flex items-center gap-2.5 text-[9px] text-white/40 font-black uppercase tracking-wide">
- <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping"></div>
- <span>Party Session Active</span>
- </div>
- <button 
- onClick={handleClose}
- className="w-full py-3.5 bg-accent hover:bg-red-700 text-white font-black uppercase tracking-widest text-[10px] rounded-xl transition-all active:scale-95 cursor-pointer "
- >
- Leave Watch Party
- </button>
- </div>
- </div>
- )}
- </div>
-
-      {/* Sliding Server Switcher Drawer */}
-      <AnimatePresence>
-        {showServerMenu && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowServerMenu(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[70] pointer-events-auto"
-            />
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-              className="absolute top-0 right-0 bottom-0 w-80 md:w-96 max-h-screen bg-[#080808]/95 backdrop-blur-2xl border-l border-white/10 z-[80] p-4 md:p-6 landscape:p-3 landscape:w-80 flex flex-col pointer-events-auto justify-between overflow-hidden"
-            >
-              <div className="space-y-3 landscape:space-y-2 flex-1 overflow-hidden flex flex-col min-h-0">
-                <div className="flex items-center justify-between pb-2.5 md:pb-4 border-b border-white/5 flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <Server size={18} className="text-accent" />
-                    <h3 className="text-base md:text-lg font-black uppercase tracking-wider italic">Stream Sources</h3>
-                  </div>
-                  <button 
-                    onClick={() => setShowServerMenu(false)} 
-                    className="p-1 hover:bg-white/10 rounded-full transition-all cursor-pointer text-white/50 hover:text-white"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-
-                <div className="hidden sm:block p-3 bg-white/5 rounded-xl border border-white/5 text-[11px] text-white/60 space-y-1 leading-relaxed flex-shrink-0">
-                  <div className="flex items-center gap-1.5 font-bold text-white uppercase tracking-wider text-[9px]">
-                    <Globe size={11} className="text-accent" />
-                    <span>Language & Subtitles</span>
-                  </div>
-                  <p className="text-[10px]">
-                    If subtitles are missing or audio is incorrect, switch to <strong className="text-white">Server 2</strong> or <strong className="text-white">Server 3</strong>.
-                  </p>
-                </div>
-
-                <div className="space-y-2 overflow-y-auto flex-1 pr-1 pb-2 min-h-0 touch-pan-y overscroll-contain">
-                  {SERVERS.map((srv) => {
-                    const isSelected = selectedServer === srv.id;
-                    return (
-                      <button
-                        key={srv.id}
-                        onClick={() => {
-                          setSelectedServer(srv.id);
-                          setShowServerMenu(false);
-                        }}
-                        className={`w-full flex items-center justify-between p-3 md:p-4 rounded-xl border font-bold text-[11px] md:text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-98 text-left ${
-                          isSelected
-                            ? 'bg-accent border-accent text-white shadow-lg shadow-red-950/40'
-                            : 'bg-white/5 border-white/5 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/10'
-                        }`}
-                      >
-                        <span>{srv.name}</span>
-                        {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></div>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="text-[9px] text-white/30 uppercase font-black tracking-widest text-center pt-2 md:pt-3 border-t border-white/5 flex-shrink-0">
-                Playing on ApexWatch Premium
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Sliding Episodes Drawer */}
       <AnimatePresence>
@@ -1385,7 +1186,7 @@ export function VideoPlayer() {
         }}
       />
 
-      {/* Active Cast Remote Control (Floating Controller) */}
+      {/* Active Cast Remote Control */}
       {activeCastSession && (
         <CastRemoteControl
           castSession={activeCastSession}

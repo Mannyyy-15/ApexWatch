@@ -6,14 +6,6 @@ import firebaseConfig from '../firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// Safe cleanup of legacy IndexedDB persistence caches to prevent ve:-1 schema assertions
-if (typeof window !== 'undefined' && window.indexedDB) {
-  try {
-    window.indexedDB.deleteDatabase('firestore/[DEFAULT]/apexwatch/main');
-    window.indexedDB.deleteDatabase('firestore/[DEFAULT]/apexwatch-default/main');
-  } catch (_) {}
-}
-
 export const db = initializeFirestore(app, {
   localCache: memoryLocalCache()
 }, firebaseConfig.firestoreDatabaseId);
