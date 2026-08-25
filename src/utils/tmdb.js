@@ -3,37 +3,50 @@ const TMDB_ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || '';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
 
+// In-memory request cache for instant 0ms responses
+const memoryCache = new Map();
+const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
 const fetchWithErrorHandling = async (url) => {
- if (!TMDB_API_KEY && !TMDB_ACCESS_TOKEN) {
- console.warn('TMDB API credentials missing.');
- return { results: [], error: 'Missing Credentials' };
- }
- 
- const options = {
- method: 'GET',
- headers: {
- accept: 'application/json',
- ...(TMDB_ACCESS_TOKEN ? { Authorization: `Bearer ${TMDB_ACCESS_TOKEN}` } : {})
- }
- };
+  if (!TMDB_API_KEY && !TMDB_ACCESS_TOKEN) {
+    console.warn('TMDB API credentials missing.');
+    return { results: [], error: 'Missing Credentials' };
+  }
 
- // If using API key, append it to URL if not already present
- const finalUrl = (!TMDB_ACCESS_TOKEN && !url.includes('api_key=')) 
- ? `${url}${url.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}`
- : url;
+  // Check cache first
+  const cacheKey = url;
+  const cached = memoryCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.data;
+  }
+  
+  const options = {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+      ...(TMDB_ACCESS_TOKEN ? { Authorization: `Bearer ${TMDB_ACCESS_TOKEN}` } : {})
+    }
+  };
 
- try {
- const response = await fetch(finalUrl, options);
- if (!response.ok) {
- const errorData = await response.json();
- console.error('TMDB API Error:', errorData.status_message || response.statusText);
- return { results: [] };
- }
- return await response.json();
- } catch (error) {
- console.error('TMDB Fetch Error (Check your network/VPN):', error);
- return { results: [] };
- }
+  const finalUrl = (!TMDB_ACCESS_TOKEN && !url.includes('api_key=')) 
+    ? `${url}${url.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}`
+    : url;
+
+  try {
+    const response = await fetch(finalUrl, options);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('TMDB API Error:', errorData.status_message || response.statusText);
+      return { results: [] };
+    }
+    const data = await response.json();
+    // Store in cache
+    memoryCache.set(cacheKey, { timestamp: Date.now(), data });
+    return data;
+  } catch (error) {
+    console.error('TMDB Fetch Error:', error);
+    return { results: [] };
+  }
 };
 
 export const tmdb = {

@@ -1,81 +1,110 @@
 import { Play, Plus, Check, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { tmdb } from '../utils/tmdb';
 import { firestoreService } from '../utils/firestore';
 
 export function Hero() {
- const { setActiveMovieId, setActiveMediaType, setCurrentView, user, activeProfile, heroCache, setHeroCache } = useAppContext();
- const [heroesList, setHeroesList] = useState(heroCache || []);
- const [currentIndex, setCurrentIndex] = useState(0);
- const heroMovie = heroesList[currentIndex];
- const [inWatchlist, setInWatchlist] = useState(false);
- const [loading, setLoading] = useState(!heroCache);
+  const { setActiveMovieId, setActiveMediaType, setCurrentView, user, activeProfile, heroCache, setHeroCache } = useAppContext();
+  const [heroesList, setHeroesList] = useState(heroCache || []);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const heroMovie = heroesList[currentIndex];
+  const [inWatchlist, setInWatchlist] = useState(false);
+  const [loading, setLoading] = useState(!heroCache);
 
- useEffect(() => {
- const loadHeroes = async () => {
- if (heroCache) return; // Skip if we already have it
- try {
- const trending = await tmdb.fetchTrending();
- const formatted = trending.map(tmdb.formatMovie).filter(Boolean).slice(0, 5);
- setHeroesList(formatted);
- setHeroCache(formatted);
- } catch (error) {
- console.error('Error loading heroes:', error);
- } finally {
- setLoading(false);
- }
- };
- loadHeroes();
- }, [heroCache, setHeroCache]);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
- useEffect(() => {
- const timer = setInterval(() => {
- if (heroesList.length > 0) {
- setCurrentIndex((prev) => (prev + 1) % heroesList.length);
- }
- }, 8000);
- return () => clearInterval(timer);
- }, [heroesList]);
+  // Preload next hero backdrop images
+  useEffect(() => {
+    if (heroesList.length > 0) {
+      heroesList.forEach((h) => {
+        if (h.backdrop) {
+          const img = new Image();
+          img.src = h.backdrop;
+        }
+      });
+    }
+  }, [heroesList]);
 
- useEffect(() => {
- if (!activeProfile || !heroMovie || !user) return;
+  useEffect(() => {
+    const loadHeroes = async () => {
+      if (heroCache && heroCache.length > 0) return;
+      try {
+        const trending = await tmdb.fetchTrending();
+        const formatted = trending.map(tmdb.formatMovie).filter(Boolean).slice(0, 6);
+        setHeroesList(formatted);
+        setHeroCache(formatted);
+      } catch (error) {
+        console.error('Error loading heroes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadHeroes();
+  }, [heroCache, setHeroCache]);
 
- const checkWatchlist = async () => {
- const wl = await firestoreService.getWatchlist(user.uid, activeProfile.id);
- setInWatchlist(wl.some(item => item.contentId === heroMovie.id));
- };
- checkWatchlist();
- }, [activeProfile, heroMovie, user]);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (heroesList.length > 0) {
+        setCurrentIndex((prev) => (prev + 1) % heroesList.length);
+      }
+    }, 7500);
+    return () => clearInterval(timer);
+  }, [heroesList.length]);
 
- const toggleWatchlist = async () => {
- if (!activeProfile || !heroMovie || !user) return;
+  useEffect(() => {
+    if (!activeProfile || !heroMovie || !user) return;
 
- try {
- if (inWatchlist) {
- await firestoreService.removeFromWatchlist(user.uid, activeProfile.id, heroMovie.id);
- setInWatchlist(false);
- } else {
- await firestoreService.addToWatchlist(user.uid, activeProfile.id, heroMovie.id, heroMovie.type);
- setInWatchlist(true);
- }
- } catch (error) {
- console.error('Error toggling watchlist:', error);
- }
- };
+    let isMounted = true;
+    const checkWatchlist = async () => {
+      const wl = await firestoreService.getWatchlist(user.uid, activeProfile.id);
+      if (isMounted) {
+        setInWatchlist(wl.some(item => item.contentId === heroMovie.id));
+      }
+    };
+    checkWatchlist();
+    return () => { isMounted = false; };
+  }, [activeProfile, heroMovie, user]);
 
- const [scrollY, setScrollY] = useState(0);
+  const toggleWatchlist = async () => {
+    if (!activeProfile || !heroMovie || !user) return;
 
- useEffect(() => {
- const mainEl = document.querySelector('main');
- if (!mainEl) return;
- const handleScroll = () => {
- setScrollY(mainEl.scrollTop);
- };
- mainEl.addEventListener('scroll', handleScroll, { passive: true });
- return () => mainEl.removeEventListener('scroll', handleScroll);
- }, []);
+    try {
+      if (inWatchlist) {
+        await firestoreService.removeFromWatchlist(user.uid, activeProfile.id, heroMovie.id);
+        setInWatchlist(false);
+      } else {
+        await firestoreService.addToWatchlist(user.uid, activeProfile.id, heroMovie.id, heroMovie.type);
+        setInWatchlist(true);
+      }
+    } catch (error) {
+      console.error('Error toggling watchlist:', error);
+    }
+  };
+
+  const nextSlide = useCallback(() => setCurrentIndex((prev) => (prev + 1) % heroesList.length), [heroesList.length]);
+  const prevSlide = useCallback(() => setCurrentIndex((prev) => (prev - 1 + heroesList.length) % heroesList.length), [heroesList.length]);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        nextSlide();
+      } else {
+        prevSlide();
+      }
+    }
+  };
 
   if (loading || !heroMovie)
     return (
@@ -84,60 +113,60 @@ export function Hero() {
       </div>
     );
 
-  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % heroesList.length);
-  const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + heroesList.length) % heroesList.length);
-
   return (
-    <div className="relative w-[calc(100%-16px)] md:w-[calc(100%-48px)] mx-auto mt-2 md:mt-6 h-[82dvh] md:h-[calc(100vh-48px)] rounded-3xl border border-white/10 overflow-hidden flex items-end group">
- <div className="absolute inset-0 overflow-hidden bg-[#020202]">
- <AnimatePresence initial={true} mode="wait">
- <motion.div
- key={currentIndex}
- initial={{ opacity: 0, scale: 1.02 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 0.98 }}
- transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
- className="absolute inset-0"
- >
-  <motion.div 
-  className="absolute inset-x-0 w-full"
-  style={{ height: '130%', top: '-15%', y: scrollY * 0.5 }}
-  >
-  <picture>
-  <source media="(max-width: 768px)" srcSet={heroMovie.poster || heroMovie.backdrop.replace('/w1280/', '/w780/')} />
-  <img
-  src={heroMovie.backdrop}
-  alt={heroMovie.title}
-  className="w-full h-full object-cover object-center"
-  loading={currentIndex === 0 ? 'eager' : 'lazy'}
-  fetchPriority={currentIndex === 0 ? 'high' : 'auto'}
-  />
-  </picture>
-  </motion.div>
-  {/* Moody Cinematic Overlays */}
-  <div className="absolute inset-0 bg-black/30"></div>
-  {/* Mobile: strong bottom gradient for text legibility */}
-  <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-[#020202]/70 to-[#020202]/10 md:via-[#020202]/50 md:to-transparent"></div>
-  {/* Desktop: left side gradient */}
-  <div className="absolute inset-0 bg-gradient-to-r from-[#020202] via-transparent to-transparent hidden md:block"></div>
- </motion.div>
- </AnimatePresence>
- </div>
+    <div 
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="relative w-[calc(100%-16px)] md:w-[calc(100%-48px)] mx-auto mt-2 md:mt-6 h-[80dvh] md:h-[calc(100vh-48px)] rounded-3xl border border-white/10 overflow-hidden flex items-end group select-none"
+    >
+      <div className="absolute inset-0 overflow-hidden bg-[#020202]">
+        <AnimatePresence initial={false} mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            className="absolute inset-0 will-change-transform"
+          >
+            <div className="absolute inset-0 w-full h-full">
+              <picture>
+                <source media="(max-width: 768px)" srcSet={heroMovie.poster || heroMovie.backdrop} />
+                <img
+                  src={heroMovie.backdrop}
+                  alt={heroMovie.title}
+                  className="w-full h-full object-cover object-center"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </picture>
+            </div>
+            {/* Moody Cinematic Overlays */}
+            <div className="absolute inset-0 bg-black/30"></div>
+            {/* Mobile: strong bottom gradient for text legibility */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-[#020202]/70 to-[#020202]/10 md:via-[#020202]/50 md:to-transparent"></div>
+            {/* Desktop: left side gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#020202] via-transparent to-transparent hidden md:block"></div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-  {/* Navigation Arrows */}
-  <div className="absolute right-5 md:right-12 bottom-5 md:bottom-12 z-40 hidden md:flex items-center gap-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-  <button onClick={prevSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
-  <ChevronLeft size={20} />
-  </button>
-  <div className="flex items-center gap-2 font-black text-[9px] text-white/20 uppercase tracking-[0.25em]">
-  <span className="text-white/60">{currentIndex + 1}</span>
-  <span>/</span>
-  <span>{heroesList.length}</span>
-  </div>
-  <button onClick={nextSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
-  <ChevronRight size={20} />
-  </button>
-  </div>
+      {/* Navigation Arrows */}
+      <div className="absolute right-5 md:right-12 bottom-5 md:bottom-12 z-40 hidden md:flex items-center gap-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button onClick={prevSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
+          <ChevronLeft size={20} />
+        </button>
+        <div className="flex items-center gap-2 font-black text-[9px] text-white/20 uppercase tracking-[0.25em]">
+          <span className="text-white/60">{currentIndex + 1}</span>
+          <span>/</span>
+          <span>{heroesList.length}</span>
+        </div>
+        <button onClick={nextSlide} className="w-10 h-10 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border flex items-center justify-center text-white/40 hover:text-white hover:bg-glass-hover hover:border-white/15 transition-all active:scale-90 shadow-2xl cursor-pointer">
+          <ChevronRight size={20} />
+        </button>
+      </div>
 
   {/* Content */}
   <div className="relative z-10 w-full">

@@ -11,14 +11,14 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
 
   return (
     <div
-      className={`flex-shrink-0 snap-start cursor-pointer transition-all duration-300 group tv-focusable active:scale-[0.98]
+      className={`flex-shrink-0 snap-start cursor-pointer transition-transform duration-200 group tv-focusable active:scale-[0.98] will-change-transform
       ${isTop10
         ? 'movie-card-top10 w-[calc((100vw-36px)/1.9)] sm:w-[calc((100vw-48px)/2.8)] md:w-[calc((100vw-160px-100px)/5)] min-w-[155px] sm:min-w-[190px] md:min-w-[210px] pl-8 sm:pl-10 md:pl-12'
         : isContinueWatching 
         ? 'movie-card-cw w-[calc((100vw-36px)/1.35)] sm:w-[calc((100vw-48px)/2.2)] md:w-[calc((100vw-160px-40px)/3)] min-w-[220px] sm:min-w-[280px] md:min-w-[320px]' 
         : 'movie-card-standard w-[calc((100vw-36px)/2.4)] sm:w-[calc((100vw-48px)/3.5)] md:w-[calc((100vw-160px-100px)/6)] min-w-[130px] sm:min-w-[160px] md:min-w-[180px]'
       }`}
-      style={isTop10 ? { position: 'relative' } : {}}
+      style={{ position: 'relative', contain: 'content' }}
       onClick={(e) => {
         if (e.target.closest('.watchlist-btn')) return;
         onMovieClick(movie.id, movie.type);
@@ -47,11 +47,12 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
       )}
 
       {/* Thumbnail Container */}
-      <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded-xl md:rounded-2xl overflow-hidden mb-2.5 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-300 group-hover:border-accent/50 `}>
+      <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded-xl md:rounded-2xl overflow-hidden mb-2.5 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-300 group-hover:border-accent/50 bg-[#121218]`}>
         <img
           src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster}
           alt={movie.title}
-          loading="lazy"
+          loading={index < 4 ? 'eager' : 'lazy'}
+          fetchPriority={index < 2 ? 'high' : 'auto'}
           decoding="async"
           className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
@@ -144,112 +145,121 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
 });
 
 export function MovieRow({ title, subtitle = "ApexWatch Curated Collection", movies, isContinueWatching = false, isTop10 = false, continueWatchingItems, onMovieClick, onRemoveFromContinueWatching }) {
- const rowRef = useRef(null);
- const [showArrows, setShowArrows] = useState(false);
- const [isAtStart, setIsAtStart] = useState(true);
- const [isAtEnd, setIsAtEnd] = useState(false);
+  const rowRef = useRef(null);
+  const [showArrows, setShowArrows] = useState(false);
+  const [isAtStart, setIsAtStart] = useState(true);
+  const [isAtEnd, setIsAtEnd] = useState(false);
+  const scrollRaf = useRef(null);
 
- if (!movies || movies.length === 0) return null;
+  if (!movies || movies.length === 0) return null;
 
- const handleScroll = () => {
- if (!rowRef.current) return;
- const { scrollLeft, scrollWidth, clientWidth } = rowRef.current;
- setIsAtStart(scrollLeft <= 10);
- setIsAtEnd(scrollLeft + clientWidth >= scrollWidth - 10);
- };
+  const handleScroll = () => {
+    if (scrollRaf.current) return;
+    scrollRaf.current = requestAnimationFrame(() => {
+      if (rowRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = rowRef.current;
+        setIsAtStart(scrollLeft <= 10);
+        setIsAtEnd(scrollLeft + clientWidth >= scrollWidth - 10);
+      }
+      scrollRaf.current = null;
+    });
+  };
 
- useEffect(() => {
- handleScroll();
- // Recalculate on window resize
- window.addEventListener('resize', handleScroll);
- return () => window.removeEventListener('resize', handleScroll);
- }, [movies]);
+  useEffect(() => {
+    handleScroll();
+    window.addEventListener('resize', handleScroll);
+    return () => {
+      window.removeEventListener('resize', handleScroll);
+      if (scrollRaf.current) cancelAnimationFrame(scrollRaf.current);
+    };
+  }, [movies]);
 
- const scroll = (direction) => {
- if (rowRef.current) {
- const container = rowRef.current;
- const firstCard = container.querySelector('div');
- if (firstCard) {
- const cardWidth = firstCard.offsetWidth;
- const gap = parseInt(window.getComputedStyle(container).gap) || 0;
- const scrollAmount = direction === 'left' ? -(cardWidth + gap) * 2 : (cardWidth + gap) * 2;
- container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
- }
- }
- };
+  const scroll = (direction) => {
+    if (rowRef.current) {
+      const container = rowRef.current;
+      const firstCard = container.querySelector('div');
+      if (firstCard) {
+        const cardWidth = firstCard.offsetWidth;
+        const gap = parseInt(window.getComputedStyle(container).gap) || 0;
+        const scrollAmount = direction === 'left' ? -(cardWidth + gap) * 2 : (cardWidth + gap) * 2;
+        container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      }
+    }
+  };
 
- const hasScroll = movies.length > 3;
+  const hasScroll = movies.length > 3;
 
- return (
- <section
- className="relative group/row mb-2 md:mb-4"
- onMouseEnter={() => setShowArrows(true)}
- onMouseLeave={() => setShowArrows(false)}
- >
- {title && (
- <div className="flex items-center justify-between mb-3 md:mb-4 px-1 md:px-2">
- <h2 className="row-title text-xl md:text-2xl font-black text-white/90 tracking-wide">
- {title}
- </h2>
- </div>
- )}
+  return (
+    <section
+      className="relative group/row mb-2 md:mb-4"
+      onMouseEnter={() => setShowArrows(true)}
+      onMouseLeave={() => setShowArrows(false)}
+    >
+      {title && (
+        <div className="flex items-center justify-between mb-3 md:mb-4 px-1 md:px-2">
+          <h2 className="row-title text-xl md:text-2xl font-black text-white/90 tracking-wide">
+            {title}
+          </h2>
+        </div>
+      )}
 
- <div className="relative">
- <AnimatePresence>
- {showArrows && hasScroll && (
- <>
- {!isAtStart && (
- <motion.button
- initial={{ opacity: 0, scale: 0.8 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 0.8 }}
- onClick={() => scroll('left')}
- className={`absolute left-2 md:left-4 z-40 w-12 h-12 md:w-14 md:h-14 bg-black/60 hover:bg-accent backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 hover:border-accent transition-all cursor-pointer hover:scale-110 active:scale-95 hidden md:flex -translate-y-1/2 ${
- isContinueWatching ? 'top-[35%]' : 'top-[42%]'
- }`}
- >
- <ChevronLeft size={24} className="md:w-7 md:h-7 text-white" />
- </motion.button>
- )}
+      <div className="relative">
+        <AnimatePresence>
+          {showArrows && hasScroll && (
+            <>
+              {!isAtStart && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={() => scroll('left')}
+                  className={`absolute left-2 md:left-4 z-40 w-12 h-12 md:w-14 md:h-14 bg-black/60 hover:bg-accent backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 hover:border-accent transition-all cursor-pointer hover:scale-110 active:scale-95 hidden md:flex -translate-y-1/2 ${
+                    isContinueWatching ? 'top-[35%]' : 'top-[42%]'
+                  }`}
+                >
+                  <ChevronLeft size={24} className="md:w-7 md:h-7 text-white" />
+                </motion.button>
+              )}
 
- {!isAtEnd && (
- <motion.button
- initial={{ opacity: 0, scale: 0.8 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 0.8 }}
- onClick={() => scroll('right')}
- className={`absolute right-2 md:right-4 z-40 w-12 h-12 md:w-14 md:h-14 bg-black/60 hover:bg-accent backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 hover:border-accent transition-all cursor-pointer hover:scale-110 active:scale-95 hidden md:flex -translate-y-1/2 ${
- isContinueWatching ? 'top-[35%]' : 'top-[42%]'
- }`}
- >
- <ChevronRight size={24} className="md:w-7 md:h-7 text-white" />
- </motion.button>
- )}
- </>
- )}
- </AnimatePresence>
+              {!isAtEnd && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={() => scroll('right')}
+                  className={`absolute right-2 md:right-4 z-40 w-12 h-12 md:w-14 md:h-14 bg-black/60 hover:bg-accent backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 hover:border-accent transition-all cursor-pointer hover:scale-110 active:scale-95 hidden md:flex -translate-y-1/2 ${
+                    isContinueWatching ? 'top-[35%]' : 'top-[42%]'
+                  }`}
+                >
+                  <ChevronRight size={24} className="md:w-7 md:h-7 text-white" />
+                </motion.button>
+              )}
+            </>
+          )}
+        </AnimatePresence>
 
- <div
- ref={rowRef}
- onScroll={handleScroll}
- className="flex gap-2 md:gap-3 overflow-x-auto hide-scrollbar pr-10 snap-x snap-mandatory scroll-smooth"
- >
- {movies.map((movie, index) => {
- return (
- <MovieCard
- key={`${movie.id}-${index}`}
- movie={movie}
- index={index}
- isContinueWatching={isContinueWatching}
- isTop10={isTop10}
- progress={movie.progress || 0}
- onMovieClick={onMovieClick}
- onRemoveFromContinueWatching={onRemoveFromContinueWatching}
- />
- );
- })}
- </div>
- </div>
- </section>
- );
+        <div
+          ref={rowRef}
+          onScroll={handleScroll}
+          className="flex gap-2 md:gap-3 overflow-x-auto hide-scrollbar pr-10 snap-x snap-mandatory scroll-smooth touch-pan-x overscroll-x-contain will-change-scroll"
+          style={{ transform: 'translateZ(0)', WebkitOverflowScrolling: 'touch' }}
+        >
+          {movies.map((movie, index) => {
+            return (
+              <MovieCard
+                key={`${movie.id}-${index}`}
+                movie={movie}
+                index={index}
+                isContinueWatching={isContinueWatching}
+                isTop10={isTop10}
+                progress={movie.progress || 0}
+                onMovieClick={onMovieClick}
+                onRemoveFromContinueWatching={onRemoveFromContinueWatching}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 }

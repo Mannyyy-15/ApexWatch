@@ -42,22 +42,22 @@ const VIEW_INDEX = {
 const slidePageVariants = {
   enter: (direction) => ({
     x: direction > 0 ? '100%' : '-100%',
-    opacity: 0.1,
+    opacity: 0,
   }),
   center: {
     x: 0,
     opacity: 1,
     transition: {
-      x: { type: 'spring', stiffness: 280, damping: 28, mass: 0.8 },
-      opacity: { duration: 0.2 }
+      x: { type: 'tween', ease: [0.25, 1, 0.5, 1], duration: 0.24 },
+      opacity: { duration: 0.18 }
     }
   },
   exit: (direction) => ({
     x: direction > 0 ? '-100%' : '100%',
-    opacity: 0.1,
+    opacity: 0,
     transition: {
-      x: { type: 'spring', stiffness: 280, damping: 28, mass: 0.8 },
-      opacity: { duration: 0.2 }
+      x: { type: 'tween', ease: [0.25, 1, 0.5, 1], duration: 0.22 },
+      opacity: { duration: 0.16 }
     }
   })
 };
