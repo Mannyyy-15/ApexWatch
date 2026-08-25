@@ -27,6 +27,41 @@ const CategoryExplore = lazy(() => import('./components/CategoryExplore').then(m
 const Browse = lazy(() => import('./components/Browse').then(m => ({ default: m.Browse })));
 const TVReceiverOverlay = lazy(() => import('./components/TVReceiverOverlay').then(m => ({ default: m.TVReceiverOverlay })));
 
+const VIEW_INDEX = {
+  home: 0,
+  movies: 1,
+  tv: 2,
+  anime: 3,
+  browse: 4,
+  explore: 5,
+  discover: 6,
+  library: 7,
+  stats: 8,
+};
+
+const slidePageVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? '100%' : '-100%',
+    opacity: 0.1,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      x: { type: 'spring', stiffness: 280, damping: 28, mass: 0.8 },
+      opacity: { duration: 0.2 }
+    }
+  },
+  exit: (direction) => ({
+    x: direction > 0 ? '-100%' : '100%',
+    opacity: 0.1,
+    transition: {
+      x: { type: 'spring', stiffness: 280, damping: 28, mass: 0.8 },
+      opacity: { duration: 0.2 }
+    }
+  })
+};
+
 const pageVariants = {
  initial: {
  opacity: 0,
@@ -108,196 +143,226 @@ function ShortcutsModal({ onClose }) {
 }
 
 function MainLayout() {
- const { currentView } = useAppContext();
- const isTV = useTV();
- const [showScrollUp, setShowScrollUp] = useState(false);
- const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
- const [showDevConsole, setShowDevConsole] = useState(false);
- const scrollContainerRef = useRef(null);
+  const { currentView } = useAppContext();
+  const isTV = useTV();
+  const [showScrollUp, setShowScrollUp] = useState(false);
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+  const [showDevConsole, setShowDevConsole] = useState(false);
+  const scrollContainerRef = useRef(null);
 
- useEffect(() => {
- const container = scrollContainerRef.current;
- if (!container) return;
+  const prevViewRef = useRef(currentView);
+  const [direction, setDirection] = useState(1);
 
- const handleScroll = () => {
- setShowScrollUp(container.scrollTop > 200);
- };
+  useEffect(() => {
+    const prevIdx = VIEW_INDEX[prevViewRef.current] ?? 0;
+    const currIdx = VIEW_INDEX[currentView] ?? 0;
+    if (currIdx !== prevIdx) {
+      setDirection(currIdx > prevIdx ? 1 : -1);
+    }
+    prevViewRef.current = currentView;
+  }, [currentView]);
 
- container.addEventListener('scroll', handleScroll);
- 
- // Fix status bar overlapping the app
- if (Capacitor.isNativePlatform()) {
- StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
- StatusBar.setBackgroundColor({ color: '#000000' }).catch(() => {});
- StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
- }
- 
- const handleToggleDevConsole = () => {
- setShowDevConsole(prev => !prev);
- };
- window.addEventListener('toggle_dev_console', handleToggleDevConsole);
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
- return () => {
- container.removeEventListener('scroll', handleScroll);
- window.removeEventListener('toggle_dev_console', handleToggleDevConsole);
- };
- }, []);
+    const handleScroll = () => {
+      setShowScrollUp(container.scrollTop > 200);
+    };
 
- useEffect(() => {
- // Scroll to top on every view change
- scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
- }, [currentView]);
+    container.addEventListener('scroll', handleScroll);
+    
+    // Fix status bar overlapping the app
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+      StatusBar.setBackgroundColor({ color: '#000000' }).catch(() => {});
+      StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
+    }
+    
+    const handleToggleDevConsole = () => {
+      setShowDevConsole(prev => !prev);
+    };
+    window.addEventListener('toggle_dev_console', handleToggleDevConsole);
 
- useEffect(() => {
- const handleKeyDown = (e) => {
- if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
- return;
- }
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('toggle_dev_console', handleToggleDevConsole);
+    };
+  }, []);
 
- const key = e.key.toLowerCase();
+  useEffect(() => {
+    // Scroll to top on every view change
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+  }, [currentView]);
 
- if (e.key === '?') {
- e.preventDefault();
- setShowShortcutsHelp(prev => !prev);
- return;
- }
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        return;
+      }
 
- if (e.key === 'Escape') {
- setShowShortcutsHelp(false);
- }
+      const key = e.key.toLowerCase();
 
- if (e.key === ' ' || key === 'm' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Escape') {
- e.preventDefault();
- const event = new CustomEvent('global_shortcut', { 
- detail: { key: e.key, code: e.code } 
- });
- window.dispatchEvent(event);
- }
- };
+      if (e.key === '?') {
+        e.preventDefault();
+        setShowShortcutsHelp(prev => !prev);
+        return;
+      }
 
- window.addEventListener('keydown', handleKeyDown);
- return () => window.removeEventListener('keydown', handleKeyDown);
- }, []);
+      if (e.key === 'Escape') {
+        setShowShortcutsHelp(false);
+      }
 
- const scrollToTop = () => {
- if (scrollContainerRef.current) {
- scrollContainerRef.current.scrollTo({
- top: 0,
- behavior: 'smooth'
- });
- }
- };
+      if (e.key === ' ' || key === 'm' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Escape') {
+        e.preventDefault();
+        const event = new CustomEvent('global_shortcut', { 
+          detail: { key: e.key, code: e.code } 
+        });
+        window.dispatchEvent(event);
+      }
+    };
 
- return (<div className="bg-black min-h-screen text-white font-sans selection:bg-white selection:text-black overflow-hidden relative">
- {currentView !== 'auth' && currentView !== 'onboarding' && currentView !== 'profiles' && currentView !== 'details' && currentView !== 'player' && <NavigationIsland />}
- 
- <main ref={scrollContainerRef} className="w-full h-screen overflow-y-auto overflow-x-hidden hide-scrollbar pb-24 md:pb-0 md:pl-[120px] relative">
- <Suspense fallback={null}>
- <AnimatePresence mode="wait">
- {currentView === 'home' && (
- <motion.div 
- key="home"
- variants={pageVariants}
- initial="initial"
- animate="animate"
- exit="exit"
- className="pb-10"
- >
- <Hero />
- <MovieGrid />
- </motion.div>
- )}
- {currentView === 'movies' && (
- <motion.div 
- key="movies"
- variants={pageVariants}
- initial="initial"
- animate="animate"
- exit="exit"
- >
- <CategoryView type="movies" title="Movies" />
- </motion.div>
- )}
- {currentView === 'tv' && (
- <motion.div 
- key="tv"
- variants={pageVariants}
- initial="initial"
- animate="animate"
- exit="exit"
- >
- <CategoryView type="tv" title="TV Shows" />
- </motion.div>
- )}
- {currentView === 'anime' && (
- <motion.div 
- key="anime"
- variants={pageVariants}
- initial="initial"
- animate="animate"
- exit="exit"
- >
- <CategoryView type="anime" title="Anime" />
- </motion.div>
- )}
- {currentView === 'discover' && (
- <motion.div 
- key="discover"
- variants={pageVariants}
- initial="initial"
- animate="animate"
- exit="exit"
- >
- <Discover />
- </motion.div>
- )}
- {currentView === 'browse' && (
- <motion.div 
- key="browse"
- variants={pageVariants}
- initial="initial"
- animate="animate"
- exit="exit"
- >
- <Browse />
- </motion.div>
- )}
- {currentView === 'explore' && (
- <motion.div 
- key="explore"
- variants={pageVariants}
- initial="initial"
- animate="animate"
- exit="exit"
- >
- <CategoryExplore />
- </motion.div>
- )}
- {currentView === 'library' && (
- <motion.div 
- key="library"
- variants={pageVariants}
- initial="initial"
- animate="animate"
- exit="exit"
- >
- <ProfileLibrary />
- </motion.div>
- )}
- {currentView === 'stats' && (
- <motion.div 
- key="stats"
- variants={pageVariants}
- initial="initial"
- animate="animate"
- exit="exit"
- >
- <StatsDashboard />
- </motion.div>
- )}
- </AnimatePresence>
- </Suspense>
- </main>
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const scrollToTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  return (
+    <div className="bg-black min-h-screen text-white font-sans selection:bg-white selection:text-black overflow-hidden relative">
+      {currentView !== 'auth' && currentView !== 'onboarding' && currentView !== 'profiles' && currentView !== 'details' && currentView !== 'player' && <NavigationIsland />}
+      
+      <main ref={scrollContainerRef} className="w-full h-screen overflow-y-auto overflow-x-hidden hide-scrollbar pb-24 md:pb-0 md:pl-[120px] relative">
+        <Suspense fallback={null}>
+          <AnimatePresence mode="popLayout" custom={direction}>
+            {currentView === 'home' && (
+              <motion.div 
+                key="home"
+                custom={direction}
+                variants={slidePageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="pb-10 w-full"
+              >
+                <Hero />
+                <MovieGrid />
+              </motion.div>
+            )}
+            {currentView === 'movies' && (
+              <motion.div 
+                key="movies"
+                custom={direction}
+                variants={slidePageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="w-full"
+              >
+                <CategoryView type="movies" title="Movies" />
+              </motion.div>
+            )}
+            {currentView === 'tv' && (
+              <motion.div 
+                key="tv"
+                custom={direction}
+                variants={slidePageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="w-full"
+              >
+                <CategoryView type="tv" title="TV Shows" />
+              </motion.div>
+            )}
+            {currentView === 'anime' && (
+              <motion.div 
+                key="anime"
+                custom={direction}
+                variants={slidePageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="w-full"
+              >
+                <CategoryView type="anime" title="Anime" />
+              </motion.div>
+            )}
+            {currentView === 'discover' && (
+              <motion.div 
+                key="discover"
+                custom={direction}
+                variants={slidePageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="w-full"
+              >
+                <Discover />
+              </motion.div>
+            )}
+            {currentView === 'browse' && (
+              <motion.div 
+                key="browse"
+                custom={direction}
+                variants={slidePageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="w-full"
+              >
+                <Browse />
+              </motion.div>
+            )}
+            {currentView === 'explore' && (
+              <motion.div 
+                key="explore"
+                custom={direction}
+                variants={slidePageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="w-full"
+              >
+                <CategoryExplore />
+              </motion.div>
+            )}
+            {currentView === 'library' && (
+              <motion.div 
+                key="library"
+                custom={direction}
+                variants={slidePageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="w-full"
+              >
+                <ProfileLibrary />
+              </motion.div>
+            )}
+            {currentView === 'stats' && (
+              <motion.div 
+                key="stats"
+                custom={direction}
+                variants={slidePageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="w-full"
+              >
+                <StatsDashboard />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Suspense>
+      </main>
 
  {/* Floating Actions */}
  <AnimatePresence>
