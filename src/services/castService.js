@@ -180,7 +180,7 @@ class CastService {
           updatedAt: serverTimestamp()
         }, { merge: true });
       } catch (e) {
-        console.warn('Cast Receiver register warning:', e.message);
+        // Local broadcast and storage fallback active
       }
     };
 

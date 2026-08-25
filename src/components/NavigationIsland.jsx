@@ -47,38 +47,16 @@ export function NavigationIsland() {
  return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
  }, []);
 
- const handleDownloadApp = async () => {
- if (Capacitor.isNativePlatform() && window.__LATEST_APK_URL__) {
- try {
- if (window.__LATEST_APK_URL__.includes('.zip')) {
- setIsUpdating(true);
- const version = await CapacitorUpdater.download({
- url: window.__LATEST_APK_URL__,
- version: `update-${Date.now()}`
- });
- await CapacitorUpdater.set({ id: version.id });
- } else {
- // It's an APK, fall back to browser download
- window.open(window.__LATEST_APK_URL__, '_blank');
- }
- } catch (err) {
- console.error("Live Update Failed:", err);
- alert("Live Update Failed. Falling back to browser download.");
- window.open(window.__LATEST_APK_URL__, '_blank');
- setIsUpdating(false);
- }
- } else if (deferredPrompt) {
- deferredPrompt.prompt();
- const { outcome } = await deferredPrompt.userChoice;
- if (outcome === 'accepted') {
- setDeferredPrompt(null);
- }
- } else {
- // Fallback/Direct APK link
- const url = window.__LATEST_APK_URL__ || 'https://github.com/Mannyyy-15/ApexWatch/raw/main/ApexWatch.apk';
- window.open(url, '_blank');
- }
- };
+  const handleDownloadApp = async () => {
+    const latestApkUrl = `https://github.com/Mannyyy-15/ApexWatch/releases/download/v${pkg.version}/ApexWatch.apk`;
+    if (Capacitor.isNativePlatform()) {
+      if (manualCheckForUpdates) {
+        manualCheckForUpdates();
+      }
+    } else {
+      window.open(latestApkUrl, '_blank');
+    }
+  };
 
 
 
@@ -283,17 +261,27 @@ export function NavigationIsland() {
  </div>
  </motion.div>
 
- {/* Mobile Top Header */}
- <div className="md:hidden fixed top-0 left-0 right-0 p-5 z-50 flex items-center justify-center bg-gradient-to-b from-black/80 to-transparent pointer-events-none navigation-island-mobile">
- <div className="flex items-center gap-2 pointer-events-auto cursor-pointer" onClick={() => setCurrentView('home')}>
- <div className="w-7 h-7 rounded-full overflow-hidden ">
- <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
- </div>
- <span className="font-black tracking-tighter text-lg uppercase italic text-white/90">
- Apex<span className="text-accent">Watch</span>
- </span>
- </div>
- </div>
+  {/* Mobile Top Header */}
+  <div className="md:hidden fixed top-0 left-0 right-0 px-4 py-3 z-50 flex items-center justify-between bg-gradient-to-b from-black/90 via-black/50 to-transparent pointer-events-none navigation-island-mobile">
+    <div className="flex items-center gap-2 pointer-events-auto cursor-pointer" onClick={() => setCurrentView('home')}>
+      <div className="w-7 h-7 rounded-full overflow-hidden">
+        <img src="/logo.png" alt="ApexWatch" className="w-full h-full object-cover"/>
+      </div>
+      <span className="font-black tracking-tighter text-lg uppercase italic text-white/90">
+        Apex<span className="text-accent">Watch</span>
+      </span>
+    </div>
+
+    {!isNative && (
+      <button 
+        onClick={handleDownloadApp}
+        className="pointer-events-auto flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent hover:bg-red-700 text-white font-black text-[10px] uppercase tracking-wider shadow-lg shadow-red-950/50 active:scale-95 transition-all cursor-pointer border border-white/15"
+      >
+        <Smartphone size={13} />
+        <span>Get App</span>
+      </button>
+    )}
+  </div>
 
  {/* Mobile Bottom Dock - Redesigned */}
  <motion.div 
