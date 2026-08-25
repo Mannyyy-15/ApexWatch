@@ -238,5 +238,20 @@ service cloud.firestore {
         }
       }
     }
+
+    // --- TV CAST & APEXCAST DISCOVERY ---
+    match /tv_cast_receivers/{receiverId} {
+      allow read, write: if true;
+    }
+
+    match /tv_cast_sessions/{sessionId} {
+      allow read, write: if true;
+    }
+
+    // --- APP METADATA & UPDATES ---
+    match /app/{document} {
+      allow read: if true;
+      allow write: if hasAdminAccess();
+    }
   }
 }
