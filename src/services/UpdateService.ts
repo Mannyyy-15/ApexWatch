@@ -31,13 +31,19 @@ class UpdateServiceClass {
 
     async getCurrentAppVersion(): Promise<string> {
         let currentVersion = pkg.version;
+        const cached = localStorage.getItem('apexwatch_installed_version');
+        if (cached && this.isNewerVersion(currentVersion, cached)) {
+            currentVersion = cached;
+        }
+
         if (Capacitor.isNativePlatform()) {
             try {
                 const currentBundle = await CapacitorUpdater.current();
                 if (currentBundle && currentBundle.bundle && currentBundle.bundle.id) {
                     const cleanId = currentBundle.bundle.id.replace(/^update-/, '');
-                    if (/^\d+\.\d+/.test(cleanId)) {
+                    if (/^\d+\.\d+/.test(cleanId) && this.isNewerVersion(currentVersion, cleanId)) {
                         currentVersion = cleanId;
+                        localStorage.setItem('apexwatch_installed_version', cleanId);
                     }
                 }
             } catch (e) {
@@ -122,7 +128,6 @@ class UpdateServiceClass {
                     });
                 } catch (downloadErr) {
                     console.warn(`[UpdateService] Primary zip download failed (${zipUrl}), trying GitHub release fallback...`, downloadErr);
-                    // Fallback to GitHub Release or Raw
                     zipUrl = `https://raw.githubusercontent.com/Mannyyy-15/ApexWatch/main/public/update-${this.targetVersion}.zip`;
                     bundle = await CapacitorUpdater.download({
                         url: zipUrl,
@@ -155,9 +160,11 @@ class UpdateServiceClass {
     }
 
     async applyUpdateAndRestart(): Promise<void> {
+        if (this.targetVersion) {
+            localStorage.setItem('apexwatch_installed_version', this.targetVersion);
+        }
         if (this.downloadedBundle) {
             try {
-                // This swaps the native Capgo pointer and reloads the WebView instantly
                 await CapacitorUpdater.set({ id: this.downloadedBundle.id });
             } catch (e) {
                 console.error("Failed to swap version", e);
@@ -171,6 +178,7 @@ class UpdateServiceClass {
     async clearUpdates(): Promise<void> {
         try {
             await CapacitorUpdater.reset();
+            localStorage.removeItem('apexwatch_installed_version');
         } catch (error) {
             console.error('Error clearing updates', error);
         }
@@ -182,14 +190,12 @@ class UpdateServiceClass {
                 await CapacitorUpdater.notifyAppReady();
                 console.log('[UpdateService] Notified Capgo that app is ready');
                 
-                // Safety check: ensure phone is not stuck on an old downloaded bundle
                 try {
                     const currentBundle = await CapacitorUpdater.current();
                     if (currentBundle?.bundle?.id) {
                         const cleanId = currentBundle.bundle.id.replace(/^update-/, '');
-                        if (/^\d+\.\d+/.test(cleanId) && this.isNewerVersion(cleanId, pkg.version)) {
-                            console.log(`[UpdateService] Active bundle (${cleanId}) is older than APK (${pkg.version}). Resetting to APK.`);
-                            await CapacitorUpdater.reset();
+                        if (/^\d+\.\d+/.test(cleanId)) {
+                            localStorage.setItem('apexwatch_installed_version', cleanId);
                         }
                     }
                 } catch (_) {}
