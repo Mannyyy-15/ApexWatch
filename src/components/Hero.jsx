@@ -32,8 +32,34 @@ export function Hero() {
     const loadHeroes = async () => {
       if (heroCache && heroCache.length > 0) return;
       try {
-        const trending = await tmdb.fetchTrending();
-        const formatted = trending.map(tmdb.formatMovie).filter(Boolean).slice(0, 6);
+        // Netflix-style mixed billboard: trending movies + TV + top-rated
+        const [trendingAll, trendingTV, topRated] = await Promise.all([
+          tmdb.fetchTrending('movie'),
+          tmdb.fetchTrending('tv'),
+          tmdb.fetchTopRated('movie'),
+        ]);
+        
+        // Interleave for variety: movie, tv, movie, top-rated, movie, tv, top-rated, movie
+        const picks = [];
+        const usedIds = new Set();
+        const sources = [trendingAll, trendingTV, topRated];
+        const sourceIdx = [0, 0, 0];
+        const pattern = [0, 1, 0, 2, 0, 1, 2, 0]; // interleave pattern
+        
+        for (const srcI of pattern) {
+          while (sourceIdx[srcI] < sources[srcI].length) {
+            const item = sources[srcI][sourceIdx[srcI]];
+            sourceIdx[srcI]++;
+            if (item && item.backdrop_path && !usedIds.has(item.id)) {
+              usedIds.add(item.id);
+              picks.push(item);
+              break;
+            }
+          }
+          if (picks.length >= 8) break;
+        }
+        
+        const formatted = picks.map(tmdb.formatMovie).filter(Boolean);
         setHeroesList(formatted);
         setHeroCache(formatted);
       } catch (error) {
@@ -181,9 +207,10 @@ export function Hero() {
           transition={{ duration: 0.45, delay: 0.05 }}
         >
           {/* Badges */}
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
             <span className="px-2.5 py-0.5 bg-accent/20 border border-accent/40 rounded-full text-[9px] font-black tracking-[0.2em] uppercase text-accent">Trending</span>
-            <span className="text-white/40 text-[10px] font-bold">{heroMovie.year} • {heroMovie.rating || 'U/A'}</span>
+            <span className="px-2 py-0.5 bg-white/10 border border-white/10 rounded-full text-[9px] font-black tracking-wider uppercase text-white/70">{heroMovie.type === 'tv' ? 'Series' : 'Movie'}</span>
+            <span className="text-white/40 text-[10px] font-bold">{heroMovie.year} • {heroMovie.match} • {heroMovie.rating || 'U/A'}</span>
           </div>
 
           {/* Title */}
@@ -258,13 +285,21 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="w-full"
             >
-              <div className="flex items-center gap-2.5 mb-6">
+              <div className="flex items-center gap-2.5 mb-6 flex-wrap">
                 <span className="hero-badge px-2.5 py-0.5 bg-accent/15 border border-accent/30 rounded-full text-[9px] font-black tracking-[0.2em] uppercase text-white">Trending</span>
+                <span className="px-2 py-0.5 bg-white/10 border border-white/10 rounded-full text-[9px] font-black tracking-wider uppercase text-white/70">{heroMovie.type === 'tv' ? 'Series' : 'Movie'}</span>
                 <div className="flex items-center gap-1 px-2.5 py-0.5 bg-black/40 backdrop-blur-xl border border-white/5 rounded-full">
                   <span className="text-accent text-[10px] font-black uppercase">Match</span>
                   <span className="text-white text-[10px] font-black">{heroMovie.match}</span>
                 </div>
                 <span className="hero-badge-meta text-white/50 text-[11px] font-bold tracking-wider">{heroMovie.year} • {heroMovie.duration} • {heroMovie.rating || '18+'}</span>
+                {heroMovie.tags && heroMovie.tags.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    {heroMovie.tags.slice(0, 3).map((tag, i) => (
+                      <span key={i} className="text-white/40 text-[10px] font-bold">{i > 0 && '•'} {tag}</span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <h1 className="hero-title display-text text-[5rem] lg:text-[6rem] font-black tracking-tighter mb-5 leading-[0.9] text-white filter drop-shadow-xl uppercase italic">

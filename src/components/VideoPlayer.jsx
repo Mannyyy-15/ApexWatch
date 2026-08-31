@@ -250,13 +250,11 @@ export function VideoPlayer() {
 
   const [fallbackMessage, setFallbackMessage] = useState('');
   const [showSlowPrompt, setShowSlowPrompt] = useState(false);
-  const [switchCountdown, setSwitchCountdown] = useState(6);
+  const [watchdogDismissed, setWatchdogDismissed] = useState(false);
   const watchdogTimerRef = useRef(null);
-  const countdownIntervalRef = useRef(null);
 
   const switchToNextServer = useCallback(() => {
     setShowSlowPrompt(false);
-    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     const currentIndex = SERVERS.findIndex(s => s.id === selectedServer);
     const nextIndex = (currentIndex + 1) % SERVERS.length;
     const nextServer = SERVERS[nextIndex];
@@ -270,33 +268,21 @@ export function VideoPlayer() {
     switchToNextServer();
   }, [switchToNextServer]);
 
-  // Stall & Buffering Watchdog: prompts user or auto-switches if server doesn't respond
+  // Stall & Buffering Watchdog: prompts user if server doesn't respond, but relies on manual switch
   useEffect(() => {
     setShowSlowPrompt(false);
+    setWatchdogDismissed(false);
     if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
-    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
 
-    // If stream does not report timeupdate within 8.5s, trigger prompt
+    // If stream does not report timeupdate within 12s, trigger manual prompt
     watchdogTimerRef.current = setTimeout(() => {
-      if (localTime === 0) {
+      if (localTime === 0 && !watchdogDismissed) {
         setShowSlowPrompt(true);
-        setSwitchCountdown(6);
-        countdownIntervalRef.current = setInterval(() => {
-          setSwitchCountdown(prev => {
-            if (prev <= 1) {
-              clearInterval(countdownIntervalRef.current);
-              switchToNextServer();
-              return 6;
-            }
-            return prev - 1;
-          });
-        }, 1000);
       }
-    }, 8500);
+    }, 12000);
 
     return () => {
       if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
   }, [selectedServer, activeMovieId, activeSeason, activeEpisode]);
 
@@ -304,7 +290,6 @@ export function VideoPlayer() {
   useEffect(() => {
     if (localTime > 0 && showSlowPrompt) {
       setShowSlowPrompt(false);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     }
   }, [localTime, showSlowPrompt]);
 
@@ -1035,7 +1020,7 @@ export function VideoPlayer() {
 
           {/* Slow Server Response / Buffering Watchdog Alert */}
           <AnimatePresence>
-            {showSlowPrompt && (
+            {showSlowPrompt && !watchdogDismissed && (
               <motion.div
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1049,7 +1034,7 @@ export function VideoPlayer() {
                     </div>
                     <div className="min-w-0">
                       <h4 className="text-white text-xs font-black uppercase tracking-wider">Slow Stream Response?</h4>
-                      <p className="text-white/60 text-[10px] truncate">Auto-switching in {switchCountdown}s or switch now</p>
+                      <p className="text-white/60 text-[10px] truncate">If the video isn't loading, try another server.</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
@@ -1060,7 +1045,10 @@ export function VideoPlayer() {
                       Next Server
                     </button>
                     <button
-                      onClick={() => setShowSlowPrompt(false)}
+                      onClick={() => {
+                        setShowSlowPrompt(false);
+                        setWatchdogDismissed(true);
+                      }}
                       className="p-2 hover:bg-white/10 text-white/40 hover:text-white rounded-lg transition-all cursor-pointer"
                       title="Keep waiting"
                     >
