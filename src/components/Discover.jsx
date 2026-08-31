@@ -456,7 +456,7 @@ export function Discover() {
 
       {/* Recent Searches Chips */}
       {!searchQuery.trim() && recentSearches.length > 0 && (
-        <div className="mb-4 w-full max-w-3xl mx-auto flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
+        <div className="mb-4 w-full flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
           <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider flex-shrink-0">Recent:</span>
           {recentSearches.map((term, idx) => (
             <button
@@ -473,7 +473,7 @@ export function Discover() {
 
       {/* Category Header & Filter Chips Strip */}
       {!searchQuery.trim() && (
-        <div className="mb-4 md:mb-6 w-full max-w-3xl mx-auto">
+        <div className="mb-4 md:mb-6 w-full">
           <h2 className="text-lg md:text-xl font-black text-white tracking-tight mb-3">
             Popular Searches in
           </h2>
@@ -504,7 +504,7 @@ export function Discover() {
 
       {/* Live Search Results Header when Query Active */}
       {searchQuery.trim() && (
-        <div className="mb-5 max-w-3xl mx-auto flex items-center justify-between">
+        <div className="mb-5 w-full flex items-center justify-between">
           <div>
             <h2 className="text-lg md:text-xl font-black text-white tracking-tight">
               Results for <span className="text-accent italic">"{searchQuery}"</span>
@@ -532,14 +532,14 @@ export function Discover() {
       )}
 
       {/* Main Content Area */}
-      <div className="w-full max-w-3xl mx-auto">
+      <div className="w-full">
         {loading && currentDisplayList.length === 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[...Array(9)].map((_, i) => <MovieCardSkeleton key={i} />)}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {[...Array(12)].map((_, i) => <MovieCardSkeleton key={i} />)}
           </div>
         ) : searchQuery.trim() ? (
           /* Live Search Results Grid */
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 md:gap-4">
             {currentDisplayList.map((movie) => (
               <motion.div
                 key={movie.id}
