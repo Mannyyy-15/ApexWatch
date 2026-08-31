@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Plus, Check, MoreVertical, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { tmdb } from '../services/tmdb';
+import { tmdb } from '../utils/tmdb';
 
 const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progress, onMovieClick, onRemoveFromContinueWatching }) => {
   const { watchlist, toggleWatchlist } = useAppContext();
