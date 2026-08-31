@@ -7,6 +7,7 @@ import { RowSkeleton } from './Skeleton';
 import { CardStack } from './CardStack';
 import { CategoryRow } from './CategoryRow';
 import { firestoreService } from '../utils/firestore';
+import { Virtuoso } from 'react-virtuoso';
 
 export function MovieGrid() {
  const { activeProfile, user, setActiveMovieId, setActiveMediaType, setCurrentView, watchlist, movieRows, setMovieRows, setActiveSeason, setActiveEpisode } = useAppContext();
@@ -15,6 +16,11 @@ export function MovieGrid() {
  const saved = localStorage.getItem('apexwatch_cached_history');
  return saved ? JSON.parse(saved) : [];
  });
+ const [scrollParent, setScrollParent] = useState(null);
+
+ useEffect(() => {
+   setScrollParent(document.querySelector('main'));
+ }, []);
 
  const loadContent = async () => {
     // Only show full loading skeleton if we have NO cached rows at all
@@ -306,81 +312,93 @@ export function MovieGrid() {
  );
  }
 
- return (
- <div className="relative z-20 px-2 md:px-8 lg:px-10 mt-8 md:mt-12 flex flex-col gap-4 md:gap-6 pb-20">
- {movieRows.map((row, idx) => {
- if (row.isForYou) {
- return (
- <div key={`foryou-${idx}`} className="md:hidden">
- <h2 className="text-xl md:text-2xl font-black text-white/90 tracking-wide mb-3 md:mb-4 px-1 md:px-2">
- {row.title}
- </h2>
- <CardStack movies={row.movies} onMovieClick={(id, type) => {
- setActiveMovieId(id);
- setActiveMediaType(type);
- setCurrentView('details');
- }} />
- </div>
- );
- }
+  return (
+  <div className="relative z-20 px-2 md:px-8 lg:px-10 mt-8 md:mt-12 pb-20">
+  {scrollParent ? (
+    <Virtuoso
+      customScrollParent={scrollParent}
+      data={movieRows}
+      itemContent={(idx, row) => {
+        const itemClass = "pb-4 md:pb-6";
 
- if (row.isBecauseYouWatched) {
- return (
- <MovieRow
- key={`byw-${idx}`}
- title={row.title}
- movies={row.movies}
- onMovieClick={(id, type) => {
- setActiveMovieId(id);
- setActiveMediaType(type || 'movie');
- setCurrentView('details');
- }}
- />
- );
- }
+        if (row.isForYou) {
+          return (
+            <div key={`foryou-${idx}`} className={`md:hidden ${itemClass}`}>
+              <h2 className="text-xl md:text-2xl font-black text-white/90 tracking-wide mb-3 md:mb-4 px-1 md:px-2">
+                {row.title}
+              </h2>
+              <CardStack movies={row.movies} onMovieClick={(id, type) => {
+                setActiveMovieId(id);
+                setActiveMediaType(type);
+                setCurrentView('details');
+              }} />
+            </div>
+          );
+        }
 
-  if (row.isLanguages) {
-  return <CategoryRow key={`lang-${idx}`} title={row.title} type="language" />;
-  }
+        if (row.isBecauseYouWatched) {
+          return (
+            <div key={`byw-${idx}`} className={itemClass}>
+              <MovieRow
+                title={row.title}
+                movies={row.movies}
+                onMovieClick={(id, type) => {
+                  setActiveMovieId(id);
+                  setActiveMediaType(type || 'movie');
+                  setCurrentView('details');
+                }}
+              />
+            </div>
+          );
+        }
 
-  if (row.isGenres) {
-  return <CategoryRow key={`genre-${idx}`} title={row.title} type="genre" />;
-  }
+        if (row.isLanguages) {
+          return <div key={`lang-${idx}`} className={itemClass}><CategoryRow title={row.title} type="language" /></div>;
+        }
 
-  if (row.isChannels) {
-  return <CategoryRow key={`channel-${idx}`} title={row.title} type="channel" />;
-  }
+        if (row.isGenres) {
+          return <div key={`genre-${idx}`} className={itemClass}><CategoryRow title={row.title} type="genre" /></div>;
+        }
 
-  if (row.isSports) {
-  return <CategoryRow key={`sport-${idx}`} title={row.title} type="sport" />;
-  }
+        if (row.isChannels) {
+          return <div key={`channel-${idx}`} className={itemClass}><CategoryRow title={row.title} type="channel" /></div>;
+        }
 
- return (
- <MovieRow
- key={`${row.title}-${idx}`}
- title={row.title}
- movies={row.movies}
- isContinueWatching={row.isHistory}
- isTop10={row.title.toLowerCase().includes('top 10')}
- continueWatchingItems={row.isHistory ? historyItems : null}
- onRemoveFromContinueWatching={handleRemoveHistory}
- onMovieClick={(id, type) => {
- setActiveMovieId(id);
- setActiveMediaType(type || 'movie');
- 
- if (row.isHistory) {
-   const item = historyItems.find(h => h.id === id);
-   if (item && item.type === 'tv') {
-     if (item.season) setActiveSeason(item.season);
-     if (item.episode) setActiveEpisode(item.episode);
-     sessionStorage.setItem(`apexwatch_tab_${id}`, 'Episodes');
-   }
- }
- setCurrentView('details');
- }}
- />
- );
- })}
- </div>
- );
+        if (row.isSports) {
+          return <div key={`sport-${idx}`} className={itemClass}><CategoryRow title={row.title} type="sport" /></div>;
+        }
+
+        return (
+          <div key={`${row.title}-${idx}`} className={itemClass}>
+            <MovieRow
+              title={row.title}
+              movies={row.movies}
+              isContinueWatching={row.isHistory}
+              isTop10={row.title.toLowerCase().includes('top 10')}
+              continueWatchingItems={row.isHistory ? historyItems : null}
+              onRemoveFromContinueWatching={handleRemoveHistory}
+              onMovieClick={(id, type) => {
+                setActiveMovieId(id);
+                setActiveMediaType(type || 'movie');
+                
+                if (row.isHistory) {
+                  const item = historyItems.find(h => h.id === id);
+                  if (item && item.type === 'tv') {
+                    if (item.season) setActiveSeason(item.season);
+                    if (item.episode) setActiveEpisode(item.episode);
+                    sessionStorage.setItem(`apexwatch_tab_${id}`, 'Episodes');
+                  }
+                }
+                setCurrentView('details');
+              }}
+            />
+          </div>
+        );
+      }}
+    />
+  ) : (
+    <div className="h-[1000px]"></div>
+  )}
+  </div>
+  );
 }

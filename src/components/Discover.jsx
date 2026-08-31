@@ -100,7 +100,7 @@ export function Discover() {
     });
   };
 
-  // Initial Content Load (Default: Indian Trending Content)
+  // Initial Content Load (Rich Discovery Mix)
   useEffect(() => {
     const loadInitialContent = async () => {
       if (discoverCache && discoverCache.length > 0) {
@@ -110,22 +110,29 @@ export function Discover() {
 
       setLoading(true);
       try {
-        const indianRaw = await tmdb.fetchIndianTrending();
-        const formatted = indianRaw.map(tmdb.formatMovie).filter(Boolean);
-        const uniqueItems = Array.from(new Map(formatted.map(item => [item.id, item])).values());
+        // Fetch a dynamic mix of trending movies and TV
+        const [trendingMovies, trendingTV, topRated] = await Promise.all([
+          tmdb.fetchTrending('movie'),
+          tmdb.fetchTrending('tv'),
+          tmdb.fetchTopRated('movie')
+        ]);
         
-        if (uniqueItems.length > 0) {
-          setTrending(uniqueItems);
-          setDiscoverCache(uniqueItems);
-        } else {
-          // Fallback to general trending if regional is empty
-          const fallbackRaw = await tmdb.fetchTrending('all');
-          const fallbackFormatted = fallbackRaw.map(tmdb.formatMovie).filter(Boolean);
-          setTrending(fallbackFormatted);
-          setDiscoverCache(fallbackFormatted);
+        // Interleave the results to create a rich, varied bento grid
+        const mixed = [];
+        const maxLen = Math.max(trendingMovies.length, trendingTV.length, topRated.length);
+        for (let i = 0; i < maxLen; i++) {
+          if (trendingMovies[i]) mixed.push(trendingMovies[i]);
+          if (trendingTV[i]) mixed.push(trendingTV[i]);
+          if (i % 2 === 0 && topRated[i]) mixed.push(topRated[i]);
         }
+        
+        const formatted = mixed.map(tmdb.formatMovie).filter(Boolean);
+        const uniqueItems = Array.from(new Map(formatted.map(item => [item.id, item])).values()).slice(0, 48); // keep 48 rich items
+        
+        setTrending(uniqueItems);
+        setDiscoverCache(uniqueItems);
       } catch (error) {
-        console.error('Error loading initial content:', error);
+        console.error('Error loading initial discover content:', error);
       } finally {
         setLoading(false);
       }

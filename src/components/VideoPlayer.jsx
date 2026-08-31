@@ -104,6 +104,38 @@ export function VideoPlayer() {
     lastTapRef.current[side] = now;
   };
 
+  // Gesture states
+  const [brightness, setBrightness] = useState(1);
+  const touchStartY = useRef(null);
+  const currentBrightnessRef = useRef(1);
+
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMoveBrightness = (e) => {
+    if (touchStartY.current === null) return;
+    const deltaY = touchStartY.current - e.touches[0].clientY;
+    const sensitivity = 0.005;
+    let newBright = currentBrightnessRef.current + (deltaY * sensitivity);
+    newBright = Math.max(0.1, Math.min(newBright, 1)); // Clamp 0.1 to 1.0
+    setBrightness(newBright);
+    showHud(`🔆 Brightness: ${Math.round(newBright * 100)}%`);
+  };
+
+  const handleTouchMoveVolume = (e) => {
+    if (touchStartY.current === null) return;
+    const deltaY = touchStartY.current - e.touches[0].clientY;
+    if (Math.abs(deltaY) > 20) {
+      showHud(`🔊 Use device volume buttons`);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartY.current = null;
+    currentBrightnessRef.current = brightness;
+  };
+
   // Global Keyboard Shortcuts Listener
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -718,6 +750,7 @@ export function VideoPlayer() {
       animate={{ opacity: 1 }} 
       exit={{ opacity: 0 }} 
       className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden video-player-container"
+      style={{ filter: `brightness(${brightness})` }}
     >
       <div className="flex w-full h-full relative">
         {/* Left Side: Video Player Column */}
@@ -733,7 +766,7 @@ export function VideoPlayer() {
                 src={embedUrl} 
                 className="w-full h-full border-none" 
                 allowFullScreen={true}
-                allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; accelerometer *; gyroscope *; clipboard-write *"
+                allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; presentation *; accelerometer *; gyroscope *; clipboard-write *"
                 referrerPolicy="no-referrer"
                 title={movie.title}
                 onError={handleIframeError}
@@ -745,6 +778,24 @@ export function VideoPlayer() {
           <div 
             className="absolute top-0 left-0 right-0 h-24 z-30 pointer-events-none"
             onMouseMove={resetControlsTimeout}
+          />
+
+          {/* Left Swipe Zone (Brightness) */}
+          <div 
+            className="absolute top-24 bottom-24 left-0 w-[15%] z-30 pointer-events-auto"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMoveBrightness}
+            onTouchEnd={handleTouchEnd}
+            onClick={() => handleDoubleTap('left')}
+          />
+
+          {/* Right Swipe Zone (Volume Info) */}
+          <div 
+            className="absolute top-24 bottom-24 right-0 w-[15%] z-30 pointer-events-auto"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMoveVolume}
+            onTouchEnd={handleTouchEnd}
+            onClick={() => handleDoubleTap('right')}
           />
 
           {/* Floating Top Controls Toggle Pill (Allows 1-tap toggle without blocking video center) */}
@@ -1427,7 +1478,8 @@ export function VideoPlayer() {
           backdrop: movie.backdrop,
           currentTime: localTime,
           duration: duration,
-          server: selectedServer
+          server: selectedServer,
+          url: embedUrl
         }}
         onCastStarted={(sessionInfo) => {
           setActiveCastSession({

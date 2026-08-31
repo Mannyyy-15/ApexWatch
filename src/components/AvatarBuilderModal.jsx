@@ -11,12 +11,14 @@ export function AvatarBuilderModal({ isOpen, onClose, onSave }) {
  const [styleIdx, setStyleIdx] = useState(0);
  const [seed, setSeed] = useState('');
  const [colorIdx, setColorIdx] = useState(0);
+ const [customImageUrl, setCustomImageUrl] = useState(null);
 
  // Initialize randoms on open
  useEffect(() => {
  if (isOpen) {
  setName('');
  setIsKid(false);
+ setCustomImageUrl(null);
  setSeed(Math.random().toString(36).substring(7));
  setColorIdx(Math.floor(Math.random() * COLORS.length));
  setStyleIdx(0);
@@ -28,23 +30,40 @@ export function AvatarBuilderModal({ isOpen, onClose, onSave }) {
  const handleShuffleStyle = () => {
  setStyleIdx((prev) => (prev + 1) % STYLES.length);
  setSeed(Math.random().toString(36).substring(7));
+ setCustomImageUrl(null);
  };
 
  const handleShuffleLook = () => {
  setSeed(Math.random().toString(36).substring(7));
+ setCustomImageUrl(null);
  };
 
  const handleShuffleColor = () => {
  setColorIdx((prev) => (prev + 1) % COLORS.length);
+ setCustomImageUrl(null);
  };
+
+ const handleImageUpload = (e) => {
+   const file = e.target.files[0];
+   if (file) {
+     if (file.size > 2 * 1024 * 1024) {
+       alert("Image must be smaller than 2MB");
+       return;
+     }
+     const reader = new FileReader();
+     reader.onloadend = () => {
+       setCustomImageUrl(reader.result);
+     };
+     reader.readAsDataURL(file);
+   }
+ };
+
+ const currentAvatarUrl = customImageUrl || `https://api.dicebear.com/9.x/${STYLES[styleIdx]}/svg?seed=${seed}&backgroundColor=${COLORS[colorIdx]}`;
 
  const handleSave = () => {
  if (!name.trim()) return;
- const avatarUrl = `https://api.dicebear.com/9.x/${STYLES[styleIdx]}/svg?seed=${seed}&backgroundColor=${COLORS[colorIdx]}`;
- onSave(name.trim(), isKid, avatarUrl);
+ onSave(name.trim(), isKid, currentAvatarUrl);
  };
-
- const avatarUrl = `https://api.dicebear.com/9.x/${STYLES[styleIdx]}/svg?seed=${seed}&backgroundColor=${COLORS[colorIdx]}`;
 
  return (
  <AnimatePresence>
@@ -83,13 +102,18 @@ export function AvatarBuilderModal({ isOpen, onClose, onSave }) {
  {/* Avatar Preview */}
  <div className="flex flex-col items-center gap-6">
  <motion.div 
- key={avatarUrl}
+ key={currentAvatarUrl}
  initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
  animate={{ scale: 1, opacity: 1, rotate: 0 }}
  transition={{ type: "spring", damping: 20, stiffness: 200 }}
- className="w-40 h-40 rounded-[32px] overflow-hidden shadow-2xl relative border border-white/20 group"
+ className="w-40 h-40 rounded-[32px] overflow-hidden shadow-2xl relative border border-white/20 group cursor-pointer"
+ onClick={() => document.getElementById('avatar-upload').click()}
  >
- <img src={avatarUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
+ <img src={currentAvatarUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
+ <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+   <span className="text-white text-xs font-bold uppercase tracking-wider">Upload Custom</span>
+ </div>
+ <input type="file" id="avatar-upload" className="hidden" accept="image/*" onChange={handleImageUpload} />
  </motion.div>
 
  {/* Controls */}

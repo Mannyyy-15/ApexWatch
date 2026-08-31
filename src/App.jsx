@@ -12,19 +12,20 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { StatusBar, Style } from '@capacitor/status-bar';
 
+import { Discover } from './components/Discover';
+import { CategoryView } from './components/CategoryView';
+import { ProfileLibrary } from './components/ProfileLibrary';
+import { CategoryExplore } from './components/CategoryExplore';
+import { Browse } from './components/Browse';
+
 const MovieDetails = lazy(() => import('./components/MovieDetails').then(m => ({ default: m.MovieDetails })));
 const VideoPlayer = lazy(() => import('./components/VideoPlayer').then(m => ({ default: m.VideoPlayer })));
-const Discover = lazy(() => import('./components/Discover').then(m => ({ default: m.Discover })));
 const ProfilesSelection = lazy(() => import('./components/ProfilesSelection').then(m => ({ default: m.ProfilesSelection })));
 const Auth = lazy(() => import('./components/Auth').then(m => ({ default: m.Auth })));
 const Onboarding = lazy(() => import('./components/Onboarding').then(m => ({ default: m.Onboarding })));
 const StatsDashboard = lazy(() => import('./components/StatsDashboard').then(m => ({ default: m.StatsDashboard })));
-const CategoryView = lazy(() => import('./components/CategoryView').then(m => ({ default: m.CategoryView })));
-const ProfileLibrary = lazy(() => import('./components/ProfileLibrary').then(m => ({ default: m.ProfileLibrary })));
 const DevConsole = lazy(() => import('./components/DevConsole').then(m => ({ default: m.DevConsole })));
 const UpdaterModal = lazy(() => import('./components/UpdaterModal').then(m => ({ default: m.UpdaterModal })));
-const CategoryExplore = lazy(() => import('./components/CategoryExplore').then(m => ({ default: m.CategoryExplore })));
-const Browse = lazy(() => import('./components/Browse').then(m => ({ default: m.Browse })));
 const TVReceiverOverlay = lazy(() => import('./components/TVReceiverOverlay').then(m => ({ default: m.TVReceiverOverlay })));
 const AIMoodMatcherModal = lazy(() => import('./components/AIMoodMatcherModal').then(m => ({ default: m.AIMoodMatcherModal })));
 const SurpriseMeModal = lazy(() => import('./components/SurpriseMeModal').then(m => ({ default: m.SurpriseMeModal })));

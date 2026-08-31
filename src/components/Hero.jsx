@@ -16,6 +16,32 @@ export function Hero() {
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [isPlayingTrailer, setIsPlayingTrailer] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    setTrailerKey(null);
+    setIsPlayingTrailer(false);
+
+    if (heroMovie) {
+      timer = setTimeout(async () => {
+        try {
+          const data = heroMovie.type === 'tv' 
+            ? await tmdb.fetchTVDetails(heroMovie.id)
+            : await tmdb.fetchMovieDetails(heroMovie.id);
+          const trailer = data?.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+          if (trailer) {
+            setTrailerKey(trailer.key);
+            setIsPlayingTrailer(true);
+          }
+        } catch(e) {}
+      }, 3500);
+    }
+
+    return () => clearTimeout(timer);
+  }, [heroMovie?.id]);
+
   // Preload next hero backdrop images
   useEffect(() => {
     if (heroesList.length > 0) {
@@ -156,18 +182,27 @@ export function Hero() {
             transition={{ duration: 0.45, ease: "easeOut" }}
             className="absolute inset-0 will-change-transform"
           >
-            <div className="absolute inset-0 w-full h-full">
+            <div className="absolute inset-0 w-full h-full bg-[#050505]">
               <picture>
                 <source media="(max-width: 768px)" srcSet={heroMovie.poster || heroMovie.backdrop} />
                 <img
                   src={heroMovie.backdrop}
                   alt={heroMovie.title}
-                  className="w-full h-full object-cover object-center"
+                  className={`w-full h-full object-cover object-center transition-opacity duration-1000 ${isPlayingTrailer ? 'opacity-0' : 'opacity-100'}`}
                   loading="eager"
                   fetchPriority="high"
                   decoding="async"
                 />
               </picture>
+
+              {isPlayingTrailer && trailerKey && (
+                <iframe
+                  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&loop=1&playlist=${trailerKey}`}
+                  allow="autoplay; encrypted-media"
+                  className="absolute inset-0 w-full h-full scale-[1.2] md:scale-[1.35] pointer-events-none opacity-80"
+                  title="Trailer"
+                />
+              )}
             </div>
             {/* Moody Cinematic Overlays */}
             <div className="absolute inset-0 bg-black/30"></div>

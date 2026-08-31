@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Cast, Tv, Monitor, Smartphone, X, Search, Wifi, Check, Sparkles, RefreshCw, AlertCircle, ArrowRight, Radio } from 'lucide-react';
 import { castService } from '../services/castService';
 import { useAppContext } from '../context/AppContext';
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 
 export function CastModal({ isOpen, onClose, currentMedia, onCastStarted }) {
   const { user } = useAppContext();
@@ -111,6 +113,16 @@ export function CastModal({ isOpen, onClose, currentMedia, onCastStarted }) {
       }
     } catch (err) {
       setErrorMsg('Mirroring error: ' + err.message);
+    }
+  };
+
+  const handleExternalCast = async () => {
+    if (currentMedia?.url) {
+      try {
+        await Browser.open({ url: currentMedia.url, presentationStyle: 'fullscreen' });
+      } catch (err) {
+        setErrorMsg('Browser error: ' + err.message);
+      }
     }
   };
 
@@ -286,6 +298,19 @@ export function CastModal({ isOpen, onClose, currentMedia, onCastStarted }) {
                 <Cast size={16} />
                 <span>Search Wireless Displays</span>
               </button>
+              
+              {Capacitor.isNativePlatform() && (
+                <div className="pt-3 mt-3 border-t border-white/10">
+                  <p className="text-[10px] text-white/50 mb-2">Android/iOS App Restriction</p>
+                  <button
+                    onClick={handleExternalCast}
+                    className="w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold text-xs transition-all flex items-center justify-center gap-2"
+                  >
+                    <Smartphone size={16} />
+                    <span>Cast via External Browser</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

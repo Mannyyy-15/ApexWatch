@@ -2,12 +2,37 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Plus, Check, MoreVertical, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { tmdb } from '../services/tmdb';
 
 const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progress, onMovieClick, onRemoveFromContinueWatching }) => {
   const { watchlist, toggleWatchlist } = useAppContext();
   const isInWatchlist = watchlist.some(item => item.contentId === movie.id);
   const [showMenu, setShowMenu] = useState(false);
   const rank = index + 1;
+
+  const [isHovered, setIsHovered] = useState(false);
+  const [trailerKey, setTrailerKey] = useState(null);
+  const hoverTimerRef = useRef(null);
+
+  const handleMouseEnter = () => {
+    hoverTimerRef.current = setTimeout(async () => {
+      setIsHovered(true);
+      if (!trailerKey) {
+        try {
+          const data = movie.type === 'tv' 
+            ? await tmdb.fetchTVDetails(movie.id)
+            : await tmdb.fetchMovieDetails(movie.id);
+          const trailer = data?.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+          if (trailer) setTrailerKey(trailer.key);
+        } catch(e) {}
+      }
+    }, 1200);
+  };
+  
+  const handleMouseLeave = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    setIsHovered(false);
+  };
 
   return (
     <div
@@ -47,15 +72,28 @@ const MovieCard = React.memo(({ movie, index, isContinueWatching, isTop10, progr
       )}
 
       {/* Thumbnail Container */}
-      <div className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded-xl md:rounded-2xl overflow-hidden mb-2.5 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-300 group-hover:border-accent/50 bg-[#121218]`}>
+      <div 
+        className={`relative ${isContinueWatching ? 'aspect-video' : 'aspect-[2/3]'} rounded-xl md:rounded-2xl overflow-hidden mb-2.5 md:mb-3.5 border border-white/10 shadow-2xl transition-all duration-300 group-hover:border-accent/50 bg-[#121218]`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <img
           src={isContinueWatching ? (movie.backdrop || movie.poster) : movie.poster}
           alt={movie.title}
           loading={index < 4 ? 'eager' : 'lazy'}
           fetchPriority={index < 2 ? 'high' : 'auto'}
           decoding="async"
-          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          className={`w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 ${isHovered && trailerKey ? 'opacity-0' : 'opacity-100'}`}
         />
+
+        {isHovered && trailerKey && (
+          <iframe
+            src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&loop=1&playlist=${trailerKey}`}
+            allow="autoplay; encrypted-media"
+            className="absolute inset-0 w-full h-full scale-[1.35] pointer-events-none"
+            title="Trailer"
+          />
+        )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300"></div>
 
